@@ -21,7 +21,11 @@ const userSchema = new mongoose.Schema({
         minlength: 8
     },
     phone: {
-        type: Number    
+        type: Number
+    },
+    verified: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,
