@@ -95,12 +95,12 @@ const Login = () => {
                                                 value={credentials.email}
                                                 onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
                                                 required
-                                                feedbackInvalid={"Plz enter email"}
+                                                feedbackInvalid={"Email is required."}
                                                 className={'form-control is_not_validated'}
-                                                id="floatingInput"
+                                                id="floatingEmail"
                                                 placeholder="name@example.com"
                                             />
-                                            <label htmlFor="floatingInput">Email</label>
+                                            <label htmlFor="floatingEmail">Email</label>
                                         </div>
                                     </div>
                                     <div className="col-md-6">
@@ -110,7 +110,7 @@ const Login = () => {
                                                 onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                                                 type="password"
                                                 required
-                                                feedbackInvalid={"Plz enter password"}
+                                                feedbackInvalid={"Password is required."}
                                                 className={'form-control eye_icn is_not_validated'}
                                                 id="floatingPassword"
                                                 placeholder="Password"
@@ -128,7 +128,7 @@ const Login = () => {
                                         <a href="#" className="forgot_psw">Forgot password?</a>
                                     </div>
                                 </div>
-                                <button type="submit" className="common_btn d-flex m-auto">Create Account</button>
+                                <button type="submit" className="common_btn d-flex m-auto">Login</button>
                             </CForm>
                         </div>
                     </div>
