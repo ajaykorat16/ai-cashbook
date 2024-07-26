@@ -1,9 +1,78 @@
-import { CForm, CFormInput } from '@coreui/react'
-import React from 'react'
+import React from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
+import { CForm, CFormInput } from '@coreui/react';
+import { Toast } from 'primereact/toast';
+import { useMsal } from '@azure/msal-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
+    const { toast, signUpUserByGoogle } = useAuth();
+    const navigate = useNavigate();
+    const { instance } = useMsal();
+
+    const handleGoogleSignUp = async (res) => {
+        try {
+            const { access_token } = res;
+            const { data } = await axios.get(process.env.REACT_APP_OAUTH2_GOOGLE_API,
+                {
+                    headers:
+                    {
+                        Authorization: `Bearer ${access_token}`
+                    }
+                })
+
+            if (typeof data !== 'undefined') {
+                if (data.email_verified) {
+                    const { given_name, family_name, email } = data
+
+                    const googleSignUp = await signUpUserByGoogle(given_name, family_name, email)
+                    if (!googleSignUp?.error) {
+                        navigate("/register")
+                    }
+                } else {
+                    toast.current?.show({ severity: 'error', summary: 'Sign Up', detail: 'An error occurred. Please try again later.', life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Sign Up', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    };
+
+    const googleSignUp = useGoogleLogin({
+        onSuccess: handleGoogleSignUp,
+    });
+
+    const handleMicrosoftSignUp = async () => {
+        try {
+            const loginResponse = await instance.loginPopup({
+                scopes: ['user.read'],
+            });
+
+            const accessToken = loginResponse.accessToken;
+            const { data } = await axios.get(process.env.REACT_APP_MICROSOFT_API,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                });
+
+            const { givenName, surname, mail } = data;
+            const microsoftSignUp = await signUpUserByGoogle(givenName, surname, mail); // Reuse the same function or create a new one for Microsoft
+            if (!microsoftSignUp?.error) {
+                navigate('/register');
+            }
+        } catch (error) {
+            console.error('Error during Microsoft login:', error);
+        }
+    };
+
     return (
         <>
+            <Toast ref={toast} />
             <section className="main_header login_header">
                 <header>
                     <div className="container">
@@ -20,21 +89,21 @@ const Register = () => {
                         <div className='special_login_box'>
                             <div className='row justify-content-center'>
                                 <div className='col-md-6'>
-                                    <a href="#" className="brd_green_box">
+                                    <a onClick={() => googleSignUp()} className="brd_green_box">
                                         <img src="/images/google_icn.svg" alt="" />
-                                        <span>Sign in with Google</span>
+                                        <span>Sign up with Google</span>
                                     </a>
                                 </div>
                                 <div className="col-md-6">
-                                    <a href="#" className="brd_green_box">
+                                    <a onClick={handleMicrosoftSignUp} className="brd_green_box">
                                         <img src="/images/microsoft_icn.svg" alt="" />
-                                        <span>Sign in with Microsoft</span>
+                                        <span>Sign up with Microsoft</span>
                                     </a>
                                 </div>
                                 <div className="col-md-6">
                                     <a href="#" className="brd_green_box">
                                         <img src="/images/apple_icn.svg" alt="" />
-                                        <span>Sign in with Apple</span>
+                                        <span>Sign up with Apple</span>
                                     </a>
                                 </div>
                             </div>
@@ -66,7 +135,6 @@ const Register = () => {
                                                 feedbackInvalid={"First name is required."}
                                                 className={'form-control is_not_validated'}
                                                 id="floatingFirstName"
-                                                placeholder="name@example.com"
                                             />
                                             <label htmlFor="floatingFirstName">First Name</label>
                                         </div>
@@ -79,7 +147,6 @@ const Register = () => {
                                                 feedbackInvalid={"Last name is required."}
                                                 className={'form-control is_not_validated'}
                                                 id="floatingLastName"
-                                                placeholder="name@example.com"
                                             />
                                             <label htmlFor="floatingLastName">Last Name</label>
                                         </div>
@@ -100,6 +167,10 @@ const Register = () => {
                                 </div>
                                 <button type="submit" className="common_btn d-flex m-auto">Create Account</button>
                             </CForm>
+                            <div className="sign-up">
+                                <span>Already have an account?</span>
+                                <a href='/'>Sign in</a>
+                            </div>
                         </div>
                     </div>
                 </div>

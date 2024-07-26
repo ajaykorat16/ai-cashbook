@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, createContext, useRef } from "react";
 import { baseURL } from "../lib";
-import axios from 'axios'
+import axios from 'axios';
 
 const AuthContext = createContext()
 
@@ -67,6 +67,67 @@ const AuthProvider = ({ children }) => {
         }
     };
 
+    const loginUserByGoogle = async (email) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/user/login-by-google`, { email });
+
+            if (data.error === false) {
+                setIsLoggedIn(true)
+                setTimeout(function () {
+                    toast.current?.show({ severity: 'success', summary: data.user.name, detail: data.message, life: 3000 })
+                }, 500);
+                setAuth({
+                    ...auth,
+                    user: data.user,
+                    token: data.token
+                })
+                localStorage.setItem('auth', JSON.stringify(data))
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Login', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'Login', detail: "Please fill all fields.", life: 3000 })
+                } else {
+                    const errorMessage = error.response.data.message;
+                    toast.current?.show({ severity: 'error', summary: 'Login', detail: errorMessage, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Login', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    };
+
+    const signUpUserByGoogle = async (given_name, family_name, email) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/user/signup-by-google`, { first_name: given_name, last_name: family_name, email });
+            if (data.error === false) {
+                setAuth({
+                    ...auth,
+                    user: data.user,
+                    token: data.token
+                })
+                localStorage.setItem('auth', JSON.stringify(data))
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Sign Up', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'Sign Up', detail: "Please fill all fields.", life: 3000 })
+                } else {
+                    const errorMessage = error.response.data.message;
+                    toast.current?.show({ severity: 'error', summary: 'Sign Up', detail: errorMessage, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Sign Up', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
     useEffect(() => {
         const data = localStorage.getItem('auth')
         if (data) {
@@ -81,7 +142,7 @@ const AuthProvider = ({ children }) => {
     }, [])
 
     return (
-        <AuthContext.Provider value={{ auth, login, logout, isLoggedIn, toast }}>
+        <AuthContext.Provider value={{ auth, login, logout, isLoggedIn, toast, loginUserByGoogle, signUpUserByGoogle }}>
             {children}
         </AuthContext.Provider>
     )

@@ -264,14 +264,31 @@ a.brd_green_box span {
   transform: rotate(45deg);
 }
 
-.forgot_psw {
-  display: inline-block;
-  color: var(--green-color);
+.forgot_psw_container{
   display: flex;
   justify-content: end;
 }
 
+.forgot_psw {
+  color: var(--green-color);
+}
+
 .forgot_psw:hover {
+  color: var(--black-color);
+}
+
+.sign-up {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.input_form_box .sign-up a{
+  color: var(--green-color);
+}
+
+.sign-up a:hover {
   color: var(--black-color);
 }
 

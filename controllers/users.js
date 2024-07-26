@@ -185,7 +185,7 @@ const loginUserByGoogle = async (req, res) => {
                 token,
             });
         } else {
-            return res.status(200).send({
+            return res.status(400).send({
                 error: true,
                 message: "You are not signed up. Please sign up.",
             });
@@ -207,7 +207,7 @@ const signUpUserByGoogle = async (req, res) => {
 
         const existingUser = await Users.findOne({ email });
         if (existingUser) {
-            return res.status(200).send({
+            return res.status(400).send({
                 error: true,
                 message: "You are already signed up. Please log in."
             });

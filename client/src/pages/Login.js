@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { Toast } from 'primereact/toast';
 import { CFormInput, CForm } from '@coreui/react';
-
+import { useGoogleLogin } from "@react-oauth/google";
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
-    const { auth, login, toast } = useAuth();
+    const { auth, login, toast, loginUserByGoogle } = useAuth();
 
     const [credentials, setCredentials] = useState({
         email: "",
@@ -13,6 +15,7 @@ const Login = () => {
     })
     const [validated, setValidated] = useState(false);
 
+    const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -36,6 +39,39 @@ const Login = () => {
         }
     };
 
+    const handleGoogleSignInSuccess = async (res) => {
+        try {
+            const { access_token } = res;
+            const { data } = await axios.get(process.env.REACT_APP_OAUTH2_GOOGLE_API,
+                {
+                    headers:
+                    {
+                        Authorization: `Bearer ${access_token}`
+                    }
+                })
+
+            if (typeof data !== 'undefined') {
+                if (data.email_verified) {
+                    const { email } = data
+
+                    const googleLogin = await loginUserByGoogle(email)
+                    if (!googleLogin?.error) {
+                        navigate("/")
+                    }
+                } else {
+                    toast.current?.show({ severity: 'error', summary: 'Login', detail: 'An error occurred. Please try again later.', life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Login', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    };
+
+    const googleSignIn = useGoogleLogin({
+        onSuccess: handleGoogleSignInSuccess,
+    });
 
     // useEffect(() => {
     //     if (auth?.token) {
@@ -63,7 +99,7 @@ const Login = () => {
                         <div className="special_login_box">
                             <div className="row justify-content-center">
                                 <div className="col-md-6">
-                                    <a href="#" className="brd_green_box">
+                                    <a onClick={() => googleSignIn()} className="brd_green_box">
                                         <img src="/images/google_icn.svg" alt="" />
                                         <span>Sign in with Google</span>
                                     </a>
@@ -124,12 +160,16 @@ const Login = () => {
                                             <label htmlFor="styled-checkbox-2">Keep Me Signed In</label>
                                         </div>
                                     </div>
-                                    <div className="col-md-6 mb-20">
+                                    <div className="col-md-6 mb-20 forgot_psw_container">
                                         <a href="#" className="forgot_psw">Forgot password?</a>
                                     </div>
                                 </div>
                                 <button type="submit" className="common_btn d-flex m-auto">Login</button>
                             </CForm>
+                            <div className="sign-up">
+                                <span>Don’t have an account?</span>
+                                <a href='/register'>Sign up</a>
+                            </div>
                         </div>
                     </div>
                 </div>
