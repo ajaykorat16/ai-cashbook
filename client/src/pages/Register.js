@@ -19,8 +19,8 @@ const Register = () => {
                 {
                     headers:
                     {
-                        Authorization: `Bearer ${access_token}`
-                    }
+                    Authorization: `Bearer ${access_token}`
+                }
                 })
 
             if (typeof data !== 'undefined') {
@@ -28,7 +28,7 @@ const Register = () => {
                     const { given_name, family_name, email } = data
 
                     const googleSignUp = await signUpUserByGoogle(given_name, family_name, email)
-                    if (!googleSignUp?.error) {
+                if (!googleSignUp?.error) {
                         navigate("/register")
                     }
                 } else {
@@ -53,12 +53,11 @@ const Register = () => {
             });
 
             const accessToken = loginResponse.accessToken;
-            const { data } = await axios.get(process.env.REACT_APP_MICROSOFT_API,
-                {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                });
+            const { data } = await axios.get('https://graph.microsoft.com/v1.0/me', { 
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                }
+            });
 
             const { givenName, surname, mail } = data;
             const microsoftSignUp = await signUpUserByGoogle(givenName, surname, mail); // Reuse the same function or create a new one for Microsoft
@@ -176,7 +175,7 @@ const Register = () => {
                 </div>
             </section>
         </>
-    )
-}
+    );
+};
 
-export default Register
+export default Register;
