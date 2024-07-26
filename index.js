@@ -14,9 +14,11 @@ app.use(express.json())
 connectDb()
 
 const user = require('./routers/users.js')
+const client = require('./routers/client.js')
 
 //routes
 app.use('/user', user)
+app.use('/client', client)
 
 
 app.listen(PORT, () => {

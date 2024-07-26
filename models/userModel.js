@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: Number
     },
+    role: {
+        type: String,
+        default: "user"
+    },
     verified: {
         type: Boolean,
         default: false

@@ -1,5 +1,6 @@
 const express = require('express')
 const { check } = require('express-validator');
+const { auth } = require("../middleware/auth")
 
 const { createUser, verifyUser, loginUser, loginUserByGoogle, signUpUserByGoogle } = require('../controllers/users')
 const router = express.Router()
@@ -36,6 +37,10 @@ router.post("/signup-by-google",
     check('email', 'Please include a valid email.').isEmail(),
     signUpUserByGoogle
 )
+
+router.get('/user-auth', auth, (req, res) => {
+    res.status(200).json({ ok: true })
+})
 
 
 module.exports = router
