@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Toast } from 'primereact/toast';
 import { CFormInput, CForm } from '@coreui/react';
 import { useGoogleLogin } from "@react-oauth/google";
+import { useMsal } from '@azure/msal-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
     const { auth, login, toast, loginUserByGoogle } = useAuth();
+    const { instance } = useMsal();
 
     const [credentials, setCredentials] = useState({
         email: "",
@@ -73,6 +75,31 @@ const Login = () => {
         onSuccess: handleGoogleSignInSuccess,
     });
 
+    const handleMicrosoftSignIn = async () => {
+        try {
+            const loginResponse = await instance.loginPopup({
+                scopes: ['user.read'],
+            });
+
+            const accessToken = loginResponse.accessToken;
+            const { data } = await axios.get('https://graph.microsoft.com/v1.0/me', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+
+            const { userPrincipalName } = data;
+            const email = userPrincipalName.replace('_', '@').split('#')[0];
+
+            const microsoftLogin = await loginUserByGoogle(email); // Assuming you have a loginUserByMicrosoft function
+            if (!microsoftLogin?.error) {
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Error during Microsoft login:', error);
+        }
+    };
+
     // useEffect(() => {
     //     if (auth?.token) {
     //         location.pathname !== '/' ? navigate(location.pathname) : (auth.user.role === "admin" && navigate('/admin/user/list'));
@@ -105,7 +132,7 @@ const Login = () => {
                                     </a>
                                 </div>
                                 <div className="col-md-6">
-                                    <a href="#" className="brd_green_box">
+                                    <a onClick={handleMicrosoftSignIn} className="brd_green_box">
                                         <img src="/images/microsoft_icn.svg" alt="" />
                                         <span>Sign in with Microsoft</span>
                                     </a>

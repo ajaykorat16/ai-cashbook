@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -8,9 +8,42 @@ import { useMsal } from '@azure/msal-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
-    const { toast, signUpUserByGoogle } = useAuth();
-    const navigate = useNavigate();
+    const { toast, signUp, signUpUserByGoogle } = useAuth();
     const { instance } = useMsal();
+    const navigate = useNavigate();
+
+    const [userDetails, setUserDetails] = useState({
+        email: "",
+        first_name: "",
+        last_name: "",
+        phone: ""
+    });
+    const [validated, setValidated] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        const form = e.currentTarget;
+        setValidated(true);
+
+        if (form.checkValidity() === false) {
+            e.stopPropagation();
+            const firstInvalidInput = form.querySelector(':invalid');
+            if (firstInvalidInput) {
+                firstInvalidInput.focus();
+                firstInvalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            try {
+                const data = await signUp(userDetails);
+                if (data.error === false) {
+                    navigate("/thanks")
+                }
+                console.log(data);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }
 
     const handleGoogleSignUp = async (res) => {
         try {
@@ -19,8 +52,8 @@ const Register = () => {
                 {
                     headers:
                     {
-                    Authorization: `Bearer ${access_token}`
-                }
+                        Authorization: `Bearer ${access_token}`
+                    }
                 })
 
             if (typeof data !== 'undefined') {
@@ -28,7 +61,7 @@ const Register = () => {
                     const { given_name, family_name, email } = data
 
                     const googleSignUp = await signUpUserByGoogle(given_name, family_name, email)
-                if (!googleSignUp?.error) {
+                    if (!googleSignUp?.error) {
                         navigate("/register")
                     }
                 } else {
@@ -53,14 +86,17 @@ const Register = () => {
             });
 
             const accessToken = loginResponse.accessToken;
-            const { data } = await axios.get('https://graph.microsoft.com/v1.0/me', { 
+            const { data } = await axios.get('https://graph.microsoft.com/v1.0/me', {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 }
             });
+            console.log(data);
 
-            const { givenName, surname, mail } = data;
-            const microsoftSignUp = await signUpUserByGoogle(givenName, surname, mail); // Reuse the same function or create a new one for Microsoft
+            const { givenName, surname, userPrincipalName } = data;
+            const email = userPrincipalName.replace('_', '@').split('#')[0];
+            
+            const microsoftSignUp = await signUpUserByGoogle(givenName, surname, email); // Reuse the same function or create a new one for Microsoft
             if (!microsoftSignUp?.error) {
                 navigate('/register');
             }
@@ -111,12 +147,14 @@ const Register = () => {
                             <div className="or_center">OR</div>
                         </div>
                         <div className='input_form_box'>
-                            <CForm>
+                            <CForm onSubmit={handleSubmit} noValidate validated={validated}>
                                 <div className='row'>
                                     <div className="col-md-6">
                                         <div className="form-floating">
                                             <CFormInput
                                                 type="email"
+                                                value={userDetails.email}
+                                                onChange={(e) => setUserDetails({ ...userDetails, email: e.target.value })}
                                                 required
                                                 feedbackInvalid={"Email is required."}
                                                 className={'form-control is_not_validated'}
@@ -130,10 +168,13 @@ const Register = () => {
                                         <div className="form-floating">
                                             <CFormInput
                                                 type="text"
+                                                value={userDetails.first_name}
+                                                onChange={(e) => setUserDetails({ ...userDetails, first_name: e.target.value })}
                                                 required
                                                 feedbackInvalid={"First name is required."}
                                                 className={'form-control is_not_validated'}
                                                 id="floatingFirstName"
+                                                placeholder="First Name"
                                             />
                                             <label htmlFor="floatingFirstName">First Name</label>
                                         </div>
@@ -142,10 +183,13 @@ const Register = () => {
                                         <div className="form-floating">
                                             <CFormInput
                                                 type="text"
+                                                value={userDetails.last_name}
+                                                onChange={(e) => setUserDetails({ ...userDetails, last_name: e.target.value })}
                                                 required
                                                 feedbackInvalid={"Last name is required."}
                                                 className={'form-control is_not_validated'}
                                                 id="floatingLastName"
+                                                placeholder="Last Name"
                                             />
                                             <label htmlFor="floatingLastName">Last Name</label>
                                         </div>
@@ -154,6 +198,8 @@ const Register = () => {
                                         <div className="form-floating">
                                             <CFormInput
                                                 type="text"
+                                                value={userDetails.phone}
+                                                onChange={(e) => setUserDetails({ ...userDetails, phone: e.target.value })}
                                                 required
                                                 feedbackInvalid={"Phone number is required."}
                                                 className={'form-control'}
