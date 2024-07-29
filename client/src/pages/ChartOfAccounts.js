@@ -82,7 +82,7 @@ const ChartOfAccounts = () => {
 
     const fetchCsvLoaded = async () => {
         const csvDetail = await getClientCategory(params?.id);
-        const csv = csvDetail?.data
+        const csv = csvDetail?.data || []
         const convertedData = convertToCellFormat(csv);
 
         if (spreadsheetRef?.current) {
@@ -98,6 +98,10 @@ const ChartOfAccounts = () => {
 
     useEffect(() => {
         fetchCsvLoaded()
+        const fixedDiv = document.querySelector('div[style*="position: fixed"]');
+        if (fixedDiv) {
+            fixedDiv.style.display = 'none';
+        }
     }, [])
 
     useEffect(() => {

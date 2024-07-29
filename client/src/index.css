@@ -391,6 +391,38 @@ h1.main_title {
   min-width: 120px;
 }
 
+
+.p-datatable .p-datatable-thead>tr>th {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--black-color);
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 10px 20px;
+  min-width: 120px;
+  background: white;
+  font-family: "Roboto Slab", serif;
+}
+
+.p-datatable .p-datatable-tbody>tr>td {
+  font-size: 14px;
+  line-height: 18px;
+  color: #555;
+  font-weight: 400;
+  text-transform: capitalize;
+  padding: 10px 20px;
+  word-wrap: break-word;
+  font-family: "Roboto Slab", serif;
+}
+
+.p-datatable > .p-datatable-wrapper {
+  border-radius: 8px;
+}
+
+tbody tr[role="row"] {
+  border-top: solid 1px var(--gray-color)
+}
+
 .main_table table.dataTable tbody td {
   font-size: 14px;
   line-height: 18px;
@@ -432,6 +464,23 @@ h1.main_title {
 }
 
 .main_table table.dataTable tbody td a.green_btn:hover {
+  background-color: var(--black-color);
+}
+
+
+.p-datatable .p-datatable-tbody>tr>td .green_btn {
+  background-color: var(--green-color);
+  border-radius: 100%;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  display: inline-block;
+  margin-left: 5px;
+  border: unset;
+}
+
+.p-datatable .p-datatable-tbody>tr>td .green_btn:hover {
   background-color: var(--black-color);
 }
 
@@ -704,6 +753,12 @@ h1.main_title {
   --bs-form-select-bg-icon: none !important;
 }
 
+.thanksMessage {
+  display: flex;
+  justify-content: center;
+  font-size: large;
+  color: var(--green-color);
+}
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;

@@ -208,11 +208,11 @@ const getAllClients = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const sortField = req.query.sortField || "createdAt";
         const sortOrder = parseInt(req.query.sortOrder) || -1;
-        const { filter } = req.body;
-
+        const filter = req.query.filter;
         let query = {};
+        console.log("filter---", filter)
 
-        if (filter) {
+        if (filter && filter !== "null") {
             query = {
                 $or: [
                     { first_name: { $regex: filter, $options: "i" } },
@@ -223,10 +223,10 @@ const getAllClients = async (req, res) => {
             };
         }
 
-        const totalClients = await Clients.countDocuments(query);
+        const totalClients = await Clients.countDocuments({ ...query, user_id: req.user?._id });
         const skip = (page - 1) * limit;
 
-        const clients = await Clients.find(query)
+        const clients = await Clients.find({ ...query, user_id: req.user?._id })
             .sort({ [sortField]: sortOrder })
             .skip(skip)
             .limit(limit);

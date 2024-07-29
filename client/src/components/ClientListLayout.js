@@ -1,20 +1,24 @@
 import React from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { Toast } from 'primereact/toast'
 
 const ClientListLayout = () => {
+    const { toast } = useAuth()
     return (
         <>
+            <Toast ref={toast} />
             <section className="main_header">
                 <header>
                     <div className="container">
                         <div className="header_flex">
                             <div className="main_logo">
-                                <a href="#"><img src="images/accoutn_logo.svg" alt="" /></a>
+                                <a href="#"><img src="/images/accoutn_logo.svg" alt="" /></a>
                             </div>
                             <div className="login_box_top pos_rel">
                                 <a href="#">
-                                    <img src="images/login_icn.svg" alt="" />
+                                    <img src="/images/login_icn.svg" alt="" />
                                     <span> Login</span>
-                                    <img className="login_click" src="images/down_white.svg" alt="" />
+                                    <img className="login_click" src="/images/down_white.svg" alt="" />
                                 </a>
                                 <div className="login_open">
                                     <a href="#">Logout</a>

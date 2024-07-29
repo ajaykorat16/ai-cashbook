@@ -13,8 +13,6 @@ router.post("/create",
 
 router.get("/client-list", auth, getAllClients)
 
-router.post("/client-list", auth, getAllClients)
-
 router.get("/single-client/:id", auth, getSingleClient)
 
 router.get("/client-category/:id", auth, getClientCategory)

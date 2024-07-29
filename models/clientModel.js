@@ -28,11 +28,9 @@ const clientSchema = new mongoose.Schema({
     },
     phone: {
         type: Number,
-        unique: true
     },
     email: {
         type: String,
-        unique: true
     },
     client_code: {
         type: String,
