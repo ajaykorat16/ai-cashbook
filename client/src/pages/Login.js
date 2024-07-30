@@ -76,6 +76,31 @@ const Login = () => {
         onSuccess: handleGoogleSignInSuccess,
     });
 
+    const handleMicrosoftSignIn = async () => {
+        try {
+            const loginResponse = await instance.loginPopup({
+                scopes: ['user.read'],
+            });
+
+            const accessToken = loginResponse.accessToken;
+            const { data } = await axios.get('https://graph.microsoft.com/v1.0/me', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+
+            const { userPrincipalName } = data;
+            const email = userPrincipalName.replace('_', '@').split('#')[0];
+
+            const microsoftLogin = await loginUserByGoogle(email); // Assuming you have a loginUserByMicrosoft function
+            if (!microsoftLogin?.error) {
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Error during Microsoft login:', error);
+        }
+    };
+
     useEffect(() => {
         if (auth?.token) {
             location.pathname !== '/' ? navigate(location.pathname) : (auth.user.role === "user" && navigate('/user/clients'));

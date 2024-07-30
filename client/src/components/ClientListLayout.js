@@ -1,9 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Toast } from 'primereact/toast'
+import { useNavigate } from 'react-router-dom';
 
 const ClientListLayout = () => {
-    const { toast } = useAuth()
+    const navigate = useNavigate();
+    const { toast, logout } = useAuth()
+    const [showMenu, setShowMenu] = useState(false)
+
+    const handleLogout = () => {
+        logout()
+        navigate("/")
+    }
     return (
         <>
             <Toast ref={toast} />
@@ -15,15 +23,15 @@ const ClientListLayout = () => {
                                 <a href="#"><img src="/images/accoutn_logo.svg" alt="" /></a>
                             </div>
                             <div className="login_box_top pos_rel">
-                                <a href="#">
+                                <button onClick={() => setShowMenu(!showMenu)}>
                                     <img src="/images/login_icn.svg" alt="" />
                                     <span> Login</span>
                                     <img className="login_click" src="/images/down_white.svg" alt="" />
-                                </a>
-                                <div className="login_open">
-                                    <a href="#">Logout</a>
-                                    <a href="#">Logout</a>
-                                    <a href="#">Logout</a>
+                                </button>
+                                <div className={`login_open ${showMenu ? 'd-block' : 'd-none'}`}>
+                                    <button onClick={() => handleLogout()}>Logout</button>
+                                    <button >Logout</button>
+                                    <button>Logout</button>
                                 </div>
                             </div>
                         </div>

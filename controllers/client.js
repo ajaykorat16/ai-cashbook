@@ -210,7 +210,6 @@ const getAllClients = async (req, res) => {
         const sortOrder = parseInt(req.query.sortOrder) || -1;
         const filter = req.query.filter;
         let query = {};
-        console.log("filter---", filter)
 
         if (filter && filter !== "null") {
             query = {

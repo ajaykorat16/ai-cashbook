@@ -24,15 +24,15 @@ const msalInstance = new PublicClientApplication(msalConfig);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <AuthProvider>
-      <ClientProvider>
-        <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
-          <MsalProvider instance={msalInstance}>
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <MsalProvider instance={msalInstance}>
+        <AuthProvider>
+          <ClientProvider>
             <App />
-          </MsalProvider>
-        </GoogleOAuthProvider>
-      </ClientProvider>
-    </AuthProvider>
+          </ClientProvider>
+        </AuthProvider>
+      </MsalProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );
 

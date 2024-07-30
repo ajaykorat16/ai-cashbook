@@ -10,7 +10,7 @@ import Register from './pages/Register';
 import ChartOfAccounts from './pages/ChartOfAccounts';
 import UserRoutes from './Routes/UserRoutes';
 import ClientList from './pages/ClientList';
-import ClientList from './pages/ThanksPage';
+import ThanksPage from './pages/ThanksPage';
 
 const App = () => {
   return (

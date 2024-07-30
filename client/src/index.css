@@ -264,7 +264,7 @@ a.brd_green_box span {
   transform: rotate(45deg);
 }
 
-.forgot_psw_container{
+.forgot_psw_container {
   display: flex;
   justify-content: end;
 }
@@ -284,7 +284,7 @@ a.brd_green_box span {
   align-items: center;
 }
 
-.input_form_box .sign-up a{
+.input_form_box .sign-up a {
   color: var(--green-color);
 }
 
@@ -415,7 +415,7 @@ h1.main_title {
   font-family: "Roboto Slab", serif;
 }
 
-.p-datatable > .p-datatable-wrapper {
+.p-datatable>.p-datatable-wrapper {
   border-radius: 8px;
 }
 
@@ -512,7 +512,7 @@ tbody tr[role="row"] {
   margin-left: 16px;
 }
 
-.login_box_top a {
+.login_box_top button {
   background: var(--green-color);
   padding: 12px;
   border-radius: 5px;
@@ -522,9 +522,10 @@ tbody tr[role="row"] {
   display: inline-flex;
   font-weight: 500;
   align-items: center;
+  border: unset;
 }
 
-.login_box_top a span {
+.login_box_top button span {
   margin: 0 20px 0 10px;
 }
 
@@ -546,7 +547,7 @@ tbody tr[role="row"] {
   display: none;
 }
 
-.login_open a {
+.login_open button {
   font-size: 14px;
   color: var(--black-color);
   border-bottom: 1px solid var(--green-color);
@@ -556,13 +557,14 @@ tbody tr[role="row"] {
   background: none;
   border-radius: 0;
   text-align: center;
+  width: 100%;
 }
 
-.login_open a:hover {
+.login_open button:hover {
   color: var(--green-color);
 }
 
-.login_open a:last-child {
+.login_open button:last-child {
   border: none;
   padding: 0;
   margin: 0;
@@ -759,6 +761,7 @@ tbody tr[role="row"] {
   font-size: large;
   color: var(--green-color);
 }
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
