@@ -95,7 +95,7 @@ const Register = () => {
 
             const { givenName, surname, userPrincipalName } = data;
             const email = userPrincipalName.replace('_', '@').split('#')[0];
-            
+
             const microsoftSignUp = await signUpUserByGoogle(givenName, surname, email); // Reuse the same function or create a new one for Microsoft
             if (!microsoftSignUp?.error) {
                 navigate('/register');
@@ -124,22 +124,22 @@ const Register = () => {
                         <div className='special_login_box'>
                             <div className='row justify-content-center'>
                                 <div className='col-md-6'>
-                                    <a onClick={() => googleSignUp()} className="brd_green_box">
+                                    <div onClick={() => googleSignUp()} className="brd_green_box">
                                         <img src="/images/google_icn.svg" alt="" />
                                         <span>Sign up with Google</span>
-                                    </a>
+                                    </div>
                                 </div>
                                 <div className="col-md-6">
-                                    <a onClick={handleMicrosoftSignUp} className="brd_green_box">
+                                    <div onClick={handleMicrosoftSignUp} className="brd_green_box">
                                         <img src="/images/microsoft_icn.svg" alt="" />
                                         <span>Sign up with Microsoft</span>
-                                    </a>
+                                    </div>
                                 </div>
                                 <div className="col-md-6">
-                                    <a href="#" className="brd_green_box">
+                                    <div href="#" className="brd_green_box">
                                         <img src="/images/apple_icn.svg" alt="" />
                                         <span>Sign up with Apple</span>
-                                    </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -198,8 +198,14 @@ const Register = () => {
                                         <div className="form-floating">
                                             <CFormInput
                                                 type="text"
+                                                minlength="10"
+                                                maxlength="13"
                                                 value={userDetails.phone}
-                                                onChange={(e) => setUserDetails({ ...userDetails, phone: e.target.value })}
+                                                onChange={(e) => {
+                                                    const inputValue = e.target.value;
+                                                    const numericValue = inputValue.replace(/[^\d+]/g, '');
+                                                    setUserDetails({ ...userDetails, phone: numericValue })
+                                                }}
                                                 required
                                                 feedbackInvalid={"Phone number is required."}
                                                 className={'form-control'}
@@ -214,7 +220,7 @@ const Register = () => {
                             </CForm>
                             <div className="sign-up">
                                 <span>Already have an account?</span>
-                                <a href='/'>Sign in</a>
+                                <div onClick={() => navigate("/")}>Sign in</div>
                             </div>
                         </div>
                     </div>
