@@ -86,6 +86,9 @@ const ClientList = () => {
         }
     }
 
+    const customBodyTemplate = (rowData, columnName) => {
+        return rowData[columnName] ? rowData[columnName] : "-";
+    };
     return (
         <>
             <ConfirmDialog />
@@ -136,16 +139,69 @@ const ClientList = () => {
                                     emptyMessage="No clients found."
                                     responsiveLayout="scroll"
                                 >
-                                    <Column field="first_name" header="First Name" sortable filterField="first_name" />
-                                    <Column field="last_name" header="Last Name" sortable filterField="last_name" />
-                                    <Column field="entity_name" header="Entity Name" sortable filterField="entity_name" />
-                                    <Column field="preferred_name" header="Preferred Name" sortable />
-                                    <Column field="abn_number" header="ABN Number" sortable />
-                                    <Column field="email" header="Email Address" sortable filterField="email" />
-                                    <Column field="phone" header="Phone Number" sortable />
-                                    <Column field="address" header="Address" sortable />
-                                    <Column field="client_code" header="Client Code" sortable />
-                                    <Column field="user_defined" header="User Defined" sortable />
+                                    <Column
+                                        field="first_name"
+                                        header="First Name"
+                                        body={(rowData) => customBodyTemplate(rowData, 'first_name')}
+                                        sortable
+                                        filterField="first_name"
+                                    />
+                                    <Column
+                                        field="last_name"
+                                        header="Last Name"
+                                        body={(rowData) => customBodyTemplate(rowData, 'last_name')}
+                                        sortable
+                                        filterField="last_name"
+                                    />
+                                    <Column f
+                                        ield="entity_name"
+                                        header="Entity Name"
+                                        body={(rowData) => customBodyTemplate(rowData, 'entity_name')}
+                                        sortable
+                                        filterField="entity_name"
+                                    />
+                                    <Column
+                                        field="preferred_name"
+                                        header="Preferred Name"
+                                        body={(rowData) => customBodyTemplate(rowData, 'preferred_name')}
+                                        sortable
+                                    />
+                                    <Column
+                                        field="abn_number"
+                                        header="ABN Number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')}
+                                        sortable
+                                    />
+                                    <Column
+                                        field="email"
+                                        className='table-email-field'
+                                        header="Email Address"
+                                        body={(rowData) => customBodyTemplate(rowData, 'email')}
+                                        sortable
+                                        filterField="email"
+                                    />
+                                    <Column
+                                        field="phone"
+                                        header="Phone Number"
+                                        body={(rowData) => customBodyTemplate(rowData, 'phone')}
+                                        sortable
+                                    />
+                                    <Column
+                                        field="address"
+                                        header="Address"
+                                        body={(rowData) => customBodyTemplate(rowData, 'address')}
+                                        sortable
+                                    />
+                                    <Column
+                                        field="client_code" header="Client Code"
+                                        body={(rowData) => customBodyTemplate(rowData, 'client_code')}
+                                        sortable
+                                    />
+                                    <Column
+                                        field="user_defined"
+                                        header="User Defined"
+                                        body={(rowData) => customBodyTemplate(rowData, 'user_defined')}
+                                        sortable
+                                    />
                                     <Column
                                         header=""
                                         className='action_td'

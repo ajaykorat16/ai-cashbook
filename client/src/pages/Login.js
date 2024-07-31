@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Toast } from 'primereact/toast';
 import { CFormInput, CForm } from '@coreui/react';
 import { useGoogleLogin } from "@react-oauth/google";
@@ -80,6 +80,7 @@ const Login = () => {
         try {
             const loginResponse = await instance.loginPopup({
                 scopes: ['user.read'],
+                prompt: 'select_account'
             });
 
             const accessToken = loginResponse.accessToken;
@@ -127,22 +128,22 @@ const Login = () => {
                         <div className="special_login_box">
                             <div className="row justify-content-center">
                                 <div className="col-md-6">
-                                    <a onClick={() => googleSignIn()} className="brd_green_box">
+                                    <div onClick={() => googleSignIn()} className="brd_green_box">
                                         <img src="/images/google_icn.svg" alt="" />
                                         <span>Sign in with Google</span>
-                                    </a>
+                                    </div>
                                 </div>
                                 <div className="col-md-6">
-                                    <a onClick={handleMicrosoftSignIn} className="brd_green_box">
+                                    <div onClick={handleMicrosoftSignIn} className="brd_green_box">
                                         <img src="/images/microsoft_icn.svg" alt="" />
                                         <span>Sign in with Microsoft</span>
-                                    </a>
+                                    </div>
                                 </div>
                                 <div className="col-md-6">
-                                    <a href="#" className="brd_green_box">
+                                    <div className="brd_green_box">
                                         <img src="/images/apple_icn.svg" alt="" />
                                         <span>Sign in with Apple</span>
-                                    </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -189,14 +190,15 @@ const Login = () => {
                                         </div>
                                     </div>
                                     <div className="col-md-6 mb-20 forgot_psw_container">
-                                        <a href="#" className="forgot_psw">Forgot password?</a>
+                                        <Link to='forgot-password' className="forgot_psw">Forgot password?</Link>
                                     </div>
                                 </div>
                                 <button type="submit" className="common_btn d-flex m-auto">Login</button>
                             </CForm>
                             <div className="sign-up">
                                 <span>Don’t have an account?</span>
-                                <a href='/register'>Sign up</a>
+                                <div onClick={() => navigate("/register")} >Sign up</div>
+
                             </div>
                         </div>
                     </div>

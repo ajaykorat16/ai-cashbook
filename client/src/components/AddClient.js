@@ -72,13 +72,17 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
             }
         } else {
             try {
+                let data
                 if (editMode) {
-                    await updateClient(editClientId, { ...clientDetail, user_id: auth?.user?._id })
+                    data = await updateClient(editClientId, { ...clientDetail, user_id: auth?.user?._id })
                 } else {
-                    await createClient({ ...clientDetail, user_id: auth?.user?._id });
+                    data = await createClient({ ...clientDetail, user_id: auth?.user?._id });
                 }
-                handleClose()
-                fetchClients()
+
+                if (!data?.error) {
+                    handleClose()
+                    fetchClients()
+                }
             } catch (error) {
                 console.log(error);
             }
@@ -246,7 +250,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         type="email"
                                                         value={clientDetail.email}
                                                         onChange={(e) => setClientDetail({ ...clientDetail, email: e.target.value })}
-                                                        className="form-control"
+                                                        className="form-control email-input"
                                                         id="floatingInput9"
                                                         placeholder="Email Address"
                                                         feedbackInvalid='Enter valid email address'

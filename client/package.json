@@ -6,6 +6,7 @@
     "@azure/msal-browser": "^3.20.0",
     "@azure/msal-react": "^2.0.22",
     "@coreui/react": "^5.1.0",
+    "@iconify/react": "^5.0.2",
     "@react-oauth/google": "^0.12.1",
     "@syncfusion/ej2-base": "^17.4.51",
     "@syncfusion/ej2-buttons": "^26.1.40",

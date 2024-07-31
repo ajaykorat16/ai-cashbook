@@ -13,15 +13,16 @@ import ClientListLayout from '../components/ClientListLayout'
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent } from '@syncfusion/ej2-react-spreadsheet';
 import { useClient } from '../contexts/ClientContexts';
 import { useParams } from 'react-router-dom';
+import Loader from '../components/Loader';
 
 const ChartOfAccounts = () => {
     const spreadsheetRef = useRef(null);
     const params = useParams();
     const { getClientCategory, updateClientCatrgory, toast } = useClient();
 
-
     const [clientId, setClientId] = useState("");
     const [dataLoaded, setDataLoaded] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const getSheetData = async () => {
         if (spreadsheetRef.current) {
@@ -81,6 +82,7 @@ const ChartOfAccounts = () => {
     }
 
     const fetchCsvLoaded = async () => {
+        setIsLoading(true)
         const csvDetail = await getClientCategory(params?.id);
         const csv = csvDetail?.data || []
         const convertedData = convertToCellFormat(csv);
@@ -94,6 +96,7 @@ const ChartOfAccounts = () => {
         setTimeout(() => {
             setDataLoaded(true);
         }, 1000);
+        setIsLoading(false)
     }
 
     useEffect(() => {
@@ -122,8 +125,11 @@ const ChartOfAccounts = () => {
                                 <button className="common_btn ms-4">Import</button>
                             </div>
                         </div>
-                        <div className="account_sheet">
-                            {/* <img src="images/account_sheet.jpg" alt="" /> */}
+                        {isLoading && (
+                            <Loader />
+                        )}
+
+                        <div className={`account_sheet ${isLoading ? "hidden" : ""}`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 cellSave={handleCellSave}

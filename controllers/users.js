@@ -1,9 +1,10 @@
 const Users = require("../models/userModel");
-const { validationResult } = require("express-validator");
-const { hashPassword, comparePassword, compile } = require("../helpers/helper");
+const crypto = require('crypto');
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer")
 const { promisify } = require('util');
+const { validationResult } = require("express-validator");
+const nodemailer = require("nodemailer")
+const { hashPassword, comparePassword, compile } = require("../helpers/helper");
 
 const transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST,
@@ -23,7 +24,7 @@ const createUser = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const { first_name, last_name, email, password, phone } = req.body;
+        const { first_name, last_name, email, phone } = req.body;
 
         const existingUser = await Users.findOne({ email });
         if (existingUser) {
@@ -41,11 +42,14 @@ const createUser = async (req, res) => {
             });
         }
 
+        const token = crypto.randomBytes(16).toString('hex');
+
         const newUser = await new Users({
             first_name,
             last_name,
             email,
             phone,
+            token
         }).save();
 
         if (newUser) {
@@ -53,7 +57,7 @@ const createUser = async (req, res) => {
                 first_name,
                 comapany_name: process.env.COMPANY_NAME,
                 company_email: process.env.COMPANY_EMAIL,
-                verification_link: process.env.CLIENT_SIDE_URL
+                verification_link: `${process.env.CLIENT_SIDE_URL}/reset-password/${token}`
             }
 
             let content = compile(data, "./templates/emailVerification.html")
@@ -87,16 +91,15 @@ const createUser = async (req, res) => {
 }
 
 
-const verifyUser = async (req, res) => {
+const forgotPassword = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ error: true, errors: errors.array() });
     }
     try {
-        const { id } = req.params
-        const { password } = req.body;
+        const { email } = req.body;
 
-        const user = await Users.findById(id);
+        const [user] = await Users.find({ email });
         if (!user) {
             return res.status(200).json({
                 error: true,
@@ -104,14 +107,73 @@ const verifyUser = async (req, res) => {
             });
         }
 
+        const token = crypto.randomBytes(16).toString('hex');
+
+        const updatedUser = await Users.findByIdAndUpdate(user?.id, { token }, { new: true });
+        if (updatedUser) {
+            const data = {
+                first_name: user?.first_name,
+                comapany_name: process.env.COMPANY_NAME,
+                company_email: process.env.COMPANY_EMAIL,
+                reset_link: `${process.env.CLIENT_SIDE_URL}/reset-password/${token}`
+            }
+
+            let content = compile(data, "./templates/resetPassword.html")
+
+            const mailOptions = {
+                from: process.env.ADMIN_EMAIL,
+                to: email,
+                subject: 'Reset Password',
+                html: content
+            };
+
+            const mailResponse = await sendMailAsync(mailOptions);
+
+            if (mailResponse?.accepted) {
+                return res.status(200).send({
+                    error: false,
+                    message: "Please check your email. A reset link has been sent successfully.",
+                    user: updatedUser,
+                });
+            } else {
+                return res.status(500).send({
+                    error: true,
+                    message: "Some error occured",
+                });
+            }
+        }
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send("Server error");
+    }
+}
+
+const verifyUser = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: true, errors: errors.array() });
+    }
+    try {
+        const { token } = req.params
+        const { password } = req.body;
+
+        const [user] = await Users.find({ token });
+        if (!user) {
+            return res.status(200).json({
+                error: true,
+                message: "Token expired.",
+            });
+        }
+
         const hashedPassword = await hashPassword(password);
 
         const userDetails = {
             password: hashedPassword,
-            verified: true
+            verified: true,
+            token: ""
         }
 
-        await Users.findByIdAndUpdate(id, userDetails);
+        await Users.findByIdAndUpdate(user?.id, userDetails);
 
         return res.status(200).send({
             error: false,
@@ -234,4 +296,4 @@ const signUpUserByGoogle = async (req, res) => {
     }
 }
 
-module.exports = { createUser, verifyUser, loginUser, loginUserByGoogle, signUpUserByGoogle }
+module.exports = { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle }

@@ -19,10 +19,10 @@ const ClientProvider = ({ children }) => {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
                 }, 500);
-                return data
             } else {
                 toast.current?.show({ severity: 'error', summary: 'Client', detail: data.message, life: 3000 })
             }
+            return data
         } catch (error) {
             if (error.response) {
                 const errors = error.response.data.errors;
@@ -66,10 +66,10 @@ const ClientProvider = ({ children }) => {
             const { data } = await axios.put(`${baseURL}/client/update/${id}`, clientDetail, { headers });
             if (data.error === false) {
                 toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
-                return data
             } else {
                 toast.current?.show({ severity: 'error', summary: 'Client', detail: data.message, life: 3000 })
             }
+            return data
         } catch (error) {
             if (error.response) {
                 const errors = error.response.data.errors;

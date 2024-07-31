@@ -137,7 +137,6 @@ const AuthProvider = ({ children }) => {
     const signUpUserByGoogle = async (given_name, family_name, email) => {
         try {
             const { data } = await axios.post(`${baseURL}/user/signup-by-google`, { first_name: given_name, last_name: family_name, email });
-            console.log(data);
 
             if (data.error === false) {
                 setIsLoggedIn(true)
@@ -168,6 +167,60 @@ const AuthProvider = ({ children }) => {
         }
     }
 
+    const resetPassword = async (token, password) => {
+        try {
+            const { data } = await axios.put(`${baseURL}/user/verify-user/${token}`, { password });
+            if (data.error === false) {
+                setTimeout(function () {
+                    toast.current?.show({ severity: 'success', summary: 'Reset Password', detail: data.message, life: 3000 })
+                }, 500);
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Reset Password', detail: data.message, life: 3000 })
+            }
+            return data
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    if (errors.length > 1) {
+                        toast.current?.show({ severity: 'error', summary: 'Reset Password', detail: "Please fill all mandatory fields.", life: 3000 })
+                    } else {
+                        toast.current?.show({ severity: 'error', summary: 'Reset Password', detail: errors[0].msg, life: 3000 })
+                    }
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Reset Password', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
+    const forgotPassword = async (email) => {
+        try {
+            const { data } = await axios.put(`${baseURL}/user/forgot-password`, { email });
+            if (data.error === false) {
+                setTimeout(function () {
+                    toast.current?.show({ severity: 'success', summary: 'Forgot Password', detail: data.message, life: 3000 })
+                }, 500);
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Forgot Password', detail: data.message, life: 3000 })
+            }
+            return data
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    if (errors.length > 1) {
+                        toast.current?.show({ severity: 'error', summary: 'Forgot Password', detail: "Please fill all mandatory fields.", life: 3000 })
+                    } else {
+                        toast.current?.show({ severity: 'error', summary: 'Forgot Password', detail: errors[0].msg, life: 3000 })
+                    }
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Forgot Password', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
     useEffect(() => {
         const data = localStorage.getItem('auth')
         if (data) {
@@ -182,7 +235,7 @@ const AuthProvider = ({ children }) => {
     }, [])
 
     return (
-        <AuthContext.Provider value={{ auth, signUp, login, logout, isLoggedIn, toast, loginUserByGoogle, signUpUserByGoogle }}>
+        <AuthContext.Provider value={{ auth, signUp, login, logout, isLoggedIn, toast, loginUserByGoogle, signUpUserByGoogle, resetPassword, forgotPassword }}>
             {children}
         </AuthContext.Provider>
     )

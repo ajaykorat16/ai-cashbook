@@ -2,7 +2,7 @@ const express = require('express')
 const { check } = require('express-validator');
 const { auth } = require("../middleware/auth")
 
-const { createUser, verifyUser, loginUser, loginUserByGoogle, signUpUserByGoogle } = require('../controllers/users')
+const { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle } = require('../controllers/users')
 const router = express.Router()
 
 
@@ -14,10 +14,15 @@ router.post("/register",
     createUser
 )
 
-router.put("/verify-user/:id",
+router.put("/verify-user/:token",
     check('password', 'Password is required').notEmpty(),
     check('password', 'Please enter a password with 8 or more characters.').isLength({ min: 8 }),
     verifyUser
+)
+
+router.put("/forgot-password",
+    check('email', 'Please include a valid email.').isEmail(),
+    forgotPassword
 )
 
 router.post("/login",

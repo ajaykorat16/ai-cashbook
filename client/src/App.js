@@ -11,6 +11,8 @@ import ChartOfAccounts from './pages/ChartOfAccounts';
 import UserRoutes from './Routes/UserRoutes';
 import ClientList from './pages/ClientList';
 import ThanksPage from './pages/ThanksPage';
+import ResetPassword from './pages/ResetPassword';
+import ForgotPassword from './pages/ForgotPassword';
 
 const App = () => {
   return (
@@ -18,6 +20,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/forgot-password/" element={<ForgotPassword />} />
         <Route path="/thanks" element={<ThanksPage />} />
         <Route path="/user/*" element={<UserRoutes />}>
           <Route path="chart-of-accounts/:id" element={<ChartOfAccounts />} />
