@@ -197,8 +197,7 @@ const Login = () => {
                             </CForm>
                             <div className="sign-up">
                                 <span>Don’t have an account?</span>
-                                <div onClick={() => navigate("/register")} >Sign up</div>
-
+                                <Link to='/register' >Sign up</Link>
                             </div>
                         </div>
                     </div>

@@ -283,12 +283,12 @@ div.brd_green_box span {
   align-items: center;
 }
 
-.input_form_box .sign-up div {
+.input_form_box .sign-up a {
   color: var(--green-color);
   cursor: pointer;
 }
 
-.sign-up div:hover {
+.sign-up a:hover {
   color: var(--black-color);
 }
 
@@ -795,7 +795,7 @@ tbody tr[role="row"] {
 
 .password-toggle {
   position: absolute;
-  top: 50%;
+  top: 28px;
   right: 0.5rem;
   transform: translateY(-50%);
   background: transparent;

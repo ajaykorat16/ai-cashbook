@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { CForm, CFormInput } from '@coreui/react';
 import { Toast } from 'primereact/toast';
@@ -220,7 +220,7 @@ const Register = () => {
                             </CForm>
                             <div className="sign-up">
                                 <span>Already have an account?</span>
-                                <div onClick={() => navigate("/")}>Sign in</div>
+                                <Link to='/'>Sign in</Link>
                             </div>
                         </div>
                     </div>

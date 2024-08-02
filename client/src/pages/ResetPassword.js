@@ -57,11 +57,12 @@ const ResetPassword = () => {
                         <div className="input_form_box">
                             <CForm onSubmit={handleSubmit} noValidate validated={validated}>
                                 <div className="password-container">
-                                    <div className="form-floating relative">
+                                    <div className="form-floating">
                                         <CFormInput
                                             value={credentials.password}
                                             onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                                             type={passwordVisible ? 'text' : 'password'}
+                                            minLength="8"
                                             required
                                             feedbackInvalid={"Password must be at least 8 characters long."}
                                             className={'form-control is_not_validated'}
@@ -79,10 +80,10 @@ const ResetPassword = () => {
                                     </div>
                                 </div>
                                 <div className="password-container">
-                                    <div className="form-floating relative">
+                                    <div className="form-floating">
                                         <CFormInput
                                             value={credentials.confirm_password}
-                                            minlength="8"
+                                            minLength="8"
                                             onChange={(e) => setCredentials({ ...credentials, confirm_password: e.target.value })}
                                             type={confirmPassVisible ? 'text' : 'password'}
                                             required
