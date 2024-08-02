@@ -22,7 +22,7 @@ const ClientListLayout = () => {
                     <div className="container">
                         <div className="header_flex">
                             <div className="main_logo">
-                                <a href="#"><img src="/images/accoutn_logo.svg" alt="" /></a>
+                                <img src="/images/accoutn_logo.svg" alt="" />
                             </div>
                             <div className="login_box_top pos_rel">
                                 <button onClick={() => setShowMenu(!showMenu)}>

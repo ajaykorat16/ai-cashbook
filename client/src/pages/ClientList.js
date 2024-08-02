@@ -27,6 +27,7 @@ const ClientList = () => {
         try {
             setIsLoading(true);
             const clientList = await getAllClients(currentPage, rowsPerPage, sortField, sortOrder, filter);
+
             if (clientList?.clients?.length !== 0) {
                 setClients(clientList?.clients)
                 setTotalRecords(clientList.totalClients)
@@ -80,6 +81,9 @@ const ClientList = () => {
             if (confirmed) {
                 await deleteClient(id);
                 fetchClients();
+                if (clients?.length === 1) {
+                    setCurrentPage(currentPage - 1)
+                }
             }
         } catch (error) {
             console.error('Error during delete operation', error);
@@ -260,6 +264,7 @@ const ClientList = () => {
                 setEditClientId={setEditClientId}
                 setEditMode={setEditMode}
                 fetchClients={fetchClients}
+                setCurrentPage={setCurrentPage}
             />
         </>
     );

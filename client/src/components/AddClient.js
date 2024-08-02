@@ -4,7 +4,7 @@ import { useClient } from '../contexts/ClientContexts';
 import { useAuth } from '../contexts/AuthContext';
 import { Modal } from 'bootstrap';
 
-const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditClientId }) => {
+const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditClientId, setCurrentPage }) => {
     const { createClient, getSingleClient, updateClient } = useClient()
     const { auth } = useAuth()
 
@@ -56,6 +56,27 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
         setShowFullDetail(false)
     }
 
+    useEffect(() => {
+        const handleModalHidden = () => {
+            document.body.classList.remove('modal-open');
+            document.body.style = '';
+        }
+
+        const handleModalShown = () => {
+            document.body.style.overflow = 'hidden';
+        };
+
+        const modalElement = document.getElementById('add_client');
+        modalElement.addEventListener('shown.bs.modal', handleModalShown);
+        modalElement.addEventListener('hidden.bs.modal', handleModalHidden);
+
+        return () => {
+            modalElement.removeEventListener('shown.bs.modal', handleModalShown);
+            modalElement.removeEventListener('hidden.bs.modal', handleModalHidden);
+        };
+    }, [])
+
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -77,6 +98,9 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                     data = await updateClient(editClientId, { ...clientDetail, user_id: auth?.user?._id })
                 } else {
                     data = await createClient({ ...clientDetail, user_id: auth?.user?._id });
+                    if (!data?.error) {
+                        setCurrentPage(1)
+                    }
                 }
 
                 if (!data?.error) {
@@ -127,7 +151,6 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                             onClick={(e) => {
                                                 setValidated(false)
                                                 setShowIndividual(e.target.checked)
-                                                console.log("clientDetail", clientDetail)
                                             }}
                                         />
                                         <label htmlFor="styled-checkbox-2">Non-individual</label>
