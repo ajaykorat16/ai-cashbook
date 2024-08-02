@@ -763,6 +763,7 @@ tbody tr[role="row"] {
 .was-validated .form-control:invalid,
 .form-control.is-invalid {
   border-color: var(--bs-form-invalid-border-color);
+  background-image: unset;
 }
 
 .was-validated .form-control:invalid,

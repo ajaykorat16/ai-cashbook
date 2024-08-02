@@ -6,6 +6,7 @@ import { CFormInput, CForm } from '@coreui/react';
 import { useGoogleLogin } from "@react-oauth/google";
 import { useMsal } from '@azure/msal-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Icon } from '@iconify/react';
 
 const Login = () => {
     const { auth, login, toast, loginUserByGoogle } = useAuth();
@@ -17,6 +18,7 @@ const Login = () => {
         password: ""
     })
     const [validated, setValidated] = useState(false);
+    const [passwordVisible, setPasswordVisible] = useState(false);
 
     const navigate = useNavigate()
 
@@ -173,13 +175,20 @@ const Login = () => {
                                             <CFormInput
                                                 value={credentials.password}
                                                 onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                                                type="password"
+                                                type={passwordVisible ? 'text' : 'password'}
                                                 required
                                                 feedbackInvalid={"Password is required."}
-                                                className={'form-control eye_icn is_not_validated'}
+                                                className={'form-control is_not_validated'}
                                                 id="floatingPassword"
                                                 placeholder="Password"
                                             />
+                                            <button
+                                                type="button"
+                                                className="password-toggle"
+                                                onClick={() => setPasswordVisible(!passwordVisible)}
+                                            >
+                                                <Icon icon={passwordVisible ? 'ph:eye-slash' : 'ph:eye'} width={30} height={30} />
+                                            </button>
                                             <label htmlFor="floatingPassword">Password</label>
                                         </div>
                                     </div>
