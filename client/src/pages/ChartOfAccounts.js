@@ -115,10 +115,7 @@ const ChartOfAccounts = () => {
 
     return (
         <div>
-            <ClientListLayout />
-            <section className="client_list_section spredsheet">
-                <div className="container">
-                    <div className="bg_white_box m-20">
+            <ClientListLayout>
                         <div className="special_flex mb-25">
                             <h1 className="main_title">Chart of Accounts</h1>
                             <div className="right_flex">
@@ -143,9 +140,8 @@ const ChartOfAccounts = () => {
                                 </SheetsDirective>
                             </SpreadsheetComponent>
                         </div>
-                    </div>
-                </div>
-            </section>
+                        </ClientListLayout>
+
         </div>
     )
 }

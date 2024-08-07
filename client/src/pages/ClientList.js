@@ -96,166 +96,91 @@ const ClientList = () => {
     return (
         <>
             <ConfirmDialog />
-            <ClientListLayout />
-            <section className="client_list_section">
-                <div className="container">
-                    <div className="bg_white_box m-20">
-                        <div className="special_flex mb-25">
-                            <h1 className="main_title">Client List</h1>
-                            <div className="right_flex">
-                                <div className="search_box">
-                                    <input
-                                        type="text"
-                                        placeholder="Search"
-                                        onChange={(e) => setFilter(e.target.value)}
-                                    />
-                                </div>
-                                <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client">
-                                    <img src="/images/plus_white.svg" alt="" /> Add Client
-                                </button>
-                                <button className="common_btn ms-4">Import</button>
-                            </div>
+            <ClientListLayout >
+                <div className="special_flex mb-25">
+                    <h1 className="main_title">Client List</h1>
+                    <div className="right_flex">
+                        <div className="search_box">
+                            <input
+                                type="text"
+                                placeholder="Search"
+                                onChange={(e) => setFilter(e.target.value)}
+                            />
                         </div>
-
-                        <div className="main_table">
-                            {isLoading ? (
-                                <Loader />
-                            ) : (
-                                <DataTable
-                                    className="dataTable"
-                                    totalRecords={totalRecords}
-                                    lazy
-                                    sortField={sortField}
-                                    sortOrder={sortOrder}
-                                    onSort={(e) => {
-                                        if (!e.sortField && e.sortOrder === 0) {
-                                            handleSorting({ sortField: 'createdAt', sortOrder: -1 });
-                                        } else {
-                                            handleSorting(e);
-                                        }
-                                    }}
-                                    removableSort
-                                    rows={rowsPerPage}
-                                    value={clients}
-                                    first={(currentPage - 1) * rowsPerPage}
-                                    onPage={onPageChange}
-                                    dataKey="id"
-                                    emptyMessage="No clients found."
-                                    responsiveLayout="scroll"
-                                >
-                                    <Column
-                                        field="first_name"
-                                        header="First Name"
-                                        body={(rowData) => customBodyTemplate(rowData, 'first_name')}
-                                        sortable
-                                        filterField="first_name"
-                                    />
-                                    <Column
-                                        field="last_name"
-                                        header="Last Name"
-                                        body={(rowData) => customBodyTemplate(rowData, 'last_name')}
-                                        sortable
-                                        filterField="last_name"
-                                    />
-                                    <Column f
-                                        ield="entity_name"
-                                        header="Entity Name"
-                                        body={(rowData) => customBodyTemplate(rowData, 'entity_name')}
-                                        sortable
-                                        filterField="entity_name"
-                                    />
-                                    <Column
-                                        field="preferred_name"
-                                        header="Preferred Name"
-                                        body={(rowData) => customBodyTemplate(rowData, 'preferred_name')}
-                                        sortable
-                                    />
-                                    <Column
-                                        field="abn_number"
-                                        header="ABN Number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')}
-                                        sortable
-                                    />
-                                    <Column
-                                        field="email"
-                                        className='table-email-field'
-                                        header="Email Address"
-                                        body={(rowData) => customBodyTemplate(rowData, 'email')}
-                                        sortable
-                                        filterField="email"
-                                    />
-                                    <Column
-                                        field="phone"
-                                        header="Phone Number"
-                                        body={(rowData) => customBodyTemplate(rowData, 'phone')}
-                                        sortable
-                                    />
-                                    <Column
-                                        field="address"
-                                        header="Address"
-                                        body={(rowData) => customBodyTemplate(rowData, 'address')}
-                                        sortable
-                                    />
-                                    <Column
-                                        field="client_code" header="Client Code"
-                                        body={(rowData) => customBodyTemplate(rowData, 'client_code')}
-                                        sortable
-                                    />
-                                    <Column
-                                        field="user_defined"
-                                        header="User Defined"
-                                        body={(rowData) => customBodyTemplate(rowData, 'user_defined')}
-                                        sortable
-                                    />
-                                    <Column
-                                        header=""
-                                        className='action_td'
-                                        align="left"
-                                        body={(rowData) => (
-                                            <div className='d-flex'>
-                                                <Link to={`/user/chart-of-accounts/${rowData?._id}`} className="green_btn">
-                                                    <img src="/images/chart.svg" alt="Chart" />
-                                                </Link>
-                                                <Link to="/file" className="green_btn">
-                                                    <img src="/images/file.svg" alt="File" />
-                                                </Link>
-                                                <button
-                                                    className="green_btn"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#add_client"
-                                                    onClick={() => {
-                                                        setEditClientId(rowData?._id)
-                                                        setEditMode(true)
-                                                    }}
-                                                >
-                                                    <img src="/images/edit.svg" alt="Edit" />
-                                                </button>
-                                                <button className="green_btn" onClick={() => handleDelete(rowData?._id)}>
-                                                    <img src="/images/delete.svg" alt="Delete" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    />
-                                </DataTable>
-                            )}
-                        </div>
-                        <div className="entries_page">
-                            <select name="" id="" onChange={(e) => setRowsPerPage(e.target.value)}>
-                                <option value="10">10</option>
-                                <option value="20">20</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                            </select>
-                            <label>entries per page </label>
-                        </div>
-                        <Paginator
-                            first={(currentPage - 1) * rowsPerPage}
-                            rows={rowsPerPage}
-                            totalRecords={totalRecords}
-                            onPageChange={onPageChange}
-                        />
+                        <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client">
+                            <img src="/images/plus_white.svg" alt="" /> Add Client
+                        </button>
+                        <button className="common_btn ms-4">Import</button>
                     </div>
                 </div>
-            </section >
+                <div className="main_table">
+                    {isLoading ? (
+                        <Loader />
+                    ) : (
+                        <DataTable
+                            className="dataTable"
+                            totalRecords={totalRecords}
+                            lazy
+                            sortField={sortField}
+                            sortOrder={sortOrder}
+                            onSort={handleSorting}
+                            removableSort
+                            rows={rowsPerPage}
+                            value={clients}
+                            first={(currentPage - 1) * rowsPerPage}
+                            onPage={onPageChange}
+                            dataKey="id"
+                            emptyMessage="No clients found."
+                            responsiveLayout="scroll"
+                        >
+                            <Column field="first_name" header="First Name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} sortable filterField="first_name" />
+                            <Column field="last_name" header="Last Name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} sortable filterField="last_name" />
+                            <Column field="entity_name" header="Entity Name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} sortable filterField="entity_name" />
+                            <Column field="preferred_name" header="Preferred Name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} sortable />
+                            <Column field="abn_number" header="ABN Number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} sortable />
+                            <Column field="email" className='table-email-field' header="Email Address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
+                            <Column field="phone" header="Phone Number" body={(rowData) => customBodyTemplate(rowData, 'phone')} sortable />
+                            <Column field="address" header="Address" body={(rowData) => customBodyTemplate(rowData, 'address')} sortable />
+                            <Column field="client_code" header="Client Code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} sortable />
+                            <Column field="user_defined" header="User Defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} sortable />
+                            <Column header="" className='action_td' align="left" body={(rowData) => (
+                                <div className='d-flex'>
+                                    <Link to={`/user/chart-of-accounts/${rowData?._id}`} className="green_btn">
+                                        <img src="/images/chart.svg" alt="Chart" />
+                                    </Link>
+                                    <Link to="/file" className="green_btn">
+                                        <img src="/images/file.svg" alt="File" />
+                                    </Link>
+                                    <button className="green_btn" data-bs-toggle="modal" data-bs-target="#edit_client" onClick={() => {
+                                        setEditClientId(rowData?._id);
+                                        setEditMode(true);
+                                    }}>
+                                        <img src="/images/edit.svg" alt="Edit" />
+                                    </button>
+                                    <button className="green_btn" onClick={() => handleDelete(rowData?._id)}>
+                                        <img src="/images/delete.svg" alt="Delete" />
+                                    </button>
+                                </div>
+                            )} />
+                        </DataTable>
+                    )}
+                </div>
+                <div className="entries_page">
+                    <select name="" id="" onChange={(e) => setRowsPerPage(e.target.value)}>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <label>entries per page </label>
+                </div>
+                <Paginator
+                    first={(currentPage - 1) * rowsPerPage}
+                    rows={rowsPerPage}
+                    totalRecords={totalRecords}
+                    onPageChange={onPageChange}
+                />
+            </ClientListLayout >
 
             {/* Modals for Add and Edit Client here */}
             <AddClient

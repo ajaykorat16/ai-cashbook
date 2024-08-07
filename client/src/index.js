@@ -15,10 +15,6 @@ const msalConfig = {
   },
 };
 
-console.log('Microsoft Client ID:', process.env.REACT_APP_MICROSOFT_CLIENT_ID);
-console.log('Microsoft Tenant ID:', process.env.REACT_APP_MICROSOFT_API);
-console.log('Redirect URI:', window.location.origin);
-
 const msalInstance = new PublicClientApplication(msalConfig);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

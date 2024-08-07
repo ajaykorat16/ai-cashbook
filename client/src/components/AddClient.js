@@ -124,6 +124,21 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
         }
     }
 
+    const handleIndividual = (individual) => {
+        if (individual) {
+            setClientDetail({
+                ...clientDetail,
+                first_name: "",
+                last_name: "",
+            })
+        } else {
+            setClientDetail({
+                ...clientDetail,
+                entity_name: "",
+            })
+        }
+    }
+
     useEffect(() => {
         if (editMode) {
             fetchSingleClient();
@@ -151,6 +166,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                             onClick={(e) => {
                                                 setValidated(false)
                                                 setShowIndividual(e.target.checked)
+                                                handleIndividual(e.target.checked)
                                             }}
                                         />
                                         <label htmlFor="styled-checkbox-2">Non-individual</label>

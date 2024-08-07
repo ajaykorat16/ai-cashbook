@@ -118,9 +118,6 @@ const ClientProvider = ({ children }) => {
         try {
             const { data } = await axios.put(`${baseURL}/client/update-client-category/${id}`, { data: csvData }, { headers });
             if (data.error === false) {
-                setTimeout(function () {
-                    toast.current?.show({ severity: 'success', summary: 'Client Category', detail: data.message, life: 3000 })
-                }, 500);
                 return data;
             } else {
                 toast.current?.show({ severity: 'error', summary: 'Client Category', detail: data.message, life: 3000 })
