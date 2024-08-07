@@ -1,11 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Toast } from 'primereact/toast'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
 
 const ClientListLayout = ({ children, showSlection }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { toast, logout, auth } = useAuth()
     const user_name = auth?.user?.first_name.length > 7 ? `${auth?.user?.first_name.slice(0, 5)}...` : auth?.user?.first_name
     const [showMenu, setShowMenu] = useState(false)
@@ -77,9 +78,9 @@ const ClientListLayout = ({ children, showSlection }) => {
                             <div id="sidebar" ref={sidebarRef}>
                                 <div className="side_data">
                                     <ul>
-                                        <li><Link to={'/user/clients'} className="selected">Home</Link></li>
+                                        <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>Home</Link></li>
                                         <li><Link>Upload CSV</Link></li>
-                                        <li><Link to={'/user/chart-of-accounts'}>Chat of Accounts</Link></li>
+                                        <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>Chat of Accounts</Link></li>
                                         <li><Link>Auto Categorize</Link></li>
                                         <li><Link>Check inter-bank transfer</Link></li>
                                     </ul>
