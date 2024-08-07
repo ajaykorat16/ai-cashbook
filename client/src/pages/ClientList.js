@@ -96,7 +96,7 @@ const ClientList = () => {
     return (
         <>
             <ConfirmDialog />
-            <ClientListLayout showSlection={false}>
+            <ClientListLayout showSelection={false}>
                 <div className="special_flex mb-25">
                     <h1 className="main_title">Client List</h1>
                     <div className="right_flex">

@@ -19,10 +19,9 @@ const ClientsAccounts = () => {
         fetchClient()
     }, [])
 
-
     return (
         <>
-            <Accounts clientId={clientObject?.value} showSlection={true} />
+            <Accounts clientId={clientObject?.value} showSelection={true} />
         </>
     )
 }

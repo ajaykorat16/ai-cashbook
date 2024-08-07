@@ -7,7 +7,7 @@ const ChartOfAccounts = () => {
 
     return (
         <>
-            <Accounts clientId={params?.id} showSlection={false} />
+            <Accounts clientId={params?.id} showSelection={false} />
         </>
     )
 }

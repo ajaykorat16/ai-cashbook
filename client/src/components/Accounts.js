@@ -14,7 +14,7 @@ import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, Sprea
 import { useClient } from '../contexts/ClientContexts';
 import Loader from '../components/Loader';
 
-const Accounts = ({ clientId, showSlection }) => {
+const Accounts = ({ clientId, showSelection }) => {
     const spreadsheetRef = useRef(null);
     const { getClientCategory, updateClientCatrgory } = useClient();
 
@@ -109,7 +109,7 @@ const Accounts = ({ clientId, showSlection }) => {
 
     return (
         <div>
-            <ClientListLayout showSlection={showSlection}>
+            <ClientListLayout showSelection={showSelection}>
                 <div className="special_flex mb-25">
                     <h1 className="main_title">Chart of Accounts</h1>
                     <div className="right_flex">

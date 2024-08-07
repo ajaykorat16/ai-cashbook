@@ -4,7 +4,7 @@ import { Toast } from 'primereact/toast'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
 
-const ClientListLayout = ({ children, showSlection }) => {
+const ClientListLayout = ({ children, showSelection }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { toast, logout, auth } = useAuth()
@@ -50,7 +50,7 @@ const ClientListLayout = ({ children, showSlection }) => {
                             </div>
                             <div className="right_head">
                                 {
-                                    showSlection && (
+                                    showSelection && (
                                         <ClientSelection className="head_select" />
                                     )
                                 }
