@@ -900,7 +900,17 @@ tbody tr[role="row"] {
   align-items: center;
 }
 
-.head_select{margin-right: 20px;}
+.head_select {
+  margin-right: 20px;
+}
+
+.paginate_container {
+  width: 210px;
+}
+
+div[style*="position: fixed"] {
+  display: none;
+}
 
 @media screen and (max-width: 1550px) {
   .login_center_box {
@@ -1090,5 +1100,9 @@ tbody tr[role="row"] {
   .main_logo {
     text-align: center;
     margin-bottom: 20px;
+  }
+
+  .paginate_container {
+    width: 140px;
   }
 }

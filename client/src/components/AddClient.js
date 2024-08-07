@@ -163,7 +163,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                             id="styled-checkbox-2"
                                             type="checkbox"
                                             checked={showIndividual}
-                                            onClick={(e) => {
+                                            onChange={(e) => {
                                                 setValidated(false)
                                                 setShowIndividual(e.target.checked)
                                                 handleIndividual(e.target.checked)
@@ -267,8 +267,8 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                 <div className="form-floating">
                                                     <CFormInput
                                                         type="text"
-                                                        minlength="10"
-                                                        maxlength="13"
+                                                        minLength="10"
+                                                        maxLength="13"
                                                         value={clientDetail.phone}
                                                         onChange={(e) => {
                                                             const inputValue = e.target.value;
