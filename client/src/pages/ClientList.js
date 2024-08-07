@@ -151,7 +151,7 @@ const ClientList = () => {
                                     <Link to="/file" className="green_btn">
                                         <img src="/images/file.svg" alt="File" />
                                     </Link>
-                                    <button className="green_btn" data-bs-toggle="modal" data-bs-target="#edit_client" onClick={() => {
+                                    <button className="green_btn" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => {
                                         setEditClientId(rowData?._id);
                                         setEditMode(true);
                                     }}>
