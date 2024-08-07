@@ -900,6 +900,8 @@ tbody tr[role="row"] {
   align-items: center;
 }
 
+.head_select{margin-right: 20px;}
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;

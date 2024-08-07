@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Toast } from 'primereact/toast'
 import { Link, useNavigate } from 'react-router-dom';
+import ClientSelection from './ClientSelection';
 
 const ClientListLayout = ({ children }) => {
     const navigate = useNavigate();
@@ -47,6 +48,7 @@ const ClientListLayout = ({ children }) => {
                                 </Link>
                             </div>
                             <div class="right_head">
+                                <ClientSelection className="head_select" />
                                 <div className="login_box_top pos_rel">
                                     <button onClick={() => setShowMenu(!showMenu)}>
                                         <img src="/images/login_icn.svg" alt="" />
