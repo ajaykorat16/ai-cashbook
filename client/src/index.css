@@ -907,11 +907,6 @@ tbody tr[role="row"] {
 .paginate_container {
   width: 210px;
 }
-
-div[style*="position: fixed"] {
-  display: none;
-}
-
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
