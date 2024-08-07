@@ -4,7 +4,7 @@ import { Toast } from 'primereact/toast'
 import { Link, useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
 
-const ClientListLayout = ({ children }) => {
+const ClientListLayout = ({ children, showSlection }) => {
     const navigate = useNavigate();
     const { toast, logout, auth } = useAuth()
     const user_name = auth?.user?.first_name.length > 7 ? `${auth?.user?.first_name.slice(0, 5)}...` : auth?.user?.first_name
@@ -47,8 +47,12 @@ const ClientListLayout = ({ children }) => {
                                     <img src="/images/accoutn_logo.svg" alt="" />
                                 </Link>
                             </div>
-                            <div class="right_head">
-                                <ClientSelection className="head_select" />
+                            <div className="right_head">
+                                {
+                                    showSlection && (
+                                        <ClientSelection className="head_select" />
+                                    )
+                                }
                                 <div className="login_box_top pos_rel">
                                     <button onClick={() => setShowMenu(!showMenu)}>
                                         <img src="/images/login_icn.svg" alt="" />
@@ -75,7 +79,7 @@ const ClientListLayout = ({ children }) => {
                                     <ul>
                                         <li><Link to={'/user/clients'} className="selected">Home</Link></li>
                                         <li><Link>Upload CSV</Link></li>
-                                        <li><Link>Chat of Accounts</Link></li>
+                                        <li><Link to={'/user/chart-of-accounts'}>Chat of Accounts</Link></li>
                                         <li><Link>Auto Categorize</Link></li>
                                         <li><Link>Check inter-bank transfer</Link></li>
                                     </ul>

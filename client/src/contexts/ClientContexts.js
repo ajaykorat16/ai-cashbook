@@ -1,4 +1,4 @@
-import { useContext, createContext } from "react";
+import { useContext, createContext, useState } from "react";
 import { baseURL } from "../lib";
 import axios from 'axios'
 import { useAuth } from "./AuthContext";
@@ -7,6 +7,7 @@ const ClientContext = createContext()
 
 const ClientProvider = ({ children }) => {
     const { auth, toast } = useAuth()
+    const [clientObject, setClientObject] = useState("")
 
     const headers = {
         Authorization: auth?.token,
@@ -136,7 +137,7 @@ const ClientProvider = ({ children }) => {
 
 
     return (
-        <ClientContext.Provider value={{ createClient, getSingleClient, getAllClients, updateClient, deleteClient, getClientCategory, updateClientCatrgory }}>
+        <ClientContext.Provider value={{ createClient, getSingleClient, getAllClients, updateClient, deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject }}>
             {children}
         </ClientContext.Provider>
     )

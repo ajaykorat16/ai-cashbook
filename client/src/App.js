@@ -13,6 +13,7 @@ import ClientList from './pages/ClientList';
 import ThanksPage from './pages/ThanksPage';
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
+import ClientsAccounts from './pages/ClientsAccounts';
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/forgot-password/" element={<ForgotPassword />} />
         <Route path="/thanks" element={<ThanksPage />} />
         <Route path="/user/*" element={<UserRoutes />}>
+          <Route path="chart-of-accounts" element={<ClientsAccounts />} />
           <Route path="chart-of-accounts/:id" element={<ChartOfAccounts />} />
           <Route path="clients" element={<ClientList />} />
         </Route>

@@ -96,7 +96,7 @@ const ClientList = () => {
     return (
         <>
             <ConfirmDialog />
-            <ClientListLayout >
+            <ClientListLayout showSlection={false}>
                 <div className="special_flex mb-25">
                     <h1 className="main_title">Client List</h1>
                     <div className="right_flex">
@@ -129,7 +129,7 @@ const ClientList = () => {
                             value={clients}
                             first={(currentPage - 1) * rowsPerPage}
                             onPage={onPageChange}
-                            dataKey="id"
+                            dataKey="_id"
                             emptyMessage="No clients found."
                             responsiveLayout="scroll"
                         >

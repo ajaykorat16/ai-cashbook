@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { AsyncPaginate } from 'react-select-async-paginate';
-import { CFormLabel } from '@coreui/react';
 import { useClient } from '../contexts/ClientContexts';
 
 const ClientSelection = ({ className, labelClassName, multiSelect = false, required = false, error = false, menuPlacement = 'bottom' }) => {
     const requiredIcon = required ? <span className="text-danger">*</span> : null;
-    const { getAllClients } = useClient()
+    const { getAllClients, clientObject, setClientObject } = useClient()
 
-    const [clientId, setClientId] = useState()
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(50);
 
@@ -19,7 +17,7 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
             if (response.totalPages > 0) {
                 const newOptions = response.clients.map((client) => ({
                     label: client.entity_name ? client.entity_name : `${client.first_name} ${client.last_name}`,
-                    value: client._id,
+                    value: client._id
                 }));
 
                 return {
@@ -47,6 +45,10 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
     };
 
     const customStyles = {
+        control: (provided, state) => ({
+            ...provided,
+            height: '45px',
+        }),
         option: (provided, state) => ({
             ...provided,
             whiteSpace: state.isFocused ? 'pre-wrap' : 'nowrap',
@@ -59,14 +61,14 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
 
     return (
         <div className={className}>
-            <div className='w-100'>
+            <div className='paginate_container'>
                 <AsyncPaginate
                     className={`${(error && required) && 'multiSelect_error'}`}
-                    value={clientId}
+                    value={clientObject}
                     loadOptions={fetchClients}
                     isMulti={multiSelect}
                     closeMenuOnSelect={!multiSelect ? true : false}
-                    onChange={(selectedOptions) => setClientId(selectedOptions)}
+                    onChange={(selectedOptions) => { setClientObject(selectedOptions) }}
                     placeholder='Select clients...'
                     noOptionsMessage={() => ('No clients found')}
                     loadingMessage={() => ('Clients Loading...')}
