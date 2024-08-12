@@ -126,6 +126,7 @@ const Accounts = ({ clientId, showSelection }) => {
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 cellSave={handleCellSave}
+                                showSheetTabs = {false}
                             >
                                 <SheetsDirective>
                                     <SheetDirective >

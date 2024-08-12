@@ -83,6 +83,7 @@ const Register = () => {
         try {
             const loginResponse = await instance.loginPopup({
                 scopes: ['user.read'],
+                prompt: 'select_account'
             });
 
             const accessToken = loginResponse.accessToken;
