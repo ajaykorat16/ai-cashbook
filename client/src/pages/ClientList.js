@@ -8,9 +8,11 @@ import { Link } from 'react-router-dom';
 import ClientListLayout from '../components/ClientListLayout';
 import AddClient from '../components/AddClient';
 import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
+import CustomSelect from '../components/CustomSelect';
 
 const ClientList = () => {
-    const { getAllClients, deleteClient } = useClient()
+    const options = [10, 20, 50, 100];
+    const { getAllClients } = useClient()
 
     const [clients, setClients] = useState([]);
     const [sortField, setSortField] = useState('createdAt');
@@ -76,9 +78,14 @@ const ClientList = () => {
 
         debounceTimeout = setTimeout(() => {
             setFilter(value);
-            setCurrentPage(1); 
-        }, 500); 
+            setCurrentPage(1);
+        }, 500);
     };
+
+    const handleSelectChange = (option) => {
+        setRowsPerPage(option);
+    };
+
     return (
         <>
             <ClientListLayout showSelection={false}>
@@ -123,7 +130,7 @@ const ClientList = () => {
                             <Column field="entity_name" header="Entity name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} sortable filterField="entity_name" />
                             <Column field="preferred_name" header="Preferred name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} sortable />
                             <Column field="abn_number" header="ABN number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} sortable />
-                            <Column field="email" className='table-email-field' header="Email address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
+                            <Column field="email" className='table-email-field' header="Email Address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
                             <Column field="phone" header="Phone number" body={(rowData) => customBodyTemplate(rowData, 'phone')} sortable />
                             <Column field="address" header="Address" body={(rowData) => customBodyTemplate(rowData, 'address')} sortable />
                             <Column field="client_code" header="Client code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} sortable />
@@ -154,13 +161,12 @@ const ClientList = () => {
                     )}
                 </div>
                 <div className="entries_page">
-                    <select name="" id="" onChange={(e) => setRowsPerPage(e.target.value)}>
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                    <label>Entries per page </label>
+                    <CustomSelect
+                        options={options}
+                        onChange={handleSelectChange}
+                        defaultValue={10}
+                    />
+                    {/* <label>Entries per page </label> */}
                 </div>
                 <Paginator
                     first={(currentPage - 1) * rowsPerPage}

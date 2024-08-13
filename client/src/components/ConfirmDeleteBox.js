@@ -63,7 +63,7 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={() => handleClose()}></button>
                         </div>
                         <div className="modal-body delete-modal-body">
-                            <span class="p-confirm-dialog-icon pi pi-info-circle info-delete-circle" data-pc-section="icon"></span>
+                            <span className="p-confirm-dialog-icon pi pi-info-circle info-delete-circle" data-pc-section="icon"></span>
                             Are you sure you want to delete this client?
                         </div>
                         <div className="modal-footer delte-modal-footer">
