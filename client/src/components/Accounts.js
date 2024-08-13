@@ -111,7 +111,7 @@ const Accounts = ({ clientId, showSelection }) => {
         <div>
             <ClientListLayout showSelection={showSelection}>
                 <div className="special_flex mb-25">
-                    <h1 className="main_title">Chart of Accounts</h1>
+                    <h1 className="main_title">Chart of accounts</h1>
                     <div className="right_flex">
                         <button className="common_btn ms-4">Import</button>
                     </div>

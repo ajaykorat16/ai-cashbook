@@ -132,19 +132,19 @@ const Login = () => {
                                 <div className="col-md-6">
                                     <div onClick={() => googleSignIn()} className="brd_green_box">
                                         <img src="/images/google_icn.svg" alt="" />
-                                        <span>Sign in with Google</span>
+                                        <span>Sign in with google</span>
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div onClick={handleMicrosoftSignIn} className="brd_green_box">
                                         <img src="/images/microsoft_icn.svg" alt="" />
-                                        <span>Sign in with Microsoft</span>
+                                        <span>Sign in with microsoft</span>
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div className="brd_green_box">
                                         <img src="/images/apple_icn.svg" alt="" />
-                                        <span>Sign in with Apple</span>
+                                        <span>Sign in with apple</span>
                                     </div>
                                 </div>
                             </div>
@@ -195,7 +195,7 @@ const Login = () => {
                                     <div className="col-md-6">
                                         <div className="check_box mb-20">
                                             <input className="styled-checkbox" id="styled-checkbox-2" type="checkbox" value="value2" />
-                                            <label htmlFor="styled-checkbox-2">Keep Me Signed In</label>
+                                            <label htmlFor="styled-checkbox-2">Keep me signed in</label>
                                         </div>
                                     </div>
                                     <div className="col-md-6 mb-20 forgot_psw_container">

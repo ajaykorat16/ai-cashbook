@@ -126,19 +126,19 @@ const Register = () => {
                                 <div className='col-md-6'>
                                     <div onClick={() => googleSignUp()} className="brd_green_box">
                                         <img src="/images/google_icn.svg" alt="" />
-                                        <span>Sign up with Google</span>
+                                        <span>Sign up with google</span>
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div onClick={handleMicrosoftSignUp} className="brd_green_box">
                                         <img src="/images/microsoft_icn.svg" alt="" />
-                                        <span>Sign up with Microsoft</span>
+                                        <span>Sign up with microsoft</span>
                                     </div>
                                 </div>
                                 <div className="col-md-6">
                                     <div href="#" className="brd_green_box">
                                         <img src="/images/apple_icn.svg" alt="" />
-                                        <span>Sign up with Apple</span>
+                                        <span>Sign up with apple</span>
                                     </div>
                                 </div>
                             </div>
@@ -161,7 +161,7 @@ const Register = () => {
                                                 id="floatingEmail"
                                                 placeholder="name@example.com"
                                             />
-                                            <label htmlFor="floatingEmail">Email Address</label>
+                                            <label htmlFor="floatingEmail">Email address</label>
                                         </div>
                                     </div>
                                     <div className="col-md-6">
@@ -176,7 +176,7 @@ const Register = () => {
                                                 id="floatingFirstName"
                                                 placeholder="First Name"
                                             />
-                                            <label htmlFor="floatingFirstName">First Name</label>
+                                            <label htmlFor="floatingFirstName">First name</label>
                                         </div>
                                     </div>
                                     <div className="col-md-6">
@@ -191,15 +191,15 @@ const Register = () => {
                                                 id="floatingLastName"
                                                 placeholder="Last Name"
                                             />
-                                            <label htmlFor="floatingLastName">Last Name</label>
+                                            <label htmlFor="floatingLastName">Last name</label>
                                         </div>
                                     </div>
                                     <div className="col-md-6">
                                         <div className="form-floating">
                                             <CFormInput
                                                 type="text"
-                                                minlength="10"
-                                                maxlength="13"
+                                                minLength="10"
+                                                maxLength="13"
                                                 value={userDetails.phone}
                                                 onChange={(e) => {
                                                     const inputValue = e.target.value;
@@ -212,11 +212,11 @@ const Register = () => {
                                                 id="floatingPhoneNumber"
                                                 placeholder="Phone Number"
                                             />
-                                            <label htmlFor="floatingPhoneNumber">Phone Number</label>
+                                            <label htmlFor="floatingPhoneNumber">Phone number</label>
                                         </div>
                                     </div>
                                 </div>
-                                <button type="submit" className="common_btn d-flex m-auto">Create Account</button>
+                                <button type="submit" className="common_btn d-flex m-auto">Create account</button>
                             </CForm>
                             <div className="sign-up">
                                 <span>Already have an account?</span>
