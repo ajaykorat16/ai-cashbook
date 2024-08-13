@@ -3,7 +3,7 @@ import { CForm, CFormInput } from '@coreui/react';
 import { useClient } from '../contexts/ClientContexts';
 import { useAuth } from '../contexts/AuthContext';
 import { Modal } from 'bootstrap';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
 const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditClientId, setCurrentPage, visible, setVisible }) => {
     const { createClient, getSingleClient, updateClient } = useClient()
@@ -149,11 +149,11 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
 
     useEffect(() => {
         if (!editMode && visible) {
-            const newClientCode = uuidv4()
+            const newClientCode = nanoid(10);
             setClientDetail({
                 ...clientDetail,
                 client_code: newClientCode
-            })
+            });
         }
     }, [visible]);
     return (
@@ -315,7 +315,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         value={clientDetail.client_code}
                                                         onChange={(e) => {
                                                             const value = e.target.value;
-                                                            if (/^[a-zA-Z0-9-]*$/.test(value)) {
+                                                            if (/^[a-zA-Z0-9-_]*$/.test(value)) {
                                                                 setClientDetail({ ...clientDetail, client_code: value });
                                                             }
                                                         }}
