@@ -40,7 +40,7 @@ function isValidEmail(email) {
 }
 
 const createCollection = async (user,id) => {
-    fs.readFile('./clientCategorys/category.json', 'utf8', async (err, jsonData) => {
+    fs.readFile('./data_dump/category.json', 'utf8', async (err, jsonData) => {
         if (err) {
             console.error('Error reading file:', err);
         }

@@ -17,6 +17,10 @@ const ClientsAccounts = () => {
 
     useEffect(() => {
         fetchClient()
+
+        return () => {
+            setClientObject({});
+        };
     }, [])
 
     return (
