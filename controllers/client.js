@@ -63,6 +63,11 @@ const createClient = async (req, res) => {
                     message: "Client code should be unique.",
                 });
             }
+        } else {
+            return res.status(200).json({
+                error: true,
+                message: "Client code is required.",
+            });
         }
 
         const clientData = {
@@ -167,6 +172,11 @@ const updateClient = async (req, res) => {
                     message: "Client code should be unique.",
                 });
             }
+        } else {
+            return res.status(200).json({
+                error: true,
+                message: "Client code is required.",
+            });
         }
 
         const clientData = {

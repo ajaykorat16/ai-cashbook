@@ -3,8 +3,9 @@ import { CForm, CFormInput } from '@coreui/react';
 import { useClient } from '../contexts/ClientContexts';
 import { useAuth } from '../contexts/AuthContext';
 import { Modal } from 'bootstrap';
+import { v4 as uuidv4 } from 'uuid';
 
-const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditClientId, setCurrentPage }) => {
+const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditClientId, setCurrentPage, visible, setVisible }) => {
     const { createClient, getSingleClient, updateClient } = useClient()
     const { auth } = useAuth()
 
@@ -54,6 +55,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
         setEditClientId("")
         setShowIndividual(false)
         setShowFullDetail(false)
+        setVisible(false)
     }
 
     useEffect(() => {
@@ -146,19 +148,14 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
     }, [editMode, editClientId]);
 
     useEffect(() => {
-        if (showIndividual) {
+        if (!editMode && visible) {
+            const newClientCode = uuidv4()
             setClientDetail({
                 ...clientDetail,
-                client_code: clientDetail.entity_name.slice(0, 6)
-            })
-        } else {
-            setClientDetail({
-                ...clientDetail,
-                client_code: `${clientDetail.first_name.slice(0, 3)}${clientDetail.last_name.slice(0, 3)}`
+                client_code: newClientCode
             })
         }
-    }, [showIndividual, clientDetail.entity_name, clientDetail.first_name, clientDetail.last_name]);
-
+    }, [visible]);
     return (
         <>
             <div className="modal fade custom_modal" id="add_client" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -195,15 +192,14 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                 <CFormInput
                                                                     type="text"
                                                                     value={clientDetail.entity_name}
-                                                                    minLength="6"
                                                                     onChange={(e) => { setClientDetail({ ...clientDetail, entity_name: e.target.value }) }}
                                                                     required
-                                                                    feedbackInvalid={"Entity name must be at least 6 characters"}
+                                                                    feedbackInvalid={"Entity name should be required"}
                                                                     className={'form-control is_not_validated'}
                                                                     id="floatingInput3"
                                                                     placeholder="Entity name"
                                                                 />
-                                                                <label htmlFor="floatingInput3">Entity name</label>
+                                                                <label htmlFor="floatingInput3">Entity name<span className='text-danger'>*</span></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -219,15 +215,14 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                     <CFormInput
                                                                         type="text"
                                                                         value={clientDetail.first_name}
-                                                                        minLength="3"
                                                                         onChange={(e) => setClientDetail({ ...clientDetail, first_name: e.target.value })}
                                                                         required
-                                                                        feedbackInvalid={"First name must be at least 3 characters"}
+                                                                        feedbackInvalid={"First name should be required"}
                                                                         className={'form-control is_not_validated'}
                                                                         id="floatingInput1"
                                                                         placeholder="First name"
                                                                     />
-                                                                    <label htmlFor="floatingInput1">First name</label>
+                                                                    <label htmlFor="floatingInput1">First name<span className='text-danger'>*</span></label>
                                                                 </div>
                                                             </div>
                                                             <div className="col-md-6">
@@ -235,15 +230,14 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                     <CFormInput
                                                                         type="text"
                                                                         value={clientDetail.last_name}
-                                                                        minLength="3"
                                                                         onChange={(e) => setClientDetail({ ...clientDetail, last_name: e.target.value })}
                                                                         required
-                                                                        feedbackInvalid={"Last name must be at least 3 characters"}
+                                                                        feedbackInvalid={"Last name should be required"}
                                                                         className={'form-control is_not_validated'}
                                                                         id="floatingInput2"
                                                                         placeholder="Last name"
                                                                     />
-                                                                    <label htmlFor="floatingInput2">Last name</label>
+                                                                    <label htmlFor="floatingInput2">Last name<span className='text-danger'>*</span></label>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -319,12 +313,19 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                     <CFormInput
                                                         type="text"
                                                         value={clientDetail.client_code}
-                                                        onChange={(e) => setClientDetail({ ...clientDetail, client_code: e.target.value })}
-                                                        className="form-control"
+                                                        onChange={(e) => {
+                                                            const value = e.target.value;
+                                                            if (/^[a-zA-Z0-9-]*$/.test(value)) {
+                                                                setClientDetail({ ...clientDetail, client_code: value });
+                                                            }
+                                                        }}
+                                                        required
+                                                        feedbackInvalid={"Client code should be required"}
+                                                        className="form-control is_not_validated"
                                                         id="floatingInput10"
                                                         placeholder="Client code"
                                                     />
-                                                    <label htmlFor="floatingInput10">Client code</label>
+                                                    <label htmlFor="floatingInput10">Client code<span className='text-danger'>*</span></label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">

@@ -6,7 +6,7 @@ const { auth } = require("../middleware/auth")
 const { createClient, getSingleClient, getClientCategory, getAllClients, updateClient, updateClientCategory, deleteClient } = require("../controllers/client")
 
 router.post("/create",
-    check('user_id', 'User Id is required.').notEmpty(),
+    check('user_id', 'User id is required.').notEmpty(),
     auth,
     createClient
 )

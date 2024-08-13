@@ -24,6 +24,7 @@ const ClientList = () => {
     const [filter, setFilter] = useState(null);
     const [editClientId, setEditClientId] = useState("")
     const [editMode, setEditMode] = useState(false)
+    const [visible, setVisible] = useState(false)
     const [clientDelId, setClientDelId] = useState("")
     let debounceTimeout = null;
 
@@ -99,7 +100,7 @@ const ClientList = () => {
                                 onChange={(e) => handleSearch(e)}
                             />
                         </div>
-                        <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client">
+                        <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => setVisible(true)}>
                             <img src="/images/plus_white.svg" alt="" /> Add client
                         </button>
                         {/* <button className="common_btn ms-4">Import</button> */}
@@ -184,6 +185,8 @@ const ClientList = () => {
                 setEditMode={setEditMode}
                 fetchClients={fetchClients}
                 setCurrentPage={setCurrentPage}
+                visible={visible}
+                setVisible={setVisible}
             />
             <ConfirmDeleteBox
                 fetchClients={fetchClients}
