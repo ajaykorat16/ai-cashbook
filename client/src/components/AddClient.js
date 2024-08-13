@@ -145,13 +145,27 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
         }
     }, [editMode, editClientId]);
 
+    useEffect(() => {
+        if (showIndividual) {
+            setClientDetail({
+                ...clientDetail,
+                client_code: clientDetail.entity_name.slice(0, 6)
+            })
+        } else {
+            setClientDetail({
+                ...clientDetail,
+                client_code: `${clientDetail.first_name.slice(0, 3)}${clientDetail.last_name.slice(0, 3)}`
+            })
+        }
+    }, [showIndividual, clientDetail.entity_name, clientDetail.first_name, clientDetail.last_name]);
+
     return (
         <>
             <div className="modal fade custom_modal" id="add_client" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                 <div className="modal-dialog modal-dialog-centered modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title" id="exampleModalLabel">{editMode ? "Edit Client" : "Quick Add Client"}</h5>
+                            <h5 className="modal-title" id="exampleModalLabel">{editMode ? "Edit client" : "Add client"}</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={() => handleClose()}></button>
                         </div>
                         <CForm onSubmit={handleSubmit} noValidate validated={validated}>
@@ -181,14 +195,15 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                 <CFormInput
                                                                     type="text"
                                                                     value={clientDetail.entity_name}
-                                                                    onChange={(e) => setClientDetail({ ...clientDetail, entity_name: e.target.value })}
+                                                                    minLength="6"
+                                                                    onChange={(e) => { setClientDetail({ ...clientDetail, entity_name: e.target.value }) }}
                                                                     required
-                                                                    feedbackInvalid={"Entity name is required."}
+                                                                    feedbackInvalid={"Entity name must be at least 6 characters"}
                                                                     className={'form-control is_not_validated'}
                                                                     id="floatingInput3"
-                                                                    placeholder="Entity Name"
+                                                                    placeholder="Entity name"
                                                                 />
-                                                                <label htmlFor="floatingInput3">Entity Name</label>
+                                                                <label htmlFor="floatingInput3">Entity name</label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -204,14 +219,15 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                     <CFormInput
                                                                         type="text"
                                                                         value={clientDetail.first_name}
+                                                                        minLength="3"
                                                                         onChange={(e) => setClientDetail({ ...clientDetail, first_name: e.target.value })}
                                                                         required
-                                                                        feedbackInvalid={"First name is required."}
+                                                                        feedbackInvalid={"First name must be at least 3 characters"}
                                                                         className={'form-control is_not_validated'}
                                                                         id="floatingInput1"
-                                                                        placeholder="First Name"
+                                                                        placeholder="First name"
                                                                     />
-                                                                    <label htmlFor="floatingInput1">First Name</label>
+                                                                    <label htmlFor="floatingInput1">First name</label>
                                                                 </div>
                                                             </div>
                                                             <div className="col-md-6">
@@ -219,14 +235,15 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                     <CFormInput
                                                                         type="text"
                                                                         value={clientDetail.last_name}
+                                                                        minLength="3"
                                                                         onChange={(e) => setClientDetail({ ...clientDetail, last_name: e.target.value })}
                                                                         required
-                                                                        feedbackInvalid={"Last name is required."}
+                                                                        feedbackInvalid={"Last name must be at least 3 characters"}
                                                                         className={'form-control is_not_validated'}
                                                                         id="floatingInput2"
-                                                                        placeholder="Last Name"
+                                                                        placeholder="Last name"
                                                                     />
-                                                                    <label htmlFor="floatingInput2">Last Name</label>
+                                                                    <label htmlFor="floatingInput2">Last name</label>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -258,9 +275,9 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         onChange={(e) => setClientDetail({ ...clientDetail, preferred_name: e.target.value })}
                                                         className="form-control"
                                                         id="floatingInput7"
-                                                        placeholder="Preferred Name"
+                                                        placeholder="Preferred name"
                                                     />
-                                                    <label htmlFor="floatingInput7">Preferred Name</label>
+                                                    <label htmlFor="floatingInput7">Preferred name</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -278,9 +295,9 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         feedbackInvalid='Enter valid phone number'
                                                         className="form-control"
                                                         id="floatingInput8"
-                                                        placeholder="Phone Number"
+                                                        placeholder="Phone number"
                                                     />
-                                                    <label htmlFor="floatingInput8">Phone Number</label>
+                                                    <label htmlFor="floatingInput8">Phone number</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -291,10 +308,10 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         onChange={(e) => setClientDetail({ ...clientDetail, email: e.target.value })}
                                                         className="form-control email-input"
                                                         id="floatingInput9"
-                                                        placeholder="Email Address"
+                                                        placeholder="Email address"
                                                         feedbackInvalid='Enter valid email address'
                                                     />
-                                                    <label htmlFor="floatingInput9">Email Address</label>
+                                                    <label htmlFor="floatingInput9">Email address</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -305,9 +322,9 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         onChange={(e) => setClientDetail({ ...clientDetail, client_code: e.target.value })}
                                                         className="form-control"
                                                         id="floatingInput10"
-                                                        placeholder="Client Code"
+                                                        placeholder="Client code"
                                                     />
-                                                    <label htmlFor="floatingInput10">Client Code</label>
+                                                    <label htmlFor="floatingInput10">Client code</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -318,9 +335,9 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         onChange={(e) => setClientDetail({ ...clientDetail, user_defined: e.target.value })}
                                                         className="form-control"
                                                         id="floatingInput11"
-                                                        placeholder="User Defined"
+                                                        placeholder="User defined"
                                                     />
-                                                    <label htmlFor="floatingInput11">User Defined</label>
+                                                    <label htmlFor="floatingInput11">User defined</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-12">
@@ -343,7 +360,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                             <div className="modal-footer">
                                 <button type="button" className="btn close_btn" data-bs-dismiss="modal">Close</button>
                                 {!editMode &&
-                                    <button type="button" className="btn common_btn" onClick={() => setShowFullDetail(!showFullDetail)}>{showFullDetail ? `Hide Full Detail` : `Full Client Detail`}</button>
+                                    <button type="button" className="btn common_btn" onClick={() => setShowFullDetail(!showFullDetail)}>{showFullDetail ? `Hide full detail` : `Full client detail`}</button>
                                 }
                                 <button type="submit" className="btn common_btn">Save</button>
                             </div>

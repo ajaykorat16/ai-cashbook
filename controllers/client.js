@@ -49,7 +49,7 @@ const createClient = async (req, res) => {
                 if (existingPhone) {
                     return res.status(200).json({
                         error: true,
-                        message: "Phone Number should be unique.",
+                        message: "Phone number should be unique.",
                     });
                 }
             }
@@ -153,7 +153,7 @@ const updateClient = async (req, res) => {
                 if (existingPhone) {
                     return res.status(200).json({
                         error: true,
-                        message: "Phone Number should be unique.",
+                        message: "Phone number should be unique.",
                     });
                 }
             }

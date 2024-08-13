@@ -38,7 +38,7 @@ const createUser = async (req, res) => {
         if (existingPhone) {
             return res.status(200).json({
                 error: true,
-                message: "Phone Number should be unique.",
+                message: "Phone number should be unique.",
             });
         }
 
@@ -285,7 +285,7 @@ const signUpUserByGoogle = async (req, res) => {
 
             return res.status(200).send({
                 error: false,
-                message: "Sign Up successfully !",
+                message: "Sign up successfully !",
                 user: newUser,
                 token,
             });

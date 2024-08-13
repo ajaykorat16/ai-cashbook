@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Paginator } from 'primereact/paginator';
@@ -8,6 +7,7 @@ import { useClient } from '../contexts/ClientContexts';
 import { Link } from 'react-router-dom';
 import ClientListLayout from '../components/ClientListLayout';
 import AddClient from '../components/AddClient';
+import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
 
 const ClientList = () => {
     const { getAllClients, deleteClient } = useClient()
@@ -22,6 +22,8 @@ const ClientList = () => {
     const [filter, setFilter] = useState(null);
     const [editClientId, setEditClientId] = useState("")
     const [editMode, setEditMode] = useState(false)
+    const [clientDelId, setClientDelId] = useState("")
+    let debounceTimeout = null;
 
     const fetchClients = async () => {
         try {
@@ -61,56 +63,39 @@ const ClientList = () => {
         setRowsPerPage(newRowsPerPage);
     };
 
-    const confirmDelete = async () => {
-        return new Promise((resolve) => {
-            confirmDialog({
-                message: 'Are you sure you want to delete this client?',
-                header: 'Delete Confirmation',
-                icon: 'pi pi-info-circle',
-                position: 'top',
-                accept: () => resolve(true),
-                reject: () => resolve(false),
-            });
-        });
-    };
-
-    const handleDelete = async (id) => {
-        try {
-            const confirmed = await confirmDelete();
-
-            if (confirmed) {
-                await deleteClient(id);
-                fetchClients();
-                if (clients?.length === 1) {
-                    setCurrentPage(currentPage - 1)
-                }
-            }
-        } catch (error) {
-            console.error('Error during delete operation', error);
-        }
-    }
-
     const customBodyTemplate = (rowData, columnName) => {
         return rowData[columnName] ? rowData[columnName] : "-";
     };
+
+    const handleSearch = (e) => {
+        const value = e.target.value;
+
+        if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+        }
+
+        debounceTimeout = setTimeout(() => {
+            setFilter(value);
+            setCurrentPage(1); 
+        }, 500); 
+    };
     return (
         <>
-            <ConfirmDialog />
             <ClientListLayout showSelection={false}>
                 <div className="special_flex mb-25">
-                    <h1 className="main_title">Client List</h1>
+                    <h1 className="main_title">Client list</h1>
                     <div className="right_flex">
                         <div className="search_box">
                             <input
-                                type="text"
+                                type="search"
                                 placeholder="Search"
-                                onChange={(e) => setFilter(e.target.value)}
+                                onChange={(e) => handleSearch(e)}
                             />
                         </div>
                         <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client">
-                            <img src="/images/plus_white.svg" alt="" /> Add Client
+                            <img src="/images/plus_white.svg" alt="" /> Add client
                         </button>
-                        <button className="common_btn ms-4">Import</button>
+                        {/* <button className="common_btn ms-4">Import</button> */}
                     </div>
                 </div>
                 <div className="main_table">
@@ -133,16 +118,16 @@ const ClientList = () => {
                             emptyMessage="No clients found."
                             responsiveLayout="scroll"
                         >
-                            <Column field="first_name" header="First Name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} sortable filterField="first_name" />
-                            <Column field="last_name" header="Last Name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} sortable filterField="last_name" />
-                            <Column field="entity_name" header="Entity Name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} sortable filterField="entity_name" />
-                            <Column field="preferred_name" header="Preferred Name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} sortable />
-                            <Column field="abn_number" header="ABN Number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} sortable />
-                            <Column field="email" className='table-email-field' header="Email Address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
-                            <Column field="phone" header="Phone Number" body={(rowData) => customBodyTemplate(rowData, 'phone')} sortable />
+                            <Column field="first_name" header="First name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} sortable filterField="first_name" />
+                            <Column field="last_name" header="Last name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} sortable filterField="last_name" />
+                            <Column field="entity_name" header="Entity name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} sortable filterField="entity_name" />
+                            <Column field="preferred_name" header="Preferred name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} sortable />
+                            <Column field="abn_number" header="ABN number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} sortable />
+                            <Column field="email" className='table-email-field' header="Email address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
+                            <Column field="phone" header="Phone number" body={(rowData) => customBodyTemplate(rowData, 'phone')} sortable />
                             <Column field="address" header="Address" body={(rowData) => customBodyTemplate(rowData, 'address')} sortable />
-                            <Column field="client_code" header="Client Code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} sortable />
-                            <Column field="user_defined" header="User Defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} sortable />
+                            <Column field="client_code" header="Client code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} sortable />
+                            <Column field="user_defined" header="User defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} sortable />
                             <Column header="" className='action_td' align="left" body={(rowData) => (
                                 <div className='d-flex'>
                                     <Link to={`/user/chart-of-accounts/${rowData?._id}`} className="green_btn">
@@ -157,7 +142,10 @@ const ClientList = () => {
                                     }}>
                                         <img src="/images/edit.svg" alt="Edit" />
                                     </button>
-                                    <button className="green_btn" onClick={() => handleDelete(rowData?._id)}>
+                                    <button className="green_btn"
+                                        onClick={() => setClientDelId(rowData?._id)}
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#delete_client">
                                         <img src="/images/delete.svg" alt="Delete" />
                                     </button>
                                 </div>
@@ -172,7 +160,7 @@ const ClientList = () => {
                         <option value="50">50</option>
                         <option value="100">100</option>
                     </select>
-                    <label>entries per page </label>
+                    <label>Entries per page </label>
                 </div>
                 <Paginator
                     first={(currentPage - 1) * rowsPerPage}
@@ -190,6 +178,14 @@ const ClientList = () => {
                 setEditMode={setEditMode}
                 fetchClients={fetchClients}
                 setCurrentPage={setCurrentPage}
+            />
+            <ConfirmDeleteBox
+                fetchClients={fetchClients}
+                clientsLength={clients?.length}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                clientDelId={clientDelId}
+                setClientDelId={setClientDelId}
             />
         </>
     );
