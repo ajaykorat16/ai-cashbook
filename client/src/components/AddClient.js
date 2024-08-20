@@ -16,7 +16,6 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
         first_name: "",
         last_name: "",
         entity_name: "",
-        user_id: "",
         abn_number: "",
         preferred_name: "",
         phone: "",
@@ -41,7 +40,6 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
             first_name: "",
             last_name: "",
             entity_name: "",
-            user_id: "",
             abn_number: "",
             preferred_name: "",
             phone: "",
@@ -97,9 +95,9 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
             try {
                 let data
                 if (editMode) {
-                    data = await updateClient(editClientId, { ...clientDetail, user_id: auth?.user?._id })
+                    data = await updateClient(editClientId, { ...clientDetail })
                 } else {
-                    data = await createClient({ ...clientDetail, user_id: auth?.user?._id });
+                    data = await createClient({ ...clientDetail });
                     if (!data?.error) {
                         setCurrentPage(1)
                     }

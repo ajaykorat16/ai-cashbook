@@ -3,15 +3,18 @@ const router = express.Router();
 const { check } = require('express-validator');
 const { auth } = require("../middleware/auth")
 
-const { createClient, getSingleClient, getClientCategory, getAllClients, updateClient, updateClientCategory, deleteClient } = require("../controllers/client")
+const { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, deleteClient, clientImport } = require("../controllers/client")
 
 router.post("/create",
-    check('user_id', 'User id is required.').notEmpty(),
     auth,
     createClient
 )
 
+router.post("/client-import", auth, clientImport)
+
 router.get("/client-list", auth, getAllClients)
+
+router.get("/clients-without-pagination", auth, exportClient)
 
 router.get("/single-client/:id", auth, getSingleClient)
 

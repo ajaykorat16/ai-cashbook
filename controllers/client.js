@@ -13,7 +13,8 @@ const createClient = async (req, res) => {
     }
 
     try {
-        const { first_name, last_name, entity_name, user_id, abn_number, preferred_name, phone, email, client_code, user_defined, address } = req.body
+        const { first_name, last_name, entity_name, abn_number, preferred_name, phone, email, client_code, user_defined, address } = req.body
+        const user_id = req.user?._id
 
         if (!first_name && !last_name && !entity_name) {
             return res.status(200).json({
@@ -112,8 +113,8 @@ const updateClient = async (req, res) => {
     }
 
     try {
-        const { first_name, last_name, entity_name, user_id, abn_number, preferred_name, phone, email, client_code, user_defined, address } = req.body
-
+        const { first_name, last_name, entity_name, abn_number, preferred_name, phone, email, client_code, user_defined, address } = req.body
+        const user_id = req.user?._id
         const { id } = req.params
 
         const existingClient = await Clients.findById({ _id: id })
@@ -228,6 +229,7 @@ const getAllClients = async (req, res) => {
                     { last_name: { $regex: filter, $options: "i" } },
                     { entity_name: { $regex: filter, $options: "i" } },
                     { email: { $regex: filter, $options: "i" } },
+                    { client_code: { $regex: filter, $options: "i" } },
                 ],
             };
         }
@@ -253,6 +255,36 @@ const getAllClients = async (req, res) => {
         return res.status(500).send('Server error');
     }
 }
+
+const exportClient = async (req, res) => {
+    try {
+        let clients = await Clients.find({ user_id: req.user?._id }).select('-_id -updatedAt -createdAt -__v -user_id');
+
+        clients = clients.map(client => {
+            if (client?.entity_name) {
+                return {
+                    ...client.toObject(),
+                    individual: "true"
+                }
+            } else {
+                return {
+                    ...client.toObject(),
+                    individual: "false"
+                }
+            }
+        });
+
+        return res.status(200).json({
+            error: false,
+            message: "Clients fetched successfully.",
+            clients
+        });
+    } catch (error) {
+        console.error("Error in clientsWithoutPaging:", error);
+        return res.status(500).send('Server error');
+    }
+}
+
 
 
 const getSingleClient = async (req, res) => {
@@ -408,5 +440,278 @@ const deleteClient = async (req, res) => {
     }
 }
 
+const validateAndUpdateClient = async (clientData, id, user_id) => {
+    const {
+        first_name,
+        last_name,
+        entity_name,
+        abn_number,
+        preferred_name,
+        phone,
+        email,
+        client_code,
+        user_defined,
+        address
+    } = clientData;
 
-module.exports = { createClient, getSingleClient, getClientCategory, getAllClients, updateClient, updateClientCategory, deleteClient }
+    try {
+        if (!first_name && !last_name && !entity_name) {
+            return {
+                status: 200,
+                error: true,
+                message: "Please enter a name."
+            };
+        }
+
+        if (email) {
+            if (!isValidEmail(email)) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Please enter a valid email."
+                };
+            }
+            const existingEmail = await Clients.findOne({ email, user_id, _id: { $ne: id } });
+            if (existingEmail) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Client already created with this email."
+                };
+            }
+        }
+
+        if (phone) {
+            if (phone.length < 10 || phone.length > 13) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Please enter a valid phone number."
+                };
+            }
+            const existingPhone = await Clients.findOne({ phone, user_id, _id: { $ne: id } });
+            if (existingPhone) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Phone number should be unique."
+                };
+            }
+        }
+
+        if (client_code) {
+            const existingClientCode = await Clients.findOne({ client_code, user_id, _id: { $ne: id } });
+            if (existingClientCode) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Client code should be unique."
+                };
+            }
+        } else {
+            return {
+                status: 200,
+                error: true,
+                message: "Client code is required."
+            };
+        }
+
+        const updateData = {
+            user_id,
+            abn_number,
+            preferred_name,
+            phone,
+            email,
+            client_code,
+            user_defined,
+            address
+        };
+
+        if (entity_name) {
+            updateData.entity_name = entity_name;
+            updateData.first_name = "";
+            updateData.last_name = "";
+        } else {
+            updateData.first_name = first_name;
+            updateData.last_name = last_name;
+            updateData.entity_name = "";
+        }
+
+        const updatedClient = await Clients.findByIdAndUpdate(id, updateData, { new: true });
+
+        return {
+            status: 201,
+            error: false,
+            message: "Client updated successfully.",
+            updatedClient
+        };
+    } catch (error) {
+        return {
+            status: 500,
+            error: true,
+            message: 'Server error'
+        };
+    }
+}
+
+const validateAndCreateClient = async (clientData, user_id) => {
+    const {
+        first_name,
+        last_name,
+        entity_name,
+        abn_number,
+        preferred_name,
+        phone,
+        email,
+        client_code,
+        user_defined,
+        address
+    } = clientData;
+
+    try {
+        if (!first_name && !last_name && !entity_name) {
+            return {
+                status: 200,
+                error: true,
+                message: "Please enter a name."
+            };
+        }
+
+        if (email) {
+            if (!isValidEmail(email)) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Please enter a valid email."
+                };
+            }
+            const existingEmail = await Clients.findOne({ email, user_id });
+            if (existingEmail) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Client already created with this email."
+                };
+            }
+        }
+
+        if (phone) {
+            if (phone.length < 10 || phone.length > 13) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Please enter a valid phone number."
+                };
+            }
+            const existingPhone = await Clients.findOne({ phone, user_id });
+            if (existingPhone) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Phone number should be unique."
+                };
+            }
+        }
+
+        if (client_code) {
+            const existingClientCode = await Clients.findOne({ client_code, user_id });
+            if (existingClientCode) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Client code should be unique."
+                };
+            }
+        } else {
+            return {
+                status: 200,
+                error: true,
+                message: "Client code is required."
+            };
+        }
+
+
+        const newClientData = {
+            user_id,
+            abn_number,
+            preferred_name,
+            phone,
+            email,
+            client_code,
+            user_defined,
+            address
+        };
+
+        if (entity_name) {
+            newClientData.entity_name = entity_name;
+        } else {
+            newClientData.first_name = first_name;
+            newClientData.last_name = last_name;
+        }
+
+        const newClient = await new Clients(newClientData).save();
+
+        const user = await Users.findById(user_id);
+        if (user) {
+            await createCollection(user, newClient._id);
+        }
+
+        return {
+            error: false,
+            message: "Client created successfully.",
+            client: newClient
+        }
+    } catch (error) {
+        console.error(error.message);
+        console.error('Server error');
+    }
+};
+
+
+const clientImport = async (req, res) => {
+    try {
+        let successImports = 0
+        let failedImports = 0
+        let { clients } = req.body
+        const user_id = req.user._id
+        clients = JSON.parse(clients)
+        console.log("clients--",clients)
+
+        for (const client of clients) {
+            const { client_code } = client
+            console.log("client_code===",client_code)
+
+            const [existingClient] = await Clients.find({ client_code })
+            console.log("existingClient===",existingClient)
+
+            if (existingClient) {
+                const updatedClient = await validateAndUpdateClient(client, existingClient?._id, user_id)
+                if (updatedClient.error) {
+                    failedImports += 1
+                } else {
+                    successImports += 1
+                }
+            } else {
+                const newClient = await validateAndCreateClient(client, user_id)
+                if (newClient.error) {
+                    failedImports += 1
+                } else {
+                    successImports += 1
+                }
+
+            }
+        };
+
+        return res.status(200).json({
+            error: false,
+            message: `${successImports} clients imported successfully${failedImports > 0 ? `, ${failedImports} skipped with error.` : "."} `,
+        })
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+
+module.exports = { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, deleteClient, clientImport }

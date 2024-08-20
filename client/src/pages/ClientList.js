@@ -4,7 +4,7 @@ import { Column } from 'primereact/column';
 import { Paginator } from 'primereact/paginator';
 import Loader from '../components/Loader';
 import { useClient } from '../contexts/ClientContexts';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ClientListLayout from '../components/ClientListLayout';
 import AddClient from '../components/AddClient';
 import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
@@ -12,7 +12,8 @@ import CustomSelect from '../components/CustomSelect';
 
 const ClientList = () => {
     const options = [10, 20, 50, 100];
-    const { getAllClients } = useClient()
+    const navigate = useNavigate()
+    const { getAllClients, clientsWithoutPagination } = useClient()
 
     const [clients, setClients] = useState([]);
     const [sortField, setSortField] = useState('createdAt');
@@ -43,6 +44,38 @@ const ClientList = () => {
             setIsLoading(false);
         } catch (error) {
             console.error('Error fetching clients', error);
+        }
+    };
+
+    const handleExports = async () => {
+        const clientList = await clientsWithoutPagination();
+
+        if (clientList?.clients?.length > 0) {
+            const csvContent = convertToCSV(clientList.clients);
+            downloadCSV(csvContent, "clients.csv");
+        }
+    };
+
+    const convertToCSV = (data) => {
+        const headers = Object.keys(data[0]);
+        const csvRows = [
+            headers.join(','),
+            ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+        ];
+        return csvRows.join('\n');
+    };
+
+    const downloadCSV = (csvContent, filename) => {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     };
 
@@ -103,7 +136,8 @@ const ClientList = () => {
                         <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => setVisible(true)}>
                             <img src="/images/plus_white.svg" alt="" /> Add client
                         </button>
-                        {/* <button className="common_btn ms-4">Import</button> */}
+                        <button className="common_btn ms-4" onClick={() => navigate('/user/upload-clients')}>Import</button>
+                        <button className="common_btn ms-4" onClick={() => handleExports()}>Export</button>
                     </div>
                 </div>
                 <div className="main_table">

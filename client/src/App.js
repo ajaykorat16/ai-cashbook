@@ -14,6 +14,7 @@ import ThanksPage from './pages/ThanksPage';
 import ResetPassword from './pages/ResetPassword';
 import ForgotPassword from './pages/ForgotPassword';
 import ClientsAccounts from './pages/ClientsAccounts';
+import UploadCsv from './components/UploadCsv';
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
           <Route path="chart-of-accounts" element={<ClientsAccounts />} />
           <Route path="chart-of-accounts/:id" element={<ChartOfAccounts />} />
           <Route path="clients" element={<ClientList />} />
+          <Route path="upload-clients" element={<UploadCsv />} />
         </Route>
       </Routes>
     </Router>

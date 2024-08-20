@@ -4,7 +4,7 @@ import { Toast } from 'primereact/toast'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
 
-const ClientListLayout = ({ children, showSelection }) => {
+const ClientListLayout = ({ children, showSelection = false }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { toast, logout, auth } = useAuth()
@@ -79,7 +79,7 @@ const ClientListLayout = ({ children, showSelection }) => {
                                 <div className="side_data">
                                     <ul>
                                         <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>Home</Link></li>
-                                        <li><Link>Upload CSV</Link></li>
+                                        <li><Link to={'/user/upload-clients'} className={location.pathname.match("/user/upload-clients") && `selected`}>Upload CSV</Link></li>
                                         <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>Chat of accounts</Link></li>
                                         <li><Link>Auto categorize</Link></li>
                                         <li><Link>Check inter-bank transfer</Link></li>

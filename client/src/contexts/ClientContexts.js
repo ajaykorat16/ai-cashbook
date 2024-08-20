@@ -62,6 +62,27 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const clientsWithoutPagination = async () => {
+        try {
+            const { data } = await axios.get(`${baseURL}/client/clients-without-pagination`, { headers })
+            if (data.error === false) {
+                return data
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Client', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
+    const getAllClientsWithoutToast = async (currentPage, rowsPerPage, sortField, sortOrder, filter) => {
+        try {
+            const { data } = await axios.get(`${baseURL}/client/client-list?&sortField=${sortField}&sortOrder=${sortOrder}&page=${currentPage}&limit=${rowsPerPage}&filter=${filter !== '' ? filter : null}`, { headers })
+            if (data.error === false) {
+                return data
+            }
+        } catch (error) {
+        }
+    }
+
     const updateClient = async (id, clientDetail) => {
         try {
             const { data } = await axios.put(`${baseURL}/client/update/${id}`, clientDetail, { headers });
@@ -135,9 +156,28 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const importClient = async (clients) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/client/client-import`, {clients}, { headers });
+            if (data.error === false) {
+                setTimeout(function () {
+                    toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
+                }, 500);
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Client', detail: data.message, life: 3000 })
+            }
+            return data
+        } catch (error) {
+
+        }
+    }
+
 
     return (
-        <ClientContext.Provider value={{ createClient, getSingleClient, getAllClients, updateClient, deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject }}>
+        <ClientContext.Provider value={{
+            createClient, getSingleClient, getAllClients, clientsWithoutPagination,updateClient,
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject,importClient
+        }}>
             {children}
         </ClientContext.Provider>
     )
