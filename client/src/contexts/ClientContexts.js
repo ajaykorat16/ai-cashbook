@@ -73,16 +73,6 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-    const getAllClientsWithoutToast = async (currentPage, rowsPerPage, sortField, sortOrder, filter) => {
-        try {
-            const { data } = await axios.get(`${baseURL}/client/client-list?&sortField=${sortField}&sortOrder=${sortOrder}&page=${currentPage}&limit=${rowsPerPage}&filter=${filter !== '' ? filter : null}`, { headers })
-            if (data.error === false) {
-                return data
-            }
-        } catch (error) {
-        }
-    }
-
     const updateClient = async (id, clientDetail) => {
         try {
             const { data } = await axios.put(`${baseURL}/client/update/${id}`, clientDetail, { headers });
