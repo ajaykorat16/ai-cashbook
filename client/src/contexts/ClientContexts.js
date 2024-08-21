@@ -42,7 +42,7 @@ const ClientProvider = ({ children }) => {
 
     const getSingleClient = async (id) => {
         try {
-            let { data } = await axios.get(`${baseURL}/client/single-client/${id}`, { headers })
+            let { data } = await axios.get(`${baseURL}/client/${id}`, { headers })
             if (data.error === false) {
                 return data.client
             }
@@ -53,7 +53,7 @@ const ClientProvider = ({ children }) => {
 
     const getAllClients = async (currentPage, rowsPerPage, sortField, sortOrder, filter) => {
         try {
-            const { data } = await axios.get(`${baseURL}/client/client-list?&sortField=${sortField}&sortOrder=${sortOrder}&page=${currentPage}&limit=${rowsPerPage}&filter=${filter !== '' ? filter : null}`, { headers })
+            const { data } = await axios.get(`${baseURL}/client?&sortField=${sortField}&sortOrder=${sortOrder}&page=${currentPage}&limit=${rowsPerPage}&filter=${filter !== '' ? filter : null}`, { headers })
             if (data.error === false) {
                 return data
             }
@@ -100,7 +100,7 @@ const ClientProvider = ({ children }) => {
 
     const deleteClient = async (id) => {
         try {
-            const { data } = await axios.delete(`${baseURL}/client/delete-client/${id}`, { headers });
+            const { data } = await axios.delete(`${baseURL}/client/delete/${id}`, { headers });
             if (data.error === false) {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
@@ -117,7 +117,7 @@ const ClientProvider = ({ children }) => {
 
     const getClientCategory = async (id) => {
         try {
-            let { data } = await axios.get(`${baseURL}/client/client-category/${id}`, { headers })
+            let { data } = await axios.get(`${baseURL}/client/category/${id}`, { headers })
             if (data.error === false) {
                 return data?.clientCategory
             }
@@ -128,7 +128,7 @@ const ClientProvider = ({ children }) => {
 
     const updateClientCatrgory = async (id, csvData) => {
         try {
-            const { data } = await axios.put(`${baseURL}/client/update-client-category/${id}`, { data: csvData }, { headers });
+            const { data } = await axios.put(`${baseURL}/client/update-category/${id}`, { data: csvData }, { headers });
             if (data.error === false) {
                 return data;
             } else {
@@ -148,7 +148,7 @@ const ClientProvider = ({ children }) => {
 
     const importClient = async (clients) => {
         try {
-            const { data } = await axios.post(`${baseURL}/client/client-import`, {clients}, { headers });
+            const { data } = await axios.post(`${baseURL}/client/import`, {clients}, { headers });
             if (data.error === false) {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })

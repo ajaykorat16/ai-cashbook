@@ -312,8 +312,8 @@ const getSingleClient = async (req, res) => {
 
 const getClient = async (id) => {
     try {
-        const client = await Clients.findById({ _id: id })
-        return client
+        return await Clients.findById({ _id: id })
+
     } catch (error) {
         console.log(error.message)
     }

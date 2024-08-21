@@ -184,7 +184,7 @@ const ClientList = () => {
                                     <Link className="green_btn">
                                         <img src="/images/chart.svg" alt="Chart" />
                                     </Link>
-                                    <Link to={`/user/chart-of-accounts/${rowData?._id}`} className="green_btn">
+                                    <Link className="green_btn">
                                         <img src="/images/file.svg" alt="File" />
                                     </Link>
                                     <button className="green_btn" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => {
