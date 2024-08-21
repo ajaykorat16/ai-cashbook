@@ -416,24 +416,8 @@ const deleteClient = async (req, res) => {
     try {
         const { id } = req.params
 
-        const existingClient = await Clients.findById({ _id: id })
-        if (!existingClient) {
-            return res.status(400).json({
-                error: true,
-                message: "CLient is not existing."
-            })
-        }
-
-        const user = await Users.findById(existingClient?.user_id);
-        if (user) {
-            await deleteClientCategory(user, id)
-        }
-
-        await Clients.findByIdAndDelete({ _id: id })
-        return res.status(200).json({
-            error: false,
-            message: "Client deleted successfully.",
-        })
+        const data = await singleClientDelete(id)
+        return res.json(data)
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server error');
@@ -675,14 +659,11 @@ const clientImport = async (req, res) => {
         let { clients } = req.body
         const user_id = req.user._id
         clients = JSON.parse(clients)
-        console.log("clients--",clients)
 
         for (const client of clients) {
             const { client_code } = client
-            console.log("client_code===",client_code)
 
             const [existingClient] = await Clients.find({ client_code })
-            console.log("existingClient===",existingClient)
 
             if (existingClient) {
                 const updatedClient = await validateAndUpdateClient(client, existingClient?._id, user_id)
@@ -713,5 +694,51 @@ const clientImport = async (req, res) => {
     }
 }
 
+const singleClientDelete = async (id) => {
+    try {
+        const existingClient = await Clients.findById({ _id: id })
+        if (!existingClient) {
+            return {
+                error: true,
+                message: "CLient is not existing."
+            }
+        }
 
-module.exports = { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, deleteClient, clientImport }
+        const user = await Users.findById(existingClient?.user_id);
+        if (user) {
+            await deleteClientCategory(user, id)
+        }
+
+        await Clients.findByIdAndDelete({ _id: id })
+        return {
+            error: false,
+            message: "Client deleted successfully.",
+        }
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+const bulkClientDelete = async (req, res) => {
+    try {
+        let { selectedClientIds } = req.body
+        selectedClientIds = JSON.parse(selectedClientIds)
+
+        for (const clientId of selectedClientIds) {
+            await singleClientDelete(clientId)
+        }
+
+        return res.status(200).json({
+            error: false,
+            message: 'Clients deleted successfully.',
+        })
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+
+module.exports = { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete }

@@ -2,11 +2,11 @@ import React, { useEffect } from 'react'
 import { useClient } from '../contexts/ClientContexts'
 import { Modal } from 'bootstrap';
 
-const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrentPage, clientDelId, setClientDelId }) => {
-    const { deleteClient } = useClient()
+const ConfirmMultiDelete = ({ fetchClients, clientsLength, currentPage, setCurrentPage, selectedClients, setSelectedClients }) => {
+    const { multipleDeleteClient } = useClient()
 
     const handleClose = () => {
-        const modalElement = document.getElementById('delete_client');
+        const modalElement = document.getElementById('delete_multi_client');
         const modalInstance = Modal.getInstance(modalElement);
         modalInstance.hide();
         const customModal = document.querySelector('.custom_modal');
@@ -15,7 +15,6 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
             backdrop.remove();
             customModal.classList.remove('show');
         }
-        setClientDelId("")
     }
 
     useEffect(() => {
@@ -28,7 +27,7 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
             document.body.style.overflow = 'hidden';
         };
 
-        const modalElement = document.getElementById('delete_client');
+        const modalElement = document.getElementById('delete_multi_client');
         modalElement.addEventListener('shown.bs.modal', handleModalShown);
         modalElement.addEventListener('hidden.bs.modal', handleModalHidden);
 
@@ -40,10 +39,12 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
 
     const handleDelete = async () => {
         try {
-            if (clientDelId) {
-                await deleteClient(clientDelId);
-                handleClose()
+            const selectedClientIds = selectedClients.map((s) => s._id)
+            const data = await multipleDeleteClient(JSON.stringify(selectedClientIds))
+            if (!data.error) {
+                setSelectedClients([])
                 fetchClients();
+                handleClose()
                 if (clientsLength === 1) {
                     setCurrentPage(currentPage - 1)
                 }
@@ -55,7 +56,7 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
 
     return (
         <>
-            <div className="modal fade custom_modal delete_modal" id="delete_client" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div className="modal fade custom_modal delete_modal" id="delete_multi_client" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                 <div className="modal-dialog modal-dialog-centered modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
@@ -64,7 +65,7 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
                         </div>
                         <div className="modal-body delete-modal-body">
                             <span className="p-confirm-dialog-icon pi pi-info-circle info-delete-circle" data-pc-section="icon"></span>
-                            Are you sure you want to delete this client?
+                            Are you sure you want to delete selected clients?
                         </div>
                         <div className="modal-footer delte-modal-footer">
                             <button type="button" className="btn close_btn" data-bs-dismiss="modal">No</button>
@@ -77,4 +78,4 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
     )
 }
 
-export default ConfirmDeleteBox
+export default ConfirmMultiDelete

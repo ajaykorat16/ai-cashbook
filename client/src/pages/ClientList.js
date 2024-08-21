@@ -9,6 +9,7 @@ import ClientListLayout from '../components/ClientListLayout';
 import AddClient from '../components/AddClient';
 import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
 import CustomSelect from '../components/CustomSelect';
+import ConfirmMultiDelete from '../components/ConfirmMultiDelete';
 
 const ClientList = () => {
     const options = [10, 20, 50, 100];
@@ -27,6 +28,7 @@ const ClientList = () => {
     const [editMode, setEditMode] = useState(false)
     const [visible, setVisible] = useState(false)
     const [clientDelId, setClientDelId] = useState("")
+    const [selectedClients, setSelectedClients] = useState([]);
     let debounceTimeout = null;
 
     const fetchClients = async () => {
@@ -120,6 +122,10 @@ const ClientList = () => {
         setRowsPerPage(option);
     };
 
+    const handleRowSelect = (e) => {
+        const selectedRow = e.value;
+        setSelectedClients(selectedRow);
+    };
     return (
         <>
             <ClientListLayout showSelection={false}>
@@ -159,7 +165,10 @@ const ClientList = () => {
                             dataKey="_id"
                             emptyMessage="No clients found."
                             responsiveLayout="scroll"
+                            selection={selectedClients}
+                            onSelectionChange={handleRowSelect}
                         >
+                            <Column selectionMode="multiple" checked={selectedClients.length === clients.length} />
                             <Column field="first_name" header="First name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} sortable filterField="first_name" />
                             <Column field="last_name" header="Last name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} sortable filterField="last_name" />
                             <Column field="entity_name" header="Entity name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} sortable filterField="entity_name" />
@@ -175,7 +184,7 @@ const ClientList = () => {
                                     <Link className="green_btn">
                                         <img src="/images/chart.svg" alt="Chart" />
                                     </Link>
-                                    <Link className="green_btn">
+                                    <Link to={`/user/chart-of-accounts/${rowData?._id}`} className="green_btn">
                                         <img src="/images/file.svg" alt="File" />
                                     </Link>
                                     <button className="green_btn" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => {
@@ -201,6 +210,9 @@ const ClientList = () => {
                         onChange={handleSelectChange}
                         defaultValue={10}
                     />
+                    {selectedClients.length > 0 && (
+                        <button className="common_btn ms-4 bg-danger" data-bs-toggle="modal" data-bs-target="#delete_multi_client">Delete All </button>
+                    )}
                     {/* <label>Entries per page </label> */}
                 </div>
                 <Paginator
@@ -229,6 +241,14 @@ const ClientList = () => {
                 setCurrentPage={setCurrentPage}
                 clientDelId={clientDelId}
                 setClientDelId={setClientDelId}
+            />
+            <ConfirmMultiDelete
+                fetchClients={fetchClients}
+                clientsLength={clients?.length}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                selectedClients={selectedClients}
+                setSelectedClients={setSelectedClients}
             />
         </>
     );

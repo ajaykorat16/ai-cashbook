@@ -3,7 +3,7 @@ const router = express.Router();
 const { check } = require('express-validator');
 const { auth } = require("../middleware/auth")
 
-const { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, deleteClient, clientImport } = require("../controllers/client")
+const { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete } = require("../controllers/client")
 
 router.post("/create",
     auth,
@@ -25,5 +25,7 @@ router.put("/update/:id", auth, updateClient)
 router.put("/update-client-category/:id", auth, updateClientCategory)
 
 router.delete("/delete-client/:id", auth, deleteClient)
+
+router.post("/bulk-delete", auth, bulkClientDelete)
 
 module.exports = router

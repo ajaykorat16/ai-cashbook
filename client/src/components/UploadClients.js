@@ -99,17 +99,14 @@ const UploadCsv = () => {
             reader.readAsText(file);
             await new Promise((resolve) => reader.onloadend = resolve);
         }
-
     };
-
-
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
             'text/csv': [],
         },
-        multiple: true
+        multiple: false
     });
     return (
         <>

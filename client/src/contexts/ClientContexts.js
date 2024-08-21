@@ -162,11 +162,27 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const multipleDeleteClient = async (selectedClientIds) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/client/bulk-delete`, {selectedClientIds}, { headers });
+            if (data.error === false) {
+                setTimeout(function () {
+                    toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
+                }, 500);
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Client', detail: data.message, life: 3000 })
+            }
+            return data
+        } catch (error) {
+
+        }
+    }
+
 
     return (
         <ClientContext.Provider value={{
             createClient, getSingleClient, getAllClients, clientsWithoutPagination,updateClient,
-            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject,importClient
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject,importClient,multipleDeleteClient
         }}>
             {children}
         </ClientContext.Provider>
