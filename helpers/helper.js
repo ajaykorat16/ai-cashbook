@@ -39,7 +39,7 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-const createCollection = async (user,id) => {
+const createCollection = async (user, id) => {
     fs.readFile('./data_dump/category.json', 'utf8', async (err, jsonData) => {
         if (err) {
             console.error('Error reading file:', err);
@@ -70,10 +70,36 @@ const createCollection = async (user,id) => {
     });
 }
 
+const createBlankSpreadsheet = async (email, id) => {
+    try {
+        await mongoClient.connect();
+
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const collections = await database.listCollections().toArray();
+
+        const collectionExists = collections.some(col => col.name === `${email.split("@")[0]}_client_spreadsheet`);
+
+        if (!collectionExists) {
+            await database.createCollection(`${email.split("@")[0]}_client_spreadsheet`);
+        }
+
+        const userSpreadsheet = database.collection(`${email.split("@")[0]}_client_spreadsheet`);
+
+        const spreadsheet = {
+            client_id: id,
+            data: []
+        }
+        await userSpreadsheet.insertOne(spreadsheet);
+    } catch (parseErr) {
+        console.error('Error parsing JSON:', parseErr);
+    }
+}
+
 module.exports = {
     hashPassword,
     comparePassword,
     compile,
     isValidEmail,
-    createCollection
+    createCollection,
+    createBlankSpreadsheet
 }

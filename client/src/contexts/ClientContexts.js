@@ -126,6 +126,17 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const getSpreadsheet = async (id) => {
+        try {
+            let { data } = await axios.get(`${baseURL}/client/spreasheet/${id}`, { headers })
+            if (data.error === false) {
+                return data?.spreadsheet
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
     const updateClientCatrgory = async (id, csvData) => {
         try {
             const { data } = await axios.put(`${baseURL}/client/update-category/${id}`, { data: csvData }, { headers });
@@ -146,9 +157,50 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const createSpreadsheet = async (id, csvData) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/client/create-spreasheet/${id}`, { data: csvData }, { headers });
+            if (data.error === false) {
+                return data;
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: errors[0].msg, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
+    const updateSpreadsheet = async (id, csvData) => {
+        try {
+            const { data } = await axios.put(`${baseURL}/client/update-spreasheet/${id}`, { data: csvData }, { headers });
+            if (data.error === false) {
+                return data;
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: errors[0].msg, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
+
     const importClient = async (clients) => {
         try {
-            const { data } = await axios.post(`${baseURL}/client/import`, {clients}, { headers });
+            const { data } = await axios.post(`${baseURL}/client/import`, { clients }, { headers });
             if (data.error === false) {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
@@ -164,7 +216,7 @@ const ClientProvider = ({ children }) => {
 
     const multipleDeleteClient = async (selectedClientIds) => {
         try {
-            const { data } = await axios.post(`${baseURL}/client/bulk-delete`, {selectedClientIds}, { headers });
+            const { data } = await axios.post(`${baseURL}/client/bulk-delete`, { selectedClientIds }, { headers });
             if (data.error === false) {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
@@ -181,8 +233,8 @@ const ClientProvider = ({ children }) => {
 
     return (
         <ClientContext.Provider value={{
-            createClient, getSingleClient, getAllClients, clientsWithoutPagination,updateClient,
-            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject,importClient,multipleDeleteClient
+            createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, getSpreadsheet, updateSpreadsheet, createSpreadsheet,
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, importClient, multipleDeleteClient
         }}>
             {children}
         </ClientContext.Provider>

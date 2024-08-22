@@ -9,11 +9,15 @@ import '@syncfusion/ej2-dropdowns/styles/material.css';
 import '@syncfusion/ej2-grids/styles/material.css';
 import '@syncfusion/ej2-react-spreadsheet/styles/material.css';
 import React, { useEffect, useState, useRef } from 'react';
-import ClientListLayout from '../components/ClientListLayout'
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
+import { useClient } from '../contexts/ClientContexts';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title }) => {
+const Spreadsheet = () => {
+    const navigate = useNavigate()
+    const params = useParams();
+    const { getSpreadsheet, updateSpreadsheet } = useClient()
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
@@ -73,12 +77,12 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
     const handleCellSave = async () => {
         const formattedData = await getSheetData()
-        await updateCsvData(clientId, formattedData);
+        await updateSpreadsheet(params?.id, formattedData);
     }
 
     const fetchCsvLoaded = async () => {
         setIsLoading(true)
-        const csvDetail = await getCsvData(clientId);
+        const csvDetail = await getSpreadsheet(params?.id);
         const csv = csvDetail?.data || []
         const convertedData = convertToCellFormat(csv);
 
@@ -94,10 +98,10 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     }
 
     useEffect(() => {
-        if (clientId) {
+        if (params?.id) {
             fetchCsvLoaded()
         }
-    }, [clientId])
+    }, [params?.id])
 
     useEffect(() => {
         if (dataLoaded) {
@@ -106,42 +110,63 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     }, [dataLoaded])
 
     return (
-        <div>
-            <ClientListLayout showSelection={showSelection}>
-                <div className="special_flex mb-25">
-                    <h1 className="main_title">{title}</h1>
-                    <div className="right_flex">
-                        <button className="common_btn ms-4">Import</button>
-                    </div>
-                </div>
-                {clientId && (
-                    <>
-                        {isLoading && (
-                            <Loader />
-                        )}
 
-                        <div className={`account_sheet ${isLoading ? "hidden" : ""}`}>
-                            <SpreadsheetComponent
-                                ref={spreadsheetRef}
-                                cellSave={handleCellSave}
-                                showSheetTabs={false}
-                            >
-                                <SheetsDirective>
-                                    <SheetDirective >
-                                        <RangesDirective>
-                                            <RangeDirective ></RangeDirective>
-                                        </RangesDirective>
-                                    </SheetDirective>
-                                </SheetsDirective>
-                            </SpreadsheetComponent>
+        <section className="data_sheet">
+            <div className="">
+                <div className="sheet_flex">
+                    <div className="left_part_bg">
+                        <div className="input_form_box">
+                            <div className="row">
+                                <div className="col-md-12">
+                                    <div className="form-floating">
+                                        <input type="email" className="form-control date_icn" id="floatingInput" placeholder="From" />
+                                        <label for="floatingInput">From</label>
+                                    </div>
+                                </div>
+                                <div className="col-md-12">
+                                    <div className="form-floating">
+                                        <input type="email" className="form-control date_icn" id="floatingInput" placeholder="To" />
+                                        <label for="floatingInput">To</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </>
-                )}
-            </ClientListLayout>
-        </div>
+                        <button className="common_btn w-100 mb-20">summary </button>
+                        <button className="common_btn w-100 mb-20">Custom 1 </button>
+                        <button className="common_btn w-100 mb-20">Custom 2 </button>
+                        <button className="common_btn w-100 mb-20">Apply </button>
+                        <button className="common_btn w-100 mb-20" onClick={() => navigate("/user/clients")}>Back </button>
+                    </div>
+                    {params?.id && (
+                        <>
+                            {isLoading && (
+                                <div className='d-flex justify-content-center align-item-center w-100'>
+                                    <Loader />
+                                </div>
+                            )}
+                            <div className={`sheet_data ${isLoading && 'd-none'}`}>
+                                <SpreadsheetComponent
+                                    ref={spreadsheetRef}
+                                    cellSave={handleCellSave}
+                                    showSheetTabs={false}
+                                >
+                                    <SheetsDirective>
+                                        <SheetDirective >
+                                            <RangesDirective>
+                                                <RangeDirective ></RangeDirective>
+                                            </RangesDirective>
+                                        </SheetDirective>
+                                    </SheetsDirective>
+                                </SpreadsheetComponent>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+        </section>
 
     )
 }
 
 
-export default Accounts
+export default Spreadsheet

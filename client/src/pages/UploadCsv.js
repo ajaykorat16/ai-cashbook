@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useClient } from '../contexts/ClientContexts';
 
 const UploadCsv = () => {
-    const { clientObject, setClientObject } = useClient()
+    const { clientObject, setClientObject, createSpreadsheet } = useClient()
     const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +28,7 @@ const UploadCsv = () => {
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
-            complete: (result) => {
+            complete: async (result) => {
                 setIsLoading(false);
                 const data = result.data;
                 if (data.length > 0) {
@@ -36,9 +36,15 @@ const UploadCsv = () => {
                     const formattedData = data.map(row =>
                         headers.map(header => row[header] || '')
                     );
-                    console.log("Parsed Data: ", { data: [headers, ...formattedData] });
-                    // setCsvDetail({ data: [headers, ...formattedData] });
-                    console.log("clientObject--",clientObject)
+
+                    const spreadsheet = await createSpreadsheet(clientObject?.value, [headers, ...formattedData])
+                    if (!spreadsheet?.error) {
+                        setClientObject("")
+                        setFile(null)
+                        setFileName("")
+                        navigate(`/user/spreadsheet/${clientObject?.value}`)
+                    }
+
                 }
             },
             error: (error) => {
@@ -104,7 +110,7 @@ const UploadCsv = () => {
                             <p>{fileName}</p>
                         )}
                         <div className="flex_btn">
-                            <button className={`common_btn ${!file && 'opacity-50'}`} onClick={handleUpload} disabled={!file}>
+                            <button className={`common_btn ${(!file || !clientObject?.value) && 'opacity-50'}`} onClick={handleUpload} disabled={!file || !clientObject?.value}>
                                 Upload
                             </button>
                         </div>

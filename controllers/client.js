@@ -1,6 +1,6 @@
 const Clients = require("../models/clientModel")
 const Users = require("../models/userModel");
-const { isValidEmail, createCollection } = require("../helpers/helper");
+const { isValidEmail, createCollection, createBlankSpreadsheet } = require("../helpers/helper");
 const fs = require("fs")
 const { validationResult } = require('express-validator');
 const { MongoClient, ObjectId } = require('mongodb');
@@ -93,6 +93,7 @@ const createClient = async (req, res) => {
         const user = await Users.findById(user_id);
         if (user) {
             await createCollection(user, newClient?._id)
+            await createBlankSpreadsheet(user?.email, newClient?._id)
         }
 
         res.status(201).send({
@@ -411,6 +412,17 @@ const deleteClientCategory = async (user, id) => {
     }
 }
 
+const deleteSpreadsheet = async (user, id) => {
+    try {
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userCategory = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+        await userCategory.deleteOne({ client_id: new ObjectId(id) });
+    } catch (parseErr) {
+        console.error('Error parsing JSON:', parseErr);
+    }
+}
+
 
 const deleteClient = async (req, res) => {
     try {
@@ -707,6 +719,7 @@ const singleClientDelete = async (id) => {
         const user = await Users.findById(existingClient?.user_id);
         if (user) {
             await deleteClientCategory(user, id)
+            await deleteSpreadsheet(user, id)
         }
 
         await Clients.findByIdAndDelete({ _id: id })
@@ -740,5 +753,157 @@ const bulkClientDelete = async (req, res) => {
     }
 }
 
+const getSpreadsheet = async (req, res) => {
+    try {
+        const { id } = req.params
+        const client = await getClient(id)
 
-module.exports = { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete }
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client is not existing."
+            })
+        }
+
+        const user = await Users.findById(client?.user_id);
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+        const spreadsheet = await userSpreadsheet.findOne({ client_id: new ObjectId(id) });
+
+        if (!spreadsheet) {
+            return res.status(404).json({
+                error: true,
+                message: "Spreadsheet not found."
+            });
+        }
+
+        return res.status(200).json({
+            error: false,
+            message: "Spreadsheet is fetched successfully.",
+            spreadsheet
+        })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+
+const createClientSpreadsheet = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { data } = req.body
+        const client = await getClient(id)
+
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client is not existing."
+            })
+        }
+
+        if (!Array.isArray(data)) {
+            return res.status(200).json({
+                error: true,
+                message: "Data must be array and not empty.",
+            })
+        }
+
+        const user = await Users.findById(client?.user_id);
+        await mongoClient.connect();
+
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const collections = await database.listCollections().toArray();
+
+        const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
+
+        if (!collectionExists) {
+            await database.createCollection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+        }
+
+        const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+
+        const spreadsheet = await clientSpreadsheet.findOne({ client_id: new ObjectId(id) });
+
+        if (spreadsheet) {
+            if(spreadsheet?.data.length > 0) {
+                data.shift()
+            }
+            const newData = spreadsheet?.data.concat(data)
+            await clientSpreadsheet.findOneAndUpdate(
+                { client_id: new ObjectId(id) },
+                { $set: { data: newData } },
+                { returnOriginal: false }
+            );
+        } else {
+            const spreadsheetData = {
+                client_id: new ObjectId(id),
+                data
+            }
+            await clientSpreadsheet.insertOne(spreadsheetData);
+        }
+
+        return res.status(200).json({
+            error: false,
+            message: "Client category created successfully.",
+        })
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    } finally {
+        await mongoClient.close();
+    }
+}
+
+const updateClientSpreadsheet = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { data } = req.body
+        const client = await getClient(id)
+
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client is not existing."
+            })
+        }
+
+        if (!Array.isArray(data)) {
+            return res.status(200).json({
+                error: true,
+                message: "Data must be array and not empty.",
+            })
+        }
+
+        const user = await Users.findById(client?.user_id);
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+
+        const spreadsheet = await clientSpreadsheet.findOneAndUpdate(
+            { client_id: new ObjectId(id) },
+            { $set: { data } },
+            { returnOriginal: false }
+        );
+
+        return res.status(200).json({
+            error: false,
+            message: "Client category is updated successfully.",
+            spreadsheet
+        })
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    } finally {
+        await mongoClient.close();
+    }
+}
+
+
+module.exports = {
+    createClient, getSingleClient, getClientCategory, getAllClients, exportClient, createClientSpreadsheet, getSpreadsheet,
+    updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete, updateClientSpreadsheet
+}

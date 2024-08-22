@@ -181,10 +181,10 @@ const ClientList = () => {
                             <Column field="user_defined" header="User defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} sortable />
                             <Column header="" className='action_td' align="left" body={(rowData) => (
                                 <div className='d-flex'>
-                                    <Link className="green_btn">
+                                    <Link to={`/user/spreadsheet/${rowData._id}`} className="green_btn">
                                         <img src="/images/chart.svg" alt="Chart" />
                                     </Link>
-                                    <Link className="green_btn">
+                                    <Link to={`/user/chart-of-accounts/${rowData._id}`} className="green_btn">
                                         <img src="/images/file.svg" alt="File" />
                                     </Link>
                                     <button className="green_btn" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => {
