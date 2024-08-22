@@ -945,6 +945,7 @@ div[style*="z-index: 99999"] {
   border: none;
   border-radius: 5px;
 }
+
 .custom-select img.login_click {
   position: absolute;
   right: 10px;
@@ -992,6 +993,10 @@ div[style*="z-index: 99999"] {
 
 .p-paginator {
   flex-wrap: nowrap;
+}
+
+.sheet_flex .sheet_data {
+  overflow-x: scroll;
 }
 
 @media screen and (max-width: 1550px) {
