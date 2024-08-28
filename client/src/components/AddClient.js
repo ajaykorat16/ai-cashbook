@@ -172,24 +172,6 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                 ...prevDetail,
                 client_code: `${newClientCode}${lastCode}`
             }));
-        } else {
-            if (editMode && (clientDetail?.last_name || clientDetail?.entity_name)) {
-                const newClientCode = showIndividual
-                    ? clientDetail.entity_name.slice(0, 2).toUpperCase()
-                    : clientDetail.last_name.slice(0, 2).toUpperCase();
-                const lastCode = existingCode.slice(2, existingCode.length).toUpperCase();
-                setClientDetail(prevDetail => ({
-                    ...prevDetail,
-                    client_code: `${newClientCode}${lastCode}`
-                }));
-            } else {
-                if (!editMode) {
-                    setClientDetail(prevDetail => ({
-                        ...prevDetail,
-                        client_code: ``
-                    }));
-                }
-            }
         }
     }, 500), [editMode, visible, clientDetail.last_name, clientDetail.entity_name, showIndividual]);
 
@@ -348,26 +330,27 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                     <label htmlFor="floatingInput9">Email address</label>
                                                 </div>
                                             </div>
-                                            <div className="col-md-6">
-                                                <div className="form-floating">
-                                                    <CFormInput
-                                                        type="text"
-                                                        value={clientDetail.client_code}
-                                                        onChange={(e) => {
-                                                            const value = e.target.value;
-                                                            if (/^[a-zA-Z0-9-_]*$/.test(value)) {
-                                                                setClientDetail({ ...clientDetail, client_code: value });
-                                                            }
-                                                        }}
-                                                        required
-                                                        feedbackInvalid={"Client code should be required"}
-                                                        className="form-control is_not_validated"
-                                                        id="floatingInput10"
-                                                        placeholder="Client code"
-                                                    />
-                                                    <label htmlFor="floatingInput10">Client code<span className='text-danger'>*</span></label>
+                                                <div className="col-md-6">
+                                                    <div className="form-floating">
+                                                        <CFormInput
+                                                            type="text"
+                                                            value={clientDetail.client_code}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                if (/^[a-zA-Z0-9-_]*$/.test(value)) {
+                                                                    setClientDetail({ ...clientDetail, client_code: value });
+                                                                }
+                                                            }}
+                                                            required
+                                                            feedbackInvalid={"Client code should be required"}
+                                                            className="form-control is_not_validated"
+                                                            id="floatingInput10"
+                                                            placeholder="Client code"
+                                                            disabled= {editMode}
+                                                        />
+                                                        <label htmlFor="floatingInput10">Client code<span className='text-danger'>*</span></label>
+                                                    </div>
                                                 </div>
-                                            </div>
                                             <div className="col-md-6">
                                                 <div className="form-floating">
                                                     <CFormInput

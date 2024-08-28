@@ -116,7 +116,7 @@ const updateClient = async (req, res) => {
     }
 
     try {
-        const { first_name, last_name, entity_name, abn_number, preferred_name, phone, email, client_code, user_defined, address } = req.body
+        const { first_name, last_name, entity_name, abn_number, preferred_name, phone, email, user_defined, address } = req.body
         const user_id = req.user?._id
         const { id } = req.params
 
@@ -170,27 +170,11 @@ const updateClient = async (req, res) => {
             }
         }
 
-        if (client_code) {
-            const existingClientCode = await Clients.findOne({ client_code, user_id, _id: { $ne: id } });
-            if (existingClientCode) {
-                return res.status(200).json({
-                    error: true,
-                    message: "Client code should be unique.",
-                });
-            }
-        } else {
-            return res.status(200).json({
-                error: true,
-                message: "Client code is required.",
-            });
-        }
-
         const clientData = {
             user_id,
             abn_number,
             preferred_name,
             phone, email,
-            client_code,
             user_defined,
             address
         }
@@ -449,7 +433,6 @@ const validateAndUpdateClient = async (clientData, id, user_id) => {
         preferred_name,
         phone,
         email,
-        client_code,
         user_defined,
         address
     } = clientData;
@@ -502,30 +485,12 @@ const validateAndUpdateClient = async (clientData, id, user_id) => {
             }
         }
 
-        if (client_code) {
-            const existingClientCode = await Clients.findOne({ client_code, user_id, _id: { $ne: id } });
-            if (existingClientCode) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Client code should be unique."
-                };
-            }
-        } else {
-            return {
-                status: 200,
-                error: true,
-                message: "Client code is required."
-            };
-        }
-
         const updateData = {
             user_id,
             abn_number,
             preferred_name,
             phone,
             email,
-            client_code,
             user_defined,
             address
         };
