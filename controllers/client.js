@@ -116,7 +116,7 @@ const updateClient = async (req, res) => {
     }
 
     try {
-        const { first_name, last_name, entity_name, abn_number, preferred_name, phone, email, user_defined, address } = req.body
+        const { first_name, last_name, entity_name, abn_number, preferred_name, phone, email, user_defined, address, client_code } = req.body
         const user_id = req.user?._id
         const { id } = req.params
 
@@ -170,13 +170,29 @@ const updateClient = async (req, res) => {
             }
         }
 
+        if (client_code) {
+            const existingClientCode = await Clients.findOne({ client_code, user_id, _id: { $ne: id } });
+            if (existingClientCode) {
+                return res.status(200).json({
+                    error: true,
+                    message: "Client code should be unique.",
+                });
+            }
+        } else {
+            return res.status(200).json({
+                error: true,
+                message: "Client code is required.",
+            });
+        }
+
         const clientData = {
             user_id,
             abn_number,
             preferred_name,
             phone, email,
             user_defined,
-            address
+            address,
+            client_code
         }
 
         if (entity_name) {
@@ -618,6 +634,7 @@ const validateAndCreateClient = async (clientData, user_id) => {
         const newClient = await new Clients(newClientData).save();
 
         const user = await Users.findById(user_id);
+
         if (user) {
             await createCollection(user, newClient._id);
         }
@@ -648,7 +665,7 @@ const clientImport = async (req, res) => {
         for (const client of clients) {
             const { client_code } = client
 
-            const [existingClient] = await Clients.find({ client_code })
+            const [existingClient] = await Clients.find({ client_code, user_id })
 
             if (existingClient) {
                 const updatedClient = await validateAndUpdateClient(client, existingClient?._id, user_id)
@@ -681,7 +698,7 @@ const clientImport = async (req, res) => {
 
 const singleClientDelete = async (id) => {
     try {
-        const existingClient = await Clients.findById({ _id: id })
+        const existingClient = await Clients.findById(id)
         if (!existingClient) {
             return {
                 error: true,
@@ -695,7 +712,7 @@ const singleClientDelete = async (id) => {
             await deleteSpreadsheet(user, id)
         }
 
-        await Clients.findByIdAndDelete({ _id: id })
+        await Clients.deleteOne({ _id: id, user_id: existingClient?.user_id });
         return {
             error: false,
             message: "Client deleted successfully.",
@@ -884,12 +901,12 @@ const generateClientCode = async (user_id) => {
         const lastNumber = parseInt(lastClientCode.slice(2), 10);
         const newNumber = lastNumber + 1;
         if (newNumber) {
-            newClientCode = `0000${newNumber}`;
+            newClientCode = `000${newNumber}`;
         } else {
-            newClientCode = `00001`;
+            newClientCode = `0001`;
         }
     } else {
-        newClientCode = `00001`;
+        newClientCode = `0001`;
     }
 
     return {
