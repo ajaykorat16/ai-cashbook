@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { CForm, CFormInput } from '@coreui/react';
 import { useClient } from '../contexts/ClientContexts';
-import { useAuth } from '../contexts/AuthContext';
 import { Modal } from 'bootstrap';
 import debounce from 'lodash/debounce';
 
 const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditClientId, setCurrentPage, visible, setVisible }) => {
     const { createClient, getSingleClient, updateClient, getLastClientCode } = useClient()
-    const { auth } = useAuth()
 
     const [showIndividual, setShowIndividual] = useState(false)
     const [validated, setValidated] = useState(false);
