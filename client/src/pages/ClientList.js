@@ -57,13 +57,19 @@ const ClientList = () => {
             downloadCSV(csvContent, "clients.csv");
         }
     };
-
     const convertToCSV = (data) => {
-        const headers = Object.keys(data[0]);
+        const requiredHeaders = ['first_name', 'last_name', 'entity_name'];
+
+        const dataHeaders = new Set(Object.keys(data[0] || {}));
+        const allHeaders = [...new Set([...requiredHeaders, ...dataHeaders])];
+
         const csvRows = [
-            headers.join(','),
-            ...data.map(row => headers.map(header => `"${row[header] || ''}"`).join(','))
+            allHeaders.join(','),
+            ...data.map(row =>
+                allHeaders.map(header => `"${row[header] || ''}"`).join(',')
+            )
         ];
+
         return csvRows.join('\n');
     };
 
@@ -80,6 +86,20 @@ const ClientList = () => {
             document.body.removeChild(link);
         }
     };
+
+    useEffect(() => {
+        const handleCopy = (event) => {
+            const selectedText = window.getSelection().toString();
+            const textWithoutSpaces = selectedText.replace(/\s+/g, '');
+            event.clipboardData.setData('text/plain', textWithoutSpaces);
+            event.preventDefault();
+        };
+        document.addEventListener('copy', handleCopy);
+
+        return () => {
+            document.removeEventListener('copy', handleCopy);
+        };
+    }, []);
 
     useEffect(() => {
         fetchClients();
@@ -102,9 +122,26 @@ const ClientList = () => {
     };
 
     const customBodyTemplate = (rowData, columnName) => {
+        if (columnName === 'phone') {
+            const formattedPhone = formatPhoneNumberWithSpaces(rowData[columnName]);
+            return (
+                <span className="phone-number">
+                    {formattedPhone}
+                </span>
+            );
+        }
         return rowData[columnName] ? rowData[columnName] : "-";
     };
 
+    const formatPhoneNumberWithSpaces = (phoneNumber) => {
+        return phoneNumber.replace(/(\+?\d{1,3})?(\(?\d{2,4}\)?)?(\d{4})(\d{3})(\d{3})/, (match, p1, p2, p3, p4, p5) => {
+            let formattedNumber = '';
+            if (p1) formattedNumber += `${p1.trim()} `;
+            if (p2) formattedNumber += `${p2.trim()} `;
+            formattedNumber += `${p3} ${p4} ${p5}`;
+            return formattedNumber;
+        });
+    };
     const handleSearch = (e) => {
         const value = e.target.value;
 

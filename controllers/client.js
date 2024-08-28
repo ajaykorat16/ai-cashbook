@@ -45,14 +45,16 @@ const createClient = async (req, res) => {
                     error: true,
                     message: "Plz enter valid phone number.",
                 });
-            } else {
-                const existingPhone = await Clients.findOne({ phone, user_id });
-                if (existingPhone) {
-                    return res.status(200).json({
-                        error: true,
-                        message: "Phone number should be unique.",
-                    });
-                }
+            }
+        }
+
+        if (abn_number) {
+            const existingAbnNumber = await Clients.findOne({ abn_number, user_id });
+            if (existingAbnNumber) {
+                return res.status(200).json({
+                    error: true,
+                    message: "Abn number should be unique.",
+                });
             }
         }
 
@@ -155,14 +157,16 @@ const updateClient = async (req, res) => {
                     error: true,
                     message: "Plz enter valid phone number.",
                 });
-            } else {
-                const existingPhone = await Clients.findOne({ phone, user_id, _id: { $ne: id } });
-                if (existingPhone) {
-                    return res.status(200).json({
-                        error: true,
-                        message: "Phone number should be unique.",
-                    });
-                }
+            }
+        }
+
+        if (abn_number) {
+            const existingAbnNumber = await Clients.findOne({ abn_number, user_id, _id: { $ne: id } });
+            if (existingAbnNumber) {
+                return res.status(200).json({
+                    error: true,
+                    message: "Abn number should be unique.",
+                });
             }
         }
 
@@ -451,14 +455,14 @@ const validateAndUpdateClient = async (clientData, id, user_id) => {
     } = clientData;
 
     try {
-        if (!first_name && !last_name && !entity_name) {
+        if (!((first_name && first_name.length >= 2 && last_name && last_name.length >= 2) ||
+            (entity_name && entity_name.length >= 2))) {
             return {
                 status: 200,
                 error: true,
-                message: "Please enter a name."
+                message: "Names must be at least 2 characters long."
             };
         }
-
         if (email) {
             if (!isValidEmail(email)) {
                 return {
@@ -485,12 +489,15 @@ const validateAndUpdateClient = async (clientData, id, user_id) => {
                     message: "Please enter a valid phone number."
                 };
             }
-            const existingPhone = await Clients.findOne({ phone, user_id, _id: { $ne: id } });
-            if (existingPhone) {
+        }
+
+        if (abn_number) {
+            const existingAbnNumber = await Clients.findOne({ abn_number, user_id, _id: { $ne: id } });
+            if (existingAbnNumber) {
                 return {
                     status: 200,
                     error: true,
-                    message: "Phone number should be unique."
+                    message: "Abn code should be unique."
                 };
             }
         }
@@ -565,11 +572,12 @@ const validateAndCreateClient = async (clientData, user_id) => {
     } = clientData;
 
     try {
-        if (!first_name && !last_name && !entity_name) {
+        if (!((first_name && first_name.length >= 2 && last_name && last_name.length >= 2) ||
+            (entity_name && entity_name.length >= 2))) {
             return {
                 status: 200,
                 error: true,
-                message: "Please enter a name."
+                message: "Names must be at least 2 characters long."
             };
         }
 
@@ -599,18 +607,23 @@ const validateAndCreateClient = async (clientData, user_id) => {
                     message: "Please enter a valid phone number."
                 };
             }
-            const existingPhone = await Clients.findOne({ phone, user_id });
-            if (existingPhone) {
+        }
+
+        if (abn_number) {
+            const existingAbnNumber = await Clients.findOne({ abn_number, user_id });
+            if (existingAbnNumber) {
                 return {
                     status: 200,
                     error: true,
-                    message: "Phone number should be unique."
+                    message: "Abn code should be unique."
                 };
             }
         }
 
+        let newClientCode;
         if (client_code) {
-            const existingClientCode = await Clients.findOne({ client_code, user_id });
+            const trimmedClientCode = client_code.trim();
+            const existingClientCode = await Clients.findOne({ client_code: trimmedClientCode, user_id });
             if (existingClientCode) {
                 return {
                     status: 200,
@@ -618,14 +631,10 @@ const validateAndCreateClient = async (clientData, user_id) => {
                     message: "Client code should be unique."
                 };
             }
-        } else {
-            return {
-                status: 200,
-                error: true,
-                message: "Client code is required."
-            };
         }
 
+        const lastClient = await generateClientCode(user_id);
+        newClientCode = `${entity_name ? entity_name.slice(0, 2) : last_name.slice(0, 2)}${lastClient.clientCode}`;
 
         const newClientData = {
             user_id,
@@ -633,17 +642,13 @@ const validateAndCreateClient = async (clientData, user_id) => {
             preferred_name,
             phone,
             email,
-            client_code,
+            client_code: newClientCode,
             user_defined,
-            address
+            address,
+            first_name,
+            last_name,
+            entity_name
         };
-
-        if (entity_name) {
-            newClientData.entity_name = entity_name;
-        } else {
-            newClientData.first_name = first_name;
-            newClientData.last_name = last_name;
-        }
 
         const newClient = await new Clients(newClientData).save();
 
@@ -656,10 +661,13 @@ const validateAndCreateClient = async (clientData, user_id) => {
             error: false,
             message: "Client created successfully.",
             client: newClient
-        }
+        };
     } catch (error) {
         console.error(error.message);
-        console.error('Server error');
+        return {
+            error: true,
+            message: 'Server error'
+        };
     }
 };
 
@@ -827,7 +835,7 @@ const createClientSpreadsheet = async (req, res) => {
         const spreadsheet = await clientSpreadsheet.findOne({ client_id: new ObjectId(id) });
 
         if (spreadsheet) {
-            if(spreadsheet?.data.length > 0) {
+            if (spreadsheet?.data.length > 0) {
                 data.shift()
             }
             const newData = spreadsheet?.data.concat(data)
@@ -902,8 +910,42 @@ const updateClientSpreadsheet = async (req, res) => {
     }
 }
 
+const generateClientCode = async (user_id) => {
+    const lastRecord = await Clients.findOne({ user_id }).sort({ _id: -1 });
+
+    let newClientCode;
+    if (lastRecord) {
+        const lastClientCode = lastRecord.client_code;
+        const lastNumber = parseInt(lastClientCode.slice(2), 10);
+        const newNumber = lastNumber + 1;
+
+        newClientCode = `0000${newNumber}`;
+    } else {
+        newClientCode = `00001`;
+    }
+
+    return {
+        error: false,
+        message: "Client code fetched successfully.",
+        clientCode: newClientCode
+    };
+};
+
+
+const getLastClient = async (req, res) => {
+    try {
+        const user_id = req?.user._id
+        const response = await generateClientCode(user_id)
+        res.json(response)
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
 
 module.exports = {
     createClient, getSingleClient, getClientCategory, getAllClients, exportClient, createClientSpreadsheet, getSpreadsheet,
-    updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete, updateClientSpreadsheet
+    updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete, updateClientSpreadsheet, getLastClient
 }

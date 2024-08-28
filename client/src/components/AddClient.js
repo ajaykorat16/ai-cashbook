@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { CForm, CFormInput } from '@coreui/react';
 import { useClient } from '../contexts/ClientContexts';
 import { useAuth } from '../contexts/AuthContext';
 import { Modal } from 'bootstrap';
-import { nanoid } from 'nanoid';
+import debounce from 'lodash/debounce';
 
 const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditClientId, setCurrentPage, visible, setVisible }) => {
-    const { createClient, getSingleClient, updateClient } = useClient()
+    const { createClient, getSingleClient, updateClient, getLastClientCode } = useClient()
     const { auth } = useAuth()
 
     const [showIndividual, setShowIndividual] = useState(false)
     const [validated, setValidated] = useState(false);
     const [showFullDetail, setShowFullDetail] = useState(false)
+    const [lastCode, setLastCode] = useState("")
+    const [existingCode, setExistingCode] = useState("")
     const [clientDetail, setClientDetail] = useState({
         first_name: "",
         last_name: "",
@@ -76,8 +78,6 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
         };
     }, [])
 
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -121,11 +121,18 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
             }
             setShowFullDetail(true)
             setClientDetail({ ...clientDetail, ...client });
+            setExistingCode(client.client_code)
         }
     }
 
-    const handleIndividual = (individual) => {
-        if (individual) {
+    const handleIndividual = (e) => {
+        setValidated(false)
+        setShowIndividual(e.target.checked)
+        setClientDetail(prevDetail => ({
+            ...prevDetail,
+            client_code: ``
+        }));
+        if (e.target.checked) {
             setClientDetail({
                 ...clientDetail,
                 first_name: "",
@@ -139,6 +146,13 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
         }
     }
 
+    const fetchClientCode = async () => {
+        const data = await getLastClientCode()
+        if (!data?.error) {
+            setLastCode(data?.clientCode)
+        }
+    }
+
     useEffect(() => {
         if (editMode) {
             fetchSingleClient();
@@ -147,13 +161,40 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
 
     useEffect(() => {
         if (!editMode && visible) {
-            const newClientCode = nanoid(10);
-            setClientDetail({
-                ...clientDetail,
-                client_code: newClientCode
-            });
+            fetchClientCode()
         }
-    }, [visible]);
+    }, [visible, editMode]);
+
+    const updateClientCode = useCallback(debounce(() => {
+        if (!editMode && visible && (clientDetail?.last_name || clientDetail?.entity_name)) {
+            const newClientCode = showIndividual ? clientDetail.entity_name.slice(0, 2) : clientDetail.last_name.slice(0, 2);
+            setClientDetail(prevDetail => ({
+                ...prevDetail,
+                client_code: `${newClientCode}${lastCode}`
+            }));
+        } else {
+            if (editMode && (clientDetail?.last_name || clientDetail?.entity_name)) {
+                const newClientCode = showIndividual ? clientDetail.entity_name.slice(0, 2) : clientDetail.last_name.slice(0, 2);
+                const lastCode = existingCode.slice(2, existingCode.length)
+                setClientDetail(prevDetail => ({
+                    ...prevDetail,
+                    client_code: `${newClientCode}${lastCode}`
+                }));
+            } else {
+                if (!editMode) {
+                    setClientDetail(prevDetail => ({
+                        ...prevDetail,
+                        client_code: ``
+                    }));
+                }
+            }
+        }
+    }, 500), [editMode, visible, clientDetail.last_name, clientDetail.entity_name, showIndividual]);
+
+    useEffect(() => {
+        updateClientCode();
+        return () => updateClientCode.cancel();
+    }, [clientDetail.last_name, clientDetail.entity_name, visible, editMode, showIndividual, updateClientCode]);
     return (
         <>
             <div className="modal fade custom_modal" id="add_client" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -172,11 +213,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                             id="styled-checkbox-2"
                                             type="checkbox"
                                             checked={showIndividual}
-                                            onChange={(e) => {
-                                                setValidated(false)
-                                                setShowIndividual(e.target.checked)
-                                                handleIndividual(e.target.checked)
-                                            }}
+                                            onChange={(e) => { handleIndividual(e) }}
                                         />
                                         <label htmlFor="styled-checkbox-2">Non-individual</label>
                                     </div>
@@ -189,10 +226,11 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                             <div className="form-floating">
                                                                 <CFormInput
                                                                     type="text"
+                                                                    minLength="2"
                                                                     value={clientDetail.entity_name}
                                                                     onChange={(e) => { setClientDetail({ ...clientDetail, entity_name: e.target.value }) }}
                                                                     required
-                                                                    feedbackInvalid={"Entity name should be required"}
+                                                                    feedbackInvalid={"Entity name must be at least 2 characters long"}
                                                                     className={'form-control is_not_validated'}
                                                                     id="floatingInput3"
                                                                     placeholder="Entity name"
@@ -212,10 +250,11 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                 <div className="form-floating">
                                                                     <CFormInput
                                                                         type="text"
+                                                                        minLength="2"
                                                                         value={clientDetail.first_name}
                                                                         onChange={(e) => setClientDetail({ ...clientDetail, first_name: e.target.value })}
                                                                         required
-                                                                        feedbackInvalid={"First name should be required"}
+                                                                        feedbackInvalid={"First name must be at least 2 characters long"}
                                                                         className={'form-control is_not_validated'}
                                                                         id="floatingInput1"
                                                                         placeholder="First name"
@@ -227,10 +266,11 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                 <div className="form-floating">
                                                                     <CFormInput
                                                                         type="text"
+                                                                        minLength="2"
                                                                         value={clientDetail.last_name}
                                                                         onChange={(e) => setClientDetail({ ...clientDetail, last_name: e.target.value })}
                                                                         required
-                                                                        feedbackInvalid={"Last name should be required"}
+                                                                        feedbackInvalid={"Last name must be at least 2 characters long"}
                                                                         className={'form-control is_not_validated'}
                                                                         id="floatingInput2"
                                                                         placeholder="Last name"

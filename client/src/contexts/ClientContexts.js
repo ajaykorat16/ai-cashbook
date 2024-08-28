@@ -51,6 +51,17 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const getLastClientCode = async (id) => {
+        try {
+            let { data } = await axios.get(`${baseURL}/client/lastclient-code`, { headers })
+            if (data.error === false) {
+                return data
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Client', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
     const getAllClients = async (currentPage, rowsPerPage, sortField, sortOrder, filter) => {
         try {
             const { data } = await axios.get(`${baseURL}/client?&sortField=${sortField}&sortOrder=${sortOrder}&page=${currentPage}&limit=${rowsPerPage}&filter=${filter !== '' ? filter : null}`, { headers })
@@ -230,11 +241,10 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-
     return (
         <ClientContext.Provider value={{
             createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, getSpreadsheet, updateSpreadsheet, createSpreadsheet,
-            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, importClient, multipleDeleteClient
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, importClient, multipleDeleteClient, getLastClientCode
         }}>
             {children}
         </ClientContext.Provider>

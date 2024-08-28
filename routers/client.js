@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { auth } = require("../middleware/auth")
 
-const { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, getSpreadsheet,
+const { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, getSpreadsheet, getLastClient,
     deleteClient, clientImport, bulkClientDelete, createClientSpreadsheet, updateClientSpreadsheet } = require("../controllers/client")
 
 router.get("/", auth, getAllClients)
 
 router.get("/clients-without-pagination", auth, exportClient)
+
+router.get("/lastclient-code", auth, getLastClient)
 
 router.get("/:id", auth, getSingleClient)
 

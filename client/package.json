@@ -24,7 +24,6 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
-    "nanoid": "^5.0.7",
     "papaparse": "^5.4.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.7.0",

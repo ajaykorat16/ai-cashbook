@@ -62,7 +62,7 @@ const Register = () => {
 
                     const googleSignUp = await signUpUserByGoogle(given_name, family_name, email)
                     if (!googleSignUp?.error) {
-                        navigate("/register")
+                        navigate("/login")
                     }
                 } else {
                     toast.current?.show({ severity: 'error', summary: 'Sign Up', detail: 'An error occurred. Please try again later.', life: 3000 })
@@ -99,7 +99,7 @@ const Register = () => {
 
             const microsoftSignUp = await signUpUserByGoogle(givenName, surname, email); // Reuse the same function or create a new one for Microsoft
             if (!microsoftSignUp?.error) {
-                navigate('/register');
+                navigate('/login');
             }
         } catch (error) {
             console.error('Error during Microsoft login:', error);
