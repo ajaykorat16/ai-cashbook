@@ -12,8 +12,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import ClientListLayout from '../components/ClientListLayout'
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
+import { useNavigate } from 'react-router-dom';
 
 const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title }) => {
+    const navigate = useNavigate()
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
@@ -111,7 +113,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 <div className="special_flex mb-25">
                     <h1 className="main_title">{title}</h1>
                     <div className="right_flex">
-                        <button className="common_btn ms-4">Import</button>
+                        <button className="common_btn ms-4" onClick={()=> navigate("/user/clients")}>Back to list</button>
                     </div>
                 </div>
                 {clientId && (

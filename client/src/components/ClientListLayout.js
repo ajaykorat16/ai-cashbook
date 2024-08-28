@@ -79,7 +79,8 @@ const ClientListLayout = ({ children, showSelection = false }) => {
                                 <div className="side_data">
                                     <ul>
                                         <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>Home</Link></li>
-                                        <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>Upload CSV</Link></li>
+                                        {/* <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>Upload CSV</Link></li> */}
+                                        <li><Link >Upload CSV</Link></li>
                                         <li><Link>Chat of accounts</Link></li>
                                         <li><Link>Auto categorize</Link></li>
                                         <li><Link>Check inter-bank transfer</Link></li>

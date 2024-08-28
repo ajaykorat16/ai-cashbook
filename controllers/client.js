@@ -253,12 +253,12 @@ const exportClient = async (req, res) => {
             if (client?.entity_name) {
                 return {
                     ...client.toObject(),
-                    individual: "true"
+                    individual: "false"
                 }
             } else {
                 return {
                     ...client.toObject(),
-                    individual: "false"
+                    individual: "true"
                 }
             }
         });
