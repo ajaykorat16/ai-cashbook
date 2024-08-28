@@ -53,7 +53,7 @@ const createClient = async (req, res) => {
             if (existingAbnNumber) {
                 return res.status(200).json({
                     error: true,
-                    message: "Abn number should be unique.",
+                    message: "ABN number should be unique.",
                 });
             }
         }
@@ -165,7 +165,7 @@ const updateClient = async (req, res) => {
             if (existingAbnNumber) {
                 return res.status(200).json({
                     error: true,
-                    message: "Abn number should be unique.",
+                    message: "ABN number should be unique.",
                 });
             }
         }
@@ -918,8 +918,11 @@ const generateClientCode = async (user_id) => {
         const lastClientCode = lastRecord.client_code;
         const lastNumber = parseInt(lastClientCode.slice(2), 10);
         const newNumber = lastNumber + 1;
-
-        newClientCode = `0000${newNumber}`;
+        if (newNumber) {
+            newClientCode = `0000${newNumber}`;
+        } else {
+            newClientCode = `00001`;
+        }
     } else {
         newClientCode = `00001`;
     }
