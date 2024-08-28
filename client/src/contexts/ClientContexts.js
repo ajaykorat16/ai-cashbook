@@ -42,7 +42,7 @@ const ClientProvider = ({ children }) => {
 
     const getSingleClient = async (id) => {
         try {
-            let { data } = await axios.get(`${baseURL}/client/${id}`, { headers })
+            let { data } = await axios.get(`${baseURL}/client/single-client/${id}`, { headers })
             if (data.error === false) {
                 return data.client
             }

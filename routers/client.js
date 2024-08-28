@@ -11,7 +11,7 @@ router.get("/clients-without-pagination", auth, exportClient)
 
 router.get("/lastclient-code", auth, getLastClient)
 
-router.get("/:id", auth, getSingleClient)
+router.get("/single-client/:id", auth, getSingleClient)
 
 router.get("/category/:id", auth, getClientCategory)
 
