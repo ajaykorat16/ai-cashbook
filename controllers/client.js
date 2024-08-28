@@ -634,7 +634,7 @@ const validateAndCreateClient = async (clientData, user_id) => {
         }
 
         const lastClient = await generateClientCode(user_id);
-        newClientCode = `${entity_name ? entity_name.slice(0, 2) : last_name.slice(0, 2)}${lastClient.clientCode}`;
+        newClientCode = `${(entity_name ? entity_name.slice(0, 2) : last_name.slice(0, 2)).toUpperCase()}${lastClient.clientCode.toUpperCase()}`;
 
         const newClientData = {
             user_id,

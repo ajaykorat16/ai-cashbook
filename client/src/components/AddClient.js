@@ -165,15 +165,19 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
 
     const updateClientCode = useCallback(debounce(() => {
         if (!editMode && visible && (clientDetail?.last_name || clientDetail?.entity_name)) {
-            const newClientCode = showIndividual ? clientDetail.entity_name.slice(0, 2) : clientDetail.last_name.slice(0, 2);
+            const newClientCode = showIndividual
+                ? clientDetail.entity_name.slice(0, 2).toUpperCase()
+                : clientDetail.last_name.slice(0, 2).toUpperCase();
             setClientDetail(prevDetail => ({
                 ...prevDetail,
                 client_code: `${newClientCode}${lastCode}`
             }));
         } else {
             if (editMode && (clientDetail?.last_name || clientDetail?.entity_name)) {
-                const newClientCode = showIndividual ? clientDetail.entity_name.slice(0, 2) : clientDetail.last_name.slice(0, 2);
-                const lastCode = existingCode.slice(2, existingCode.length)
+                const newClientCode = showIndividual
+                    ? clientDetail.entity_name.slice(0, 2).toUpperCase()
+                    : clientDetail.last_name.slice(0, 2).toUpperCase();
+                const lastCode = existingCode.slice(2, existingCode.length).toUpperCase();
                 setClientDetail(prevDetail => ({
                     ...prevDetail,
                     client_code: `${newClientCode}${lastCode}`
