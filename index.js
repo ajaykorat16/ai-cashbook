@@ -15,7 +15,6 @@ app.use(express.json())
 app.use('/user', user)
 app.use('/client', client)
 
-
 app.listen(PORT, () => {
-    console.log(`Your url is http://localhost:${PORT}`)
-})
+    console.log(`Server running in http://localhost:${PORT}`);
+  })

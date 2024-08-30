@@ -129,7 +129,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                 showSheetTabs={false}
                             >
                                 <SheetsDirective>
-                                    <SheetDirective >
+                                    <SheetDirective frozenRows={1}>
                                         <RangesDirective>
                                             <RangeDirective ></RangeDirective>
                                         </RangesDirective>

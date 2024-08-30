@@ -110,7 +110,7 @@ const forgotPassword = async (req, res) => {
 
         const token = crypto.randomBytes(16).toString('hex');
 
-        const updatedUser = await Users.findByIdAndUpdate(user?.id, { token }, { new: true });
+        const updatedUser = await Users.findByIdAndUpdate(user?._id, { token }, { new: true });
         if (updatedUser) {
             const data = {
                 first_name: user?.first_name,
@@ -175,7 +175,7 @@ const verifyUser = async (req, res) => {
             token: ""
         }
 
-        await Users.findByIdAndUpdate(user?.id, userDetails);
+        await Users.findByIdAndUpdate(user?._id, userDetails);
 
         return res.status(200).send({
             error: false,

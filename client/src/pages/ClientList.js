@@ -163,6 +163,7 @@ const ClientList = () => {
         const selectedRow = e.value;
         setSelectedClients(selectedRow);
     };
+
     return (
         <>
             <ClientListLayout showSelection={false}>
@@ -211,7 +212,7 @@ const ClientList = () => {
                             <Column field="entity_name" header="Entity name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} sortable filterField="entity_name" />
                             <Column field="preferred_name" header="Preferred name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} sortable />
                             <Column field="abn_number" header="ABN number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} sortable />
-                            <Column field="email" className='table-email-field' header="Email Address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
+                            <Column field="email" className='table-email-field' header="Email address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
                             <Column field="phone" header="Phone number" body={(rowData) => customBodyTemplate(rowData, 'phone')} sortable />
                             <Column field="address" header="Address" body={(rowData) => customBodyTemplate(rowData, 'address')} sortable />
                             <Column field="client_code" header="Client code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} sortable />
