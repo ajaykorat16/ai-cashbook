@@ -110,7 +110,6 @@ const Spreadsheet = () => {
     }, [dataLoaded])
 
     return (
-
         <section className="data_sheet">
             <div className="">
                 <div className="sheet_flex">

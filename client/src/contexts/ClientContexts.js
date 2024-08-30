@@ -208,7 +208,6 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-
     const importClient = async (clients) => {
         try {
             const { data } = await axios.post(`${baseURL}/client/import`, { clients }, { headers });
@@ -252,5 +251,4 @@ const ClientProvider = ({ children }) => {
 }
 
 const useClient = () => useContext(ClientContext)
-
 export { useClient, ClientProvider }

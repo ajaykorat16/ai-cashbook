@@ -110,7 +110,6 @@ const Login = () => {
         }
     }, [auth?.token, navigate]);
 
-
     return (
         <>
             <Toast ref={toast} />

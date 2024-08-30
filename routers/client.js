@@ -33,5 +33,4 @@ router.put("/update-spreasheet/:id", auth, updateClientSpreadsheet)
 
 router.delete("/delete/:id", auth, deleteClient)
 
-
 module.exports = router

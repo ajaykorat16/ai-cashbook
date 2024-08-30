@@ -1,7 +1,6 @@
 const Clients = require("../models/clientModel")
 const Users = require("../models/userModel");
 const { isValidEmail, createCollection, createBlankSpreadsheet } = require("../helpers/helper");
-const fs = require("fs")
 const { validationResult } = require('express-validator');
 const { MongoClient, ObjectId } = require('mongodb');
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
@@ -19,7 +18,7 @@ const createClient = async (req, res) => {
         if (!first_name && !last_name && !entity_name) {
             return res.status(200).json({
                 error: true,
-                message: "Plz enter the name.",
+                message: "Please enter the name.",
             });
         }
 
@@ -27,7 +26,7 @@ const createClient = async (req, res) => {
             if (!isValidEmail(email)) {
                 return res.status(200).json({
                     error: true,
-                    message: "Plz enter valid email.",
+                    message: "Please enter valid email.",
                 });
             }
             const existingEmail = await Clients.findOne({ email, user_id });
@@ -43,7 +42,7 @@ const createClient = async (req, res) => {
             if (phone?.length < 10 || phone.length > 13) {
                 return res.status(200).json({
                     error: true,
-                    message: "Plz enter valid phone number.",
+                    message: "Please enter valid phone number.",
                 });
             }
         }
@@ -131,7 +130,7 @@ const updateClient = async (req, res) => {
         if (!first_name && !last_name && !entity_name) {
             return res.status(200).json({
                 error: true,
-                message: "Plz enter the name.",
+                message: "Please enter the name.",
             });
         }
 
@@ -139,7 +138,7 @@ const updateClient = async (req, res) => {
             if (!isValidEmail(email)) {
                 return res.status(200).json({
                     error: true,
-                    message: "Plz enter valid email.",
+                    message: "Please enter valid email.",
                 });
             }
             const existingEmail = await Clients.findOne({ email, user_id, _id: { $ne: id } });
@@ -155,7 +154,7 @@ const updateClient = async (req, res) => {
             if (phone?.length < 10 || phone.length > 13) {
                 return res.status(200).json({
                     error: true,
-                    message: "Plz enter valid phone number.",
+                    message: "Please enter valid phone number.",
                 });
             }
         }
@@ -216,7 +215,6 @@ const updateClient = async (req, res) => {
         res.status(500).send('Server error');
     }
 }
-
 
 const getAllClients = async (req, res) => {
     try {
@@ -290,13 +288,11 @@ const exportClient = async (req, res) => {
     }
 }
 
-
-
 const getSingleClient = async (req, res) => {
     try {
         const { id } = req.params
-        const client = await getClient(id)
 
+        const client = await getClient(id)
         if (!client) {
             return res.status(400).json({
                 error: true,
@@ -318,7 +314,6 @@ const getSingleClient = async (req, res) => {
 const getClient = async (id) => {
     try {
         return await Clients.findById({ _id: id })
-
     } catch (error) {
         console.log(error.message)
     }
@@ -327,8 +322,8 @@ const getClient = async (id) => {
 const getClientCategory = async (req, res) => {
     try {
         const { id } = req.params
-        const client = await getClient(id)
 
+        const client = await getClient(id)
         if (!client) {
             return res.status(400).json({
                 error: true,
@@ -364,8 +359,8 @@ const updateClientCategory = async (req, res) => {
     try {
         const { id } = req.params
         const { data } = req.body
-        const client = await getClient(id)
 
+        const client = await getClient(id)
         if (!client) {
             return res.status(400).json({
                 error: true,
@@ -426,7 +421,6 @@ const deleteSpreadsheet = async (user, id) => {
         console.error('Error parsing JSON:', parseErr);
     }
 }
-
 
 const deleteClient = async (req, res) => {
     try {
@@ -653,7 +647,6 @@ const validateAndCreateClient = async (clientData, user_id) => {
     }
 };
 
-
 const clientImport = async (req, res) => {
     try {
         let successImports = 0
@@ -746,8 +739,8 @@ const bulkClientDelete = async (req, res) => {
 const getSpreadsheet = async (req, res) => {
     try {
         const { id } = req.params
-        const client = await getClient(id)
 
+        const client = await getClient(id)
         if (!client) {
             return res.status(400).json({
                 error: true,
@@ -759,8 +752,8 @@ const getSpreadsheet = async (req, res) => {
         await mongoClient.connect();
         const database = mongoClient.db(process.env.DATABASE_NAME);
         const userSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
-        const spreadsheet = await userSpreadsheet.findOne({ client_id: new ObjectId(id) });
 
+        const spreadsheet = await userSpreadsheet.findOne({ client_id: new ObjectId(id) });
         if (!spreadsheet) {
             return res.status(404).json({
                 error: true,
@@ -779,13 +772,12 @@ const getSpreadsheet = async (req, res) => {
     }
 }
 
-
 const createClientSpreadsheet = async (req, res) => {
     try {
         const { id } = req.params
         const { data } = req.body
-        const client = await getClient(id)
 
+        const client = await getClient(id)
         if (!client) {
             return res.status(400).json({
                 error: true,
@@ -807,7 +799,6 @@ const createClientSpreadsheet = async (req, res) => {
         const collections = await database.listCollections().toArray();
 
         const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
-
         if (!collectionExists) {
             await database.createCollection(`${user?.email.split("@")[0]}_client_spreadsheet`);
         }
@@ -851,8 +842,8 @@ const updateClientSpreadsheet = async (req, res) => {
     try {
         const { id } = req.params
         const { data } = req.body
-        const client = await getClient(id)
 
+        const client = await getClient(id)
         if (!client) {
             return res.status(400).json({
                 error: true,
@@ -916,7 +907,6 @@ const generateClientCode = async (user_id) => {
     };
 };
 
-
 const getLastClient = async (req, res) => {
     try {
         const user_id = req?.user._id
@@ -928,7 +918,6 @@ const getLastClient = async (req, res) => {
         res.status(500).send('Server error');
     }
 }
-
 
 module.exports = {
     createClient, getSingleClient, getClientCategory, getAllClients, exportClient, createClientSpreadsheet, getSpreadsheet,

@@ -2,12 +2,10 @@ const jwt = require('jsonwebtoken');
 const Users = require("../models/userModel")
 
 const auth = function (req, res, next) {
-
     const token = req.headers.authorization
     if (!token) {
         return res.status(401).json({ msg: 'No token, authorization denied' });
     }
-
     try {
         jwt.verify(token, process.env.JWT_SECRET_KEY, (error, decoded) => {
             if (error) {

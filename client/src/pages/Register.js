@@ -38,7 +38,6 @@ const Register = () => {
                 if (data.error === false) {
                     navigate("/thanks")
                 }
-                console.log(data);
             } catch (error) {
                 console.log(error);
             }
@@ -92,7 +91,6 @@ const Register = () => {
                     Authorization: `Bearer ${accessToken}`,
                 }
             });
-            console.log(data);
 
             const { givenName, surname, userPrincipalName } = data;
             const email = userPrincipalName.replace('_', '@').split('#')[0];
