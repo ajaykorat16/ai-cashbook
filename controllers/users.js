@@ -23,6 +23,7 @@ const createUser = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
+
     try {
         const { first_name, last_name, email, phone } = req.body;
 
@@ -90,12 +91,12 @@ const createUser = async (req, res) => {
     }
 }
 
-
 const forgotPassword = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ error: true, errors: errors.array() });
     }
+
     try {
         const { email } = req.body;
 
@@ -153,6 +154,7 @@ const verifyUser = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ error: true, errors: errors.array() });
     }
+
     try {
         const { token } = req.params
         const { password } = req.body;
@@ -190,6 +192,7 @@ const loginUser = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ error: true, errors: errors.array() });
     }
+
     try {
         const { email, password } = req.body;
 
@@ -216,7 +219,7 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const token = await jwt.sign({ user }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
+        const token = jwt.sign({ user }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
         return res.status(200).send({
             error: false,
             message: "Login successfully !",
@@ -234,15 +237,16 @@ const loginUserByGoogle = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ error: true, errors: errors.array() });
     }
+
     try {
         const { email } = req.body;
 
         const existingUser = await Users.findOne({ email });
         if (existingUser) {
-            const token = await jwt.sign({ user: existingUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
+            const token = jwt.sign({ user: existingUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
             return res.status(200).send({
                 error: false,
-                message: "Login successfully !",
+                message: "Login successfullys!",
                 user: existingUser,
                 token,
             });
@@ -258,12 +262,12 @@ const loginUserByGoogle = async (req, res) => {
     }
 }
 
-
 const signUpUserByGoogle = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ error: true, errors: errors.array() });
     }
+
     try {
         const { email, first_name, last_name } = req.body;
 
@@ -280,8 +284,9 @@ const signUpUserByGoogle = async (req, res) => {
                 email,
                 verified: true
             }
+
             const newUser = await new Users(userDetails).save();
-            const token = await jwt.sign({ user: newUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
+            const token = jwt.sign({ user: newUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
 
             return res.status(200).send({
                 error: false,
