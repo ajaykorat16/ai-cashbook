@@ -54,7 +54,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         const sortedCols = Array.from(cols).sort();
 
         sortedRows.forEach(() => result.push([]));
-
         data.forEach((value, key) => {
             const col = key.charAt(0);
             const row = parseInt(key.substring(1), 10) - 1;
@@ -76,7 +75,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
             result[row][colIndex] = cellValue;
         });
-
         return result;
     };
 
@@ -148,7 +146,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             const formattedData = await getSheetData();
             await updateCsvData(clientId, formattedData);
         }
-
     };
 
     return (
@@ -165,7 +162,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                         {isLoading && (
                             <Loader />
                         )}
-
                         <div className={`account_sheet ${isLoading ? "hidden" : ""}`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
