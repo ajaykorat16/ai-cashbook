@@ -9,13 +9,13 @@ import '@syncfusion/ej2-dropdowns/styles/material.css';
 import '@syncfusion/ej2-grids/styles/material.css';
 import '@syncfusion/ej2-react-spreadsheet/styles/material.css';
 import React, { useEffect, useState, useRef } from 'react';
-import ClientListLayout from '../components/ClientListLayout'
+import ClientListLayout from '../components/ClientListLayout';
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
 
 const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title }) => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
@@ -31,7 +31,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
                 const data = await spreadsheetRef.current.getData(`${sheet.name}!${range}`);
                 const formattedData = convertData(data);
-                return formattedData
+                return formattedData;
             } catch (error) {
                 console.error('Error fetching sheet data:', error);
             }
@@ -59,7 +59,21 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             const col = key.charAt(0);
             const row = parseInt(key.substring(1), 10) - 1;
             const colIndex = sortedCols.indexOf(col);
-            const cellValue = value.value || '';
+            let cellValue = value?.value || '';
+
+            const style = value?.style || {};
+            if (Object.keys(style).length > 0 && cellValue) {
+                if (style.fontWeight === 'bold') {
+                    cellValue = `<b>${cellValue}</b>`;
+                }
+                if (style.fontStyle === 'italic') {
+                    cellValue = `<i>${cellValue}</i>`;
+                }
+                if (style.textDecoration === 'underline') {
+                    cellValue = `<u>${cellValue}</u>`;
+                }
+            }
+
             result[row][colIndex] = cellValue;
         });
 
@@ -68,20 +82,42 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
     const convertToCellFormat = (data) => {
         const convertedData = data?.map(row => ({
-            cells: row.map(cell => ({ value: cell }))
+            cells: row.map(cell => {
+                let value = cell || '';
+                const style = {};
+
+                if (typeof value !== 'string') {
+                    value = String(value);
+                }
+
+                if (value.includes('<b>')) {
+                    style.fontWeight = 'bold';
+                    value = value.replace(/<\/?b>/g, '');
+                }
+                if (value.includes('<i>')) {
+                    style.fontStyle = 'italic';
+                    value = value.replace(/<\/?i>/g, '');
+                }
+                if (value.includes('<u>')) {
+                    style.textDecoration = 'underline';
+                    value = value.replace(/<\/?u>/g, '');
+                }
+
+                return { value, style };
+            })
         }));
-        return convertedData
+
+        return convertedData;
+    };
+    const handleCellSave = async (args) => {
+        const formattedData = await getSheetData();
+        await updateCsvData(clientId, formattedData);
     };
 
-    const handleCellSave = async () => {
-        const formattedData = await getSheetData()
-        await updateCsvData(clientId, formattedData);
-    }
-
     const fetchCsvLoaded = async () => {
-        setIsLoading(true)
+        setIsLoading(true);
         const csvDetail = await getCsvData(clientId);
-        const csv = csvDetail?.data || []
+        const csv = csvDetail?.data || [];
         const convertedData = convertToCellFormat(csv);
 
         if (spreadsheetRef?.current) {
@@ -92,20 +128,28 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         setTimeout(() => {
             setDataLoaded(true);
         }, 1000);
-        setIsLoading(false)
-    }
+        setIsLoading(false);
+    };
 
     useEffect(() => {
         if (clientId) {
-            fetchCsvLoaded()
+            fetchCsvLoaded();
         }
-    }, [clientId])
+    }, [clientId]);
 
     useEffect(() => {
         if (dataLoaded) {
-            getSheetData()
+            getSheetData();
         }
-    }, [dataLoaded])
+    }, [dataLoaded]);
+
+    const handleActionComplete = async (args) => {
+        if (args.action === 'format') {
+            const formattedData = await getSheetData();
+            await updateCsvData(clientId, formattedData);
+        }
+
+    };
 
     return (
         <div>
@@ -113,7 +157,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 <div className="special_flex mb-25">
                     <h1 className="main_title">{title}</h1>
                     <div className="right_flex">
-                        <button className="common_btn ms-4" onClick={()=> navigate("/user/clients")}>Back to list</button>
+                        <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>Back to list</button>
                     </div>
                 </div>
                 {clientId && (
@@ -125,13 +169,14 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                         <div className={`account_sheet ${isLoading ? "hidden" : ""}`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
+                                actionComplete={handleActionComplete}
                                 cellSave={handleCellSave}
                                 showSheetTabs={false}
                             >
                                 <SheetsDirective>
                                     <SheetDirective frozenRows={1}>
                                         <RangesDirective>
-                                            <RangeDirective ></RangeDirective>
+                                            <RangeDirective></RangeDirective>
                                         </RangesDirective>
                                     </SheetDirective>
                                 </SheetsDirective>
@@ -141,9 +186,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 )}
             </ClientListLayout>
         </div>
+    );
+};
 
-    )
-}
-
-
-export default Accounts
+export default Accounts;
