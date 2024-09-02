@@ -107,10 +107,11 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
         return convertedData;
     };
-    const handleCellSave = async (args) => {
-        const formattedData = await getSheetData();
-        await updateCsvData(clientId, formattedData);
-    };
+
+    // const handleCellSave = async (args) => {
+    //     const formattedData = await getSheetData();
+    //     await updateCsvData(clientId, formattedData);
+    // };
 
     const fetchCsvLoaded = async () => {
         setIsLoading(true);
@@ -142,9 +143,10 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     }, [dataLoaded]);
 
     const handleActionComplete = async (args) => {
-        if (args.action === 'format') {
+        if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' || args.action === 'cellDelete') {
             const formattedData = await getSheetData();
             await updateCsvData(clientId, formattedData);
+
         }
     };
 
@@ -166,8 +168,8 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 actionComplete={handleActionComplete}
-                                cellSave={handleCellSave}
                                 showSheetTabs={false}
+                            // cellSave={handleCellSave}
                             >
                                 <SheetsDirective>
                                     <SheetDirective frozenRows={1}>
