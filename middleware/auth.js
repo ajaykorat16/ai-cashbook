@@ -17,7 +17,7 @@ const auth = function (req, res, next) {
             }
         });
     } catch (err) {
-        console.error('something wrong with auth middleware');
+        console.error('Something wrong with auth middleware');
         res.status(500).json({ msg: 'Server Error' });
     }
 };
@@ -28,7 +28,7 @@ const isAdmin = async (req, res, next) => {
         if (user.role !== "admin") {
             return res.status(401).send({
                 success: false,
-                message: "UnAuthorized Access"
+                message: "Unauthorized Access"
             })
         } else {
             next();
@@ -36,7 +36,7 @@ const isAdmin = async (req, res, next) => {
     } catch (error) {
         return res.status(401).send({
             success: false,
-            message: "Error In Admin Middleware",
+            message: "Error in admin middleware",
             error: error.message
         })
     }

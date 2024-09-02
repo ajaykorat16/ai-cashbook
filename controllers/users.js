@@ -229,7 +229,7 @@ const loginUser = async (req, res) => {
         const token = jwt.sign({ user }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
         return res.status(200).send({
             error: false,
-            message: "Login successfully !",
+            message: "Login successfully!",
             user,
             token,
         });
@@ -253,7 +253,7 @@ const loginUserByGoogle = async (req, res) => {
             const token = jwt.sign({ user: existingUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
             return res.status(200).send({
                 error: false,
-                message: "Login successfullys!",
+                message: "Login successfully!",
                 user: existingUser,
                 token,
             });
@@ -274,7 +274,6 @@ const signUpUserByGoogle = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ error: true, errors: errors.array() });
     }
-
     try {
         const { email, first_name, last_name } = req.body;
 

@@ -205,7 +205,6 @@ const updateClient = async (req, res) => {
         }
 
         const updatedClient = await Clients.findByIdAndUpdate(id, clientData, { new: true, });
-
         res.status(201).send({
             error: false,
             message: "Client updated successfully.",
@@ -385,13 +384,11 @@ const updateClientCategory = async (req, res) => {
             { $set: { data } },
             { returnOriginal: false }
         );
-
         return res.status(200).json({
             error: false,
             message: "Client category is updated successfully.",
             clientCatgory
         })
-
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server error');
@@ -425,7 +422,6 @@ const deleteSpreadsheet = async (user, id) => {
 const deleteClient = async (req, res) => {
     try {
         const { id } = req.params
-
         const data = await singleClientDelete(id)
         return res.json(data)
     } catch (error) {
@@ -682,7 +678,6 @@ const clientImport = async (req, res) => {
             error: false,
             message: `${successImports} clients imported successfully${failedImports > 0 ? `, ${failedImports} skipped with error.` : "."} `,
         })
-
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server error');
@@ -729,7 +724,6 @@ const bulkClientDelete = async (req, res) => {
             error: false,
             message: 'Clients deleted successfully.',
         })
-
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server error');
@@ -797,16 +791,13 @@ const createClientSpreadsheet = async (req, res) => {
 
         const database = mongoClient.db(process.env.DATABASE_NAME);
         const collections = await database.listCollections().toArray();
-
         const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
         if (!collectionExists) {
             await database.createCollection(`${user?.email.split("@")[0]}_client_spreadsheet`);
         }
 
         const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
-
         const spreadsheet = await clientSpreadsheet.findOne({ client_id: new ObjectId(id) });
-
         if (spreadsheet) {
             if (spreadsheet?.data.length > 0) {
                 data.shift()
@@ -829,7 +820,6 @@ const createClientSpreadsheet = async (req, res) => {
             error: false,
             message: "Client category created successfully.",
         })
-
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server error');
@@ -874,7 +864,6 @@ const updateClientSpreadsheet = async (req, res) => {
             message: "Client category is updated successfully.",
             spreadsheet
         })
-
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server error');
@@ -912,7 +901,6 @@ const getLastClient = async (req, res) => {
         const user_id = req?.user._id
         const response = await generateClientCode(user_id)
         res.json(response)
-
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server error');
