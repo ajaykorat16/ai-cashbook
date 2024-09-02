@@ -211,8 +211,15 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const match = await comparePassword(password, user.password);
-        if (!match) {
+        if (password && user.password) {
+            const match = await comparePassword(password, user.password);
+            if (!match) {
+                return res.status(200).json({
+                    error: true,
+                    message: "Invalid crendentials.",
+                });
+            }
+        } else {
             return res.status(200).json({
                 error: true,
                 message: "Invalid crendentials.",
