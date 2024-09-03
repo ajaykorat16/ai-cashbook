@@ -36,7 +36,7 @@ const Register = () => {
             try {
                 const data = await signUp(userDetails);
                 if (data.error === false) {
-                    navigate("/thanks")
+                    navigate("/")
                 }
             } catch (error) {
                 console.log(error);

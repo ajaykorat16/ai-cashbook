@@ -79,7 +79,7 @@ const createUser = async (req, res) => {
 
                 return res.status(200).send({
                     error: false,
-                    message: "Your Contact details submitted successfully. Thank you for sharing this with us!",
+                    message: "Thank you for signing up, Please confirm your email and generate password.",
                     user: newUser,
                 });
             } else {

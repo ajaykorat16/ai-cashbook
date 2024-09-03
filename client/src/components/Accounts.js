@@ -143,7 +143,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert') {
             const formattedData = await getSheetData();
             await updateCsvData(clientId, formattedData);
-
+            formateSheet()
         }
     };
 
@@ -206,6 +206,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                         <div className={`account_sheet ${isLoading ? "hidden" : ""}`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
+                                showGridLines={false}
                                 actionComplete={handleActionComplete}
                                 showSheetTabs={false}
                                 allowSorting={true}
