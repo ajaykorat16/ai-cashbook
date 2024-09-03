@@ -364,7 +364,6 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         className="form-control is_not_validated"
                                                         id="floatingInput10"
                                                         placeholder="Client code"
-                                                        disabled={true}
                                                     />
                                                     <label htmlFor="floatingInput10">Client code<span className='text-danger'>*</span></label>
                                                 </div>

@@ -9,7 +9,7 @@ import '@syncfusion/ej2-dropdowns/styles/material.css';
 import '@syncfusion/ej2-grids/styles/material.css';
 import '@syncfusion/ej2-react-spreadsheet/styles/material.css';
 import React, { useEffect, useState, useRef } from 'react';
-import ClientListLayout from '../components/ClientListLayout';
+import Layout from '../components/Layout';
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
@@ -108,11 +108,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         return convertedData;
     };
 
-    // const handleCellSave = async (args) => {
-    //     const formattedData = await getSheetData();
-    //     await updateCsvData(clientId, formattedData);
-    // };
-
     const fetchCsvLoaded = async () => {
         setIsLoading(true);
         const csvDetail = await getCsvData(clientId);
@@ -127,7 +122,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         setTimeout(() => {
             setDataLoaded(true);
         }, 1000);
-        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -138,21 +132,34 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
     useEffect(() => {
         if (dataLoaded) {
+            formateSheet()
             getSheetData();
         }
     }, [dataLoaded]);
 
     const handleActionComplete = async (args) => {
-        if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' || args.action === 'cellDelete') {
+        if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
+            args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert') {
             const formattedData = await getSheetData();
             await updateCsvData(clientId, formattedData);
 
         }
     };
 
+    const formateSheet = () => {
+        if (spreadsheetRef.current) {
+            const sheet = spreadsheetRef.current.getActiveSheet();
+            const colCount = sheet.usedRange.colIndex + 1;
+            spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
+            spreadsheetRef.current.cellFormat({ fontWeight: 'bold' }, `A1:${String.fromCharCode(64 + colCount)}1`);
+            spreadsheetRef.current.refresh();
+            setIsLoading(false);
+        }
+    }
+
     return (
         <div>
-            <ClientListLayout showSelection={showSelection}>
+            <Layout showSelection={showSelection}>
                 <div className="special_flex mb-25">
                     <h1 className="main_title">{title}</h1>
                     <div className="right_flex">
@@ -182,7 +189,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                         </div>
                     </>
                 )}
-            </ClientListLayout>
+            </Layout>
         </div>
     );
 };
