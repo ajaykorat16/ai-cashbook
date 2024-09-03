@@ -1007,6 +1007,10 @@ div[style*="z-index: 99999"] {
 .e-toolbar-items .e-toolbar-item[data-id = "tabitem_5"] {
   display: none;
 }
+
+.e-row .e-cell {
+  min-width: 50px;
+}
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
