@@ -4,15 +4,18 @@ import { Toast } from 'primereact/toast'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
 
-const ClientListLayout = ({ children, showSelection = false }) => {
+const Layout = ({ children, showSelection = false }) => {
+    const { toast, logout, auth } = useAuth()
+    
+    const [showMenu, setShowMenu] = useState(false)
+    
     const navigate = useNavigate();
     const location = useLocation();
-    const { toast, logout, auth } = useAuth()
-    const user_name = auth?.user?.first_name.length > 7 ? `${auth?.user?.first_name.slice(0, 5)}...` : auth?.user?.first_name
-    const [showMenu, setShowMenu] = useState(false)
     const sidebarRef = useRef(null);
     const contentRef = useRef(null);
     const slidebarArrowRef = useRef(null);
+    
+    const user_name = auth?.user?.first_name.length > 7 ? `${auth?.user?.first_name.slice(0, 5)}...` : auth?.user?.first_name
 
     const handleLogout = () => {
         logout()
@@ -36,6 +39,7 @@ const ClientListLayout = ({ children, showSelection = false }) => {
             slidebarArrow.removeEventListener('click', handleToggle);
         };
     }, []);
+
     return (
         <>
             <Toast ref={toast} />
@@ -79,6 +83,7 @@ const ClientListLayout = ({ children, showSelection = false }) => {
                                 <div className="side_data">
                                     <ul>
                                         <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>Home</Link></li>
+                                        <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>Category</Link></li>
                                         {/* <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>Upload CSV</Link></li> */}
                                         <li><Link >Upload CSV</Link></li>
                                         <li><Link>Chat of accounts</Link></li>
@@ -99,4 +104,4 @@ const ClientListLayout = ({ children, showSelection = false }) => {
     )
 }
 
-export default ClientListLayout
+export default Layout

@@ -31,6 +31,7 @@ const ForgotPassword = () => {
             }
         }
     }
+    
     return (
         <>
             <AuthLayout />

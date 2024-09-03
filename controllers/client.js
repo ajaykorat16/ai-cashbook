@@ -1,9 +1,9 @@
-const Clients = require("../models/clientModel")
 const Users = require("../models/userModel");
-const { isValidEmail, createCollection, createBlankSpreadsheet } = require("../helpers/helper");
-const { validationResult } = require('express-validator');
+const Clients = require("../models/clientModel")
 const { MongoClient, ObjectId } = require('mongodb');
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
+const { validationResult } = require('express-validator');
+const { isValidEmail, createUserClientCategoryCollection, createBlankSpreadsheet } = require("../helpers/helper");
 
 const createClient = async (req, res) => {
     const errors = validationResult(req);
@@ -93,7 +93,7 @@ const createClient = async (req, res) => {
 
         const user = await Users.findById(user_id);
         if (user) {
-            await createCollection(user, newClient?._id)
+            await createUserClientCategoryCollection(user, newClient?._id)
             await createBlankSpreadsheet(user?.email, newClient?._id)
         }
 
@@ -624,9 +624,9 @@ const validateAndCreateClient = async (clientData, user_id) => {
         const newClient = await new Clients(newClientData).save();
 
         const user = await Users.findById(user_id);
-
         if (user) {
-            await createCollection(user, newClient._id);
+            await createUserClientCategoryCollection(user, newClient?._id)
+            await createBlankSpreadsheet(user?.email, newClient?._id)
         }
 
         return {

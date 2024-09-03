@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import ClientListLayout from '../components/ClientListLayout';
+import Layout from '../components/Layout';
 import Loader from '../components/Loader';
 import Papa from 'papaparse';
 import { useNavigate } from 'react-router-dom';
@@ -64,7 +64,7 @@ const UploadCsv = () => {
 
     return (
         <>
-            <ClientListLayout showSelection={true}>
+            <Layout showSelection={true}>
                 {isLoading ? (
                     <Loader />
                 ) : (
@@ -116,7 +116,7 @@ const UploadCsv = () => {
                         </div>
                     </>
                 )}
-            </ClientListLayout>
+            </Layout>
         </>
     );
 };

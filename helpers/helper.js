@@ -1,9 +1,9 @@
-const bcrypt = require("bcrypt");
-const saltRounds = 10;
 const fs = require("fs")
 const hbs = require("handlebars")
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 const hashPassword = async (password) => {
     try {
@@ -39,7 +39,7 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-const createCollection = async (user, id) => {
+const createUserMasterCategoryCollection = async (user, id) => {
     fs.readFile('./data_dump/category.json', 'utf8', async (err, jsonData) => {
         if (err) {
             console.error('Error reading file:', err);
@@ -51,23 +51,54 @@ const createCollection = async (user, id) => {
             const database = mongoClient.db(process.env.DATABASE_NAME);
             const collections = await database.listCollections().toArray();
 
-            const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_category`);
+            const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_master_category`);
+            if (!collectionExists) {
+                await database.createCollection(`${user?.email.split("@")[0]}_master_category`);
+            }
 
+            const userCategory = database.collection(`${user?.email.split("@")[0]}_master_category`);
+
+            const userCategoryData = {
+                user_id: user._id,
+                data: JSON.parse(jsonData)?.data
+            }
+
+            await userCategory.insertOne(userCategoryData);
+        } catch (error) {
+            console.error('Error create user master category collection:', error);
+        }
+    });
+}
+
+const createUserClientCategoryCollection = async (user, client_id) => {
+    try {
+        await mongoClient.connect();
+
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userCategoryCollection = database.collection(`${user?.email.split("@")[0]}_master_category`);
+
+        const userCategoryData = await userCategoryCollection.findOne({ user_id: new ObjectId(user?._id) });
+        if (userCategoryData?.data) {
+
+            const collections = await database.listCollections().toArray();
+    
+            const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_category`);
             if (!collectionExists) {
                 await database.createCollection(`${user?.email.split("@")[0]}_client_category`);
             }
-
+    
             const userCategory = database.collection(`${user?.email.split("@")[0]}_client_category`);
-
-            const clientCategory = {
-                client_id: id,
-                data: JSON.parse(jsonData)?.data
+    
+            const clientCategoryData = {
+                client_id,
+                data: userCategoryData.data
             }
-            await userCategory.insertOne(clientCategory);
-        } catch (parseErr) {
-            console.error('Error parsing JSON:', parseErr);
+    
+            await userCategory.insertOne(clientCategoryData);
         }
-    });
+    } catch (error) {
+        console.error('Error create user client category collection:', error);
+    }
 }
 
 const createBlankSpreadsheet = async (email, id) => {
@@ -100,6 +131,7 @@ module.exports = {
     comparePassword,
     compile,
     isValidEmail,
-    createCollection,
+    createUserMasterCategoryCollection,
+    createUserClientCategoryCollection,
     createBlankSpreadsheet
 }

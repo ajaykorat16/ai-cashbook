@@ -14,6 +14,10 @@ const AuthProvider = ({ children }) => {
 
     const toast = useRef(null);
 
+    const headers = {
+        Authorization: auth?.token,
+    };
+
     const logout = () => {
         try {
             const data = localStorage.getItem('auth')
@@ -221,6 +225,37 @@ const AuthProvider = ({ children }) => {
         }
     }
 
+    const getUserCategory = async () => {
+        try {
+            let { data } = await axios.get(`${baseURL}/user/category`, { headers })
+            if (data.error === false) {
+                return data?.userCategory
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'User Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
+    const updateUserCatrgory = async (id, csvData) => {
+        try {
+            const { data } = await axios.put(`${baseURL}/user/update-category`, { data: csvData }, { headers });
+            if (data.error === false) {
+                return data;
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'User Category', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'User Category', detail: errors[0].msg, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'User Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
     useEffect(() => {
         const data = localStorage.getItem('auth')
         if (data) {
@@ -235,11 +270,12 @@ const AuthProvider = ({ children }) => {
     }, [])
 
     return (
-        <AuthContext.Provider value={{ auth, signUp, login, logout, isLoggedIn, toast, loginUserByGoogle, signUpUserByGoogle, resetPassword, forgotPassword }}>
+        <AuthContext.Provider value={{ auth, signUp, login, logout, isLoggedIn, toast, loginUserByGoogle, signUpUserByGoogle, resetPassword, forgotPassword, getUserCategory, updateUserCatrgory }}>
             {children}
         </AuthContext.Provider>
     )
 }
 
 const useAuth = () => useContext(AuthContext)
+
 export { useAuth, AuthProvider }

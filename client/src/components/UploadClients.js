@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import ClientListLayout from './ClientListLayout';
+import Layout from './Layout';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useClient } from '../contexts/ClientContexts';
@@ -110,7 +110,7 @@ const UploadCsv = () => {
     });
     return (
         <>
-            <ClientListLayout>
+            <Layout>
                 {isLoading ? (
                     <Loader />
                 ) :
@@ -163,7 +163,7 @@ const UploadCsv = () => {
                             </div>
                         </>
                     )}
-            </ClientListLayout>
+            </Layout>
         </>
     );
 };

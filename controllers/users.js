@@ -1,10 +1,12 @@
-const Users = require("../models/userModel");
 const crypto = require('crypto');
+const Users = require("../models/userModel");
+const { MongoClient, ObjectId } = require('mongodb');
+const mongoClient = new MongoClient(process.env.DATABASE_URL);
 const jwt = require("jsonwebtoken");
 const { promisify } = require('util');
-const { validationResult } = require("express-validator");
 const nodemailer = require("nodemailer")
-const { hashPassword, comparePassword, compile } = require("../helpers/helper");
+const { validationResult } = require("express-validator");
+const { hashPassword, comparePassword, compile, createUserMasterCategoryCollection } = require("../helpers/helper");
 
 const transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST,
@@ -73,6 +75,8 @@ const createUser = async (req, res) => {
             const mailResponse = await sendMailAsync(mailOptions);
 
             if (mailResponse?.accepted) {
+                await createUserMasterCategoryCollection(newUser)
+
                 return res.status(200).send({
                     error: false,
                     message: "Your Contact details submitted successfully. Thank you for sharing this with us!",
@@ -292,6 +296,10 @@ const signUpUserByGoogle = async (req, res) => {
             }
 
             const newUser = await new Users(userDetails).save();
+            if (newUser) {
+                await createUserMasterCategoryCollection(newUser)
+            }
+
             const token = jwt.sign({ user: newUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
 
             return res.status(200).send({
@@ -307,4 +315,63 @@ const signUpUserByGoogle = async (req, res) => {
     }
 }
 
-module.exports = { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle }
+const getUserCategory = async (req, res) => {
+    try {
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userCategoryCollection = database.collection(`${req.user?.email.split("@")[0]}_master_category`);
+
+        const userCategory = await userCategoryCollection.findOne({ user_id: new ObjectId(req.user?._id) });        
+        if (!userCategory) {
+            return res.status(404).json({
+                error: true,
+                message: "User category not found."
+            });
+        }
+
+        return res.status(200).json({
+            error: false,
+            message: "User category is fetched successfully.",
+            userCategory
+        })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+const updateUserCategory = async (req, res) => {
+    try {
+        const { data } = req.body
+
+        if (!Array.isArray(data)) {
+            return res.status(200).json({
+                error: true,
+                message: "Data must be array and not empty.",
+            })
+        }
+
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userCategoryCollection = database.collection(`${req.user?.email.split("@")[0]}_master_category`);
+
+        const userCatgory = await userCategoryCollection.findOneAndUpdate(
+            { user_id: new ObjectId(req.user?._id) },
+            { $set: { data } },
+            { returnOriginal: false }
+        );
+
+        return res.status(200).json({
+            error: false,
+            message: "User category is updated successfully.",
+            userCatgory
+        })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    } finally {
+        await mongoClient.close();
+    }
+}
+
+module.exports = { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle, getUserCategory, updateUserCategory }

@@ -17,6 +17,7 @@ import ClientsAccounts from './pages/ClientsAccounts';
 import UploadClients from './components/UploadClients';
 import UploadCsv from './pages/UploadCsv';
 import Spreadsheet from './pages/Spreadsheet';
+import UserCategory from './pages/UserCategory';
 
 const App = () => {
   return (
@@ -31,6 +32,7 @@ const App = () => {
           <Route path="chart-of-accounts" element={<ClientsAccounts />} />
           <Route path="chart-of-accounts/:id" element={<ChartOfAccounts />} />
           <Route path="clients" element={<ClientList />} />
+          <Route path="category" element={<UserCategory />} />
           <Route path="upload-clients" element={<UploadClients />} />
           <Route path="upload-csv" element={<UploadCsv />} />
           <Route path="spreadsheet/:id" element={<Spreadsheet />} />

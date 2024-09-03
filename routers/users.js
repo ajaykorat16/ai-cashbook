@@ -3,7 +3,9 @@ const { check } = require('express-validator');
 const { auth } = require("../middleware/auth")
 const router = express.Router()
 
-const { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle } = require('../controllers/users')
+const { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle, getUserCategory, updateUserCategory } = require('../controllers/users')
+
+router.get("/category", auth, getUserCategory)
 
 router.get('/user-auth', auth, (req, res) => {
     res.status(200).json({ ok: true })
@@ -45,5 +47,7 @@ router.post("/signup-by-google",
     check('email', 'Please include a valid email.').isEmail(),
     signUpUserByGoogle
 )
+
+router.put("/update-category", auth, updateUserCategory)
 
 module.exports = router

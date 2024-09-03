@@ -5,7 +5,7 @@ import { Paginator } from 'primereact/paginator';
 import Loader from '../components/Loader';
 import { useClient } from '../contexts/ClientContexts';
 import { Link, useNavigate } from 'react-router-dom';
-import ClientListLayout from '../components/ClientListLayout';
+import Layout from '../components/Layout';
 import AddClient from '../components/AddClient';
 import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
 import CustomSelect from '../components/CustomSelect';
@@ -166,7 +166,7 @@ const ClientList = () => {
 
     return (
         <>
-            <ClientListLayout showSelection={false}>
+            <Layout showSelection={false}>
                 <div className="special_flex mb-25">
                     <h1 className="main_title">Client list</h1>
                     <div className="right_flex">
@@ -262,7 +262,7 @@ const ClientList = () => {
                     totalRecords={totalRecords}
                     onPageChange={onPageChange}
                 />
-            </ClientListLayout >
+            </Layout >
 
             {/* Modals for Add and Edit Client here */}
             <AddClient
