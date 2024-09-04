@@ -112,7 +112,7 @@ const AuthProvider = ({ children }) => {
             if (data.error === false) {
                 setIsLoggedIn(true)
                 setTimeout(function () {
-                    toast.current?.show({ severity: 'success', summary: data.user.name, detail: data.message, life: 3000 })
+                    toast.current?.show({ severity: 'success', summary: data.user.first_name, detail: data.message, life: 3000 })
                 }, 500);
                 setAuth({
                     ...auth,
