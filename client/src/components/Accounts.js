@@ -121,7 +121,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
         setTimeout(() => {
             setDataLoaded(true);
-        }, 2000);
+        }, 3500);
     };
 
     useEffect(() => {
@@ -187,7 +187,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             );
         }
     };
-    
+
     return (
         <div>
             <Layout showSelection={showSelection}>
