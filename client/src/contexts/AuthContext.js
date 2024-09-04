@@ -256,6 +256,37 @@ const AuthProvider = ({ children }) => {
         }
     }
 
+    const getUsers = async (currentPage, rowsPerPage, sortField, sortOrder, filter) => {
+        try {
+            const { data } = await axios.get(`${baseURL}/user?&sortField=${sortField}&sortOrder=${sortOrder}&page=${currentPage}&limit=${rowsPerPage}&filter=${filter !== '' ? filter : null}`, { headers })
+            if (data.error === false) {
+                return data
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'User', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
+    const updateStatus = async (id, status) => {
+        try {
+            const { data } = await axios.put(`${baseURL}/user/update/status`, { id, status }, { headers });
+            if (data.error === false) {
+                return data;
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'User Status', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'User Status', detail: errors[0].msg, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'User Status', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
     useEffect(() => {
         const data = localStorage.getItem('auth')
         if (data) {
@@ -270,7 +301,10 @@ const AuthProvider = ({ children }) => {
     }, [])
 
     return (
-        <AuthContext.Provider value={{ auth, signUp, login, logout, isLoggedIn, toast, loginUserByGoogle, signUpUserByGoogle, resetPassword, forgotPassword, getUserCategory, updateUserCatrgory }}>
+        <AuthContext.Provider value={{
+            auth, signUp, login, logout, isLoggedIn, toast, loginUserByGoogle, signUpUserByGoogle,
+            resetPassword, forgotPassword, getUserCategory, updateUserCatrgory, getUsers, updateStatus
+        }}>
             {children}
         </AuthContext.Provider>
     )

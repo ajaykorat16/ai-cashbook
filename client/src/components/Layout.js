@@ -6,15 +6,15 @@ import ClientSelection from './ClientSelection';
 
 const Layout = ({ children, showSelection = false }) => {
     const { toast, logout, auth } = useAuth()
-    
+
     const [showMenu, setShowMenu] = useState(false)
-    
+
     const navigate = useNavigate();
     const location = useLocation();
     const sidebarRef = useRef(null);
     const contentRef = useRef(null);
     const slidebarArrowRef = useRef(null);
-    
+
     const user_name = auth?.user?.first_name.length > 7 ? `${auth?.user?.first_name.slice(0, 5)}...` : auth?.user?.first_name
 
     const handleLogout = () => {
@@ -82,13 +82,21 @@ const Layout = ({ children, showSelection = false }) => {
                             <div id="sidebar" ref={sidebarRef}>
                                 <div className="side_data">
                                     <ul>
-                                        <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>Home</Link></li>
-                                        <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>Category</Link></li>
-                                        {/* <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>Upload CSV</Link></li> */}
-                                        <li><Link >Upload CSV</Link></li>
-                                        <li><Link>Chat of accounts</Link></li>
-                                        <li><Link>Auto categorize</Link></li>
-                                        <li><Link>Check inter-bank transfer</Link></li>
+                                        {auth.user.role === 'user' ? (
+                                            <>
+                                                <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>Home</Link></li>
+                                                <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>Category</Link></li>
+                                                {/* <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>Upload CSV</Link></li> */}
+                                                <li><Link >Upload CSV</Link></li>
+                                                <li><Link>Chat of accounts</Link></li>
+                                                <li><Link>Auto categorize</Link></li>
+                                                <li><Link>Check inter-bank transfer</Link></li>
+                                            </>
+                                        ) : (
+                                            <li><Link to={'/admin/users'} className={location.pathname.match("/admin/users") && `selected`}>Home</Link></li>
+                                        )
+                                        }
+
                                     </ul>
                                 </div>
                             </div>

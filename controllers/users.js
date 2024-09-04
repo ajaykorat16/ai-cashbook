@@ -443,7 +443,7 @@ const updateUserStatus = async (req, res) => {
             })
         }
 
-        await Users.findByIdAndUpdate(id, { status }, { new: true, });
+        await Users.findByIdAndUpdate(id, { active: status }, { new: true, });
         res.status(201).send({
             error: false,
             message: "User status updated successfully.",

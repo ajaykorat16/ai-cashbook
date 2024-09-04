@@ -106,7 +106,7 @@ const Login = () => {
 
     useEffect(() => {
         if (auth?.token) {
-            location.pathname !== '/' ? navigate(location.pathname) : (auth.user.role === "user" && navigate('/user/clients'));
+            location.pathname !== '/' ? navigate(location.pathname) : (auth.user.role === "admin" ? navigate('/admin/users') : navigate('/user/clients'));
         }
     }, [auth?.token, navigate]);
 

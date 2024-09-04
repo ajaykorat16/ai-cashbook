@@ -18,6 +18,7 @@ import UploadClients from './components/UploadClients';
 import UploadCsv from './pages/UploadCsv';
 import Spreadsheet from './pages/Spreadsheet';
 import UserCategory from './pages/UserCategory';
+import UserList from './pages/UserList';
 
 const App = () => {
   return (
@@ -36,6 +37,9 @@ const App = () => {
           <Route path="upload-clients" element={<UploadClients />} />
           <Route path="upload-csv" element={<UploadCsv />} />
           <Route path="spreadsheet/:id" element={<Spreadsheet />} />
+        </Route>
+        <Route path="/admin/*" element={<UserRoutes />}>
+          <Route path="users" element={<UserList />} />
         </Route>
       </Routes>
     </Router>
