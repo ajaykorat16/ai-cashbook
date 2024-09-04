@@ -271,6 +271,7 @@ const AuthProvider = ({ children }) => {
         try {
             const { data } = await axios.put(`${baseURL}/user/update/status`, { id, status }, { headers });
             if (data.error === false) {
+                toast.current?.show({ severity: 'success', summary: 'User Status', detail: data.message, life: 3000 })
                 return data;
             } else {
                 toast.current?.show({ severity: 'error', summary: 'User Status', detail: data.message, life: 3000 })
