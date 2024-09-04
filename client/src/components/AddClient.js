@@ -91,19 +91,21 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
             }
         } else {
             try {
-                let data
-                if (editMode) {
-                    data = await updateClient(editClientId, { ...clientDetail })
-                } else {
-                    data = await createClient({ ...clientDetail });
-                    if (!data?.error) {
-                        setCurrentPage(1)
+                if (clientDetail?.client_code) {
+                    let data
+                    if (editMode) {
+                        data = await updateClient(editClientId, { ...clientDetail })
+                    } else {
+                        data = await createClient({ ...clientDetail });
+                        if (!data?.error) {
+                            setCurrentPage(1)
+                        }
                     }
-                }
 
-                if (!data?.error) {
-                    handleClose()
-                    fetchClients()
+                    if (!data?.error) {
+                        handleClose()
+                        fetchClients()
+                    }
                 }
             } catch (error) {
                 console.log(error);
