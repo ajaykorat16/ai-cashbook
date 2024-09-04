@@ -121,7 +121,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
         setTimeout(() => {
             setDataLoaded(true);
-        }, 1000);
+        }, 2000);
     };
 
     useEffect(() => {
@@ -187,6 +187,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             );
         }
     };
+    
     return (
         <div>
             <Layout showSelection={showSelection}>
@@ -204,7 +205,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                         <div className={`account_sheet ${isLoading ? "invisible" : ""}`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
-                                showGridLines={false}
                                 actionComplete={handleActionComplete}
                                 showSheetTabs={false}
                                 allowSorting={true}
