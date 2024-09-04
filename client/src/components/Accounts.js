@@ -152,22 +152,20 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             const sheet = spreadsheetRef.current.getActiveSheet();
             const colCount = sheet.usedRange.colIndex + 1;
             const rowCount = sheet.usedRange.rowIndex + 1;
-    
+
             const firstRowRange = `A1:${String.fromCharCode(64 + colCount)}1`;
             spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
-    
+
             spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
-    
+
             const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
             spreadsheetRef.current.cellFormat({ border: 'none', borderBottom: '1px solid #FFFFFF' }, range);
-    
+
             const outerBorderRange = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
             spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, outerBorderRange, 'Outer');
-    
+
             const horizontalBorderRange = `A2:${String.fromCharCode(64 + colCount)}${rowCount}`;
             spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
-    
-            spreadsheetRef.current.refresh();
             setIsLoading(false);
         }
     };
@@ -178,7 +176,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             const colCount = sheet.usedRange.colIndex + 1;
             const rowCount = sheet.usedRange.rowIndex + 1;
             const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
-    
+
             spreadsheetRef.current.applyFilter(
                 [{
                     field: columnLetter,
@@ -203,7 +201,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                         {isLoading && (
                             <Loader />
                         )}
-                        <div className={`account_sheet ${isLoading ? "hidden" : ""}`}>
+                        <div className={`account_sheet ${isLoading ? "invisible" : ""}`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 showGridLines={false}
