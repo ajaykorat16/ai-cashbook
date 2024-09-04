@@ -23,9 +23,14 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: Number
     },
+    active: {
+        type: Boolean,
+        default: true
+    },
     role: {
         type: String,
-        default: "user"
+        enum: ['admin', 'user'],
+        default: 'user'
     },
     verified: {
         type: Boolean,

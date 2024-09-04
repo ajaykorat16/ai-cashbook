@@ -52,7 +52,8 @@ const createUser = async (req, res) => {
             last_name,
             email,
             phone,
-            token
+            token,
+            active: true
         }).save();
 
         if (newUser) {
@@ -208,6 +209,13 @@ const loginUser = async (req, res) => {
             });
         }
 
+        if (!user?.active) {
+            return res.status(200).json({
+                error: true,
+                message: "Your account has been marked as inactive. You do not have permission to log in to the system. Please contact the system administrator.",
+            });
+        }
+
         if (!user?.verified) {
             return res.status(200).json({
                 error: true,
@@ -252,7 +260,7 @@ const loginUserByGoogle = async (req, res) => {
     try {
         const { email } = req.body;
 
-        const existingUser = await Users.findOne({ email });
+        const existingUser = await Users.findOne({ email, active: true });
         if (existingUser) {
             const token = jwt.sign({ user: existingUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
             return res.status(200).send({
@@ -292,7 +300,8 @@ const signUpUserByGoogle = async (req, res) => {
                 first_name,
                 last_name,
                 email,
-                verified: true
+                verified: true,
+                active: true
             }
 
             const newUser = await new Users(userDetails).save();
@@ -321,7 +330,7 @@ const getUserCategory = async (req, res) => {
         const database = mongoClient.db(process.env.DATABASE_NAME);
         const userCategoryCollection = database.collection(`${req.user?.email.split("@")[0]}_master_category`);
 
-        const userCategory = await userCategoryCollection.findOne({ user_id: new ObjectId(req.user?._id) });        
+        const userCategory = await userCategoryCollection.findOne({ user_id: new ObjectId(req.user?._id) });
         if (!userCategory) {
             return res.status(404).json({
                 error: true,
@@ -374,4 +383,71 @@ const updateUserCategory = async (req, res) => {
     }
 }
 
-module.exports = { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle, getUserCategory, updateUserCategory }
+const getAllUsers = async (req, res) => {
+    try {
+        let { page, limit, sortField, sortOrder, filter } = req.query;
+        page = parseInt(page) || 1;
+        limit = parseInt(limit) || 10;
+        sortField = sortField || "createdAt";
+        sortOrder = parseInt(sortOrder) || -1;
+        filter = filter;
+        let query = { role: 'user' };
+
+        if (filter && filter !== "null") {
+            query += {
+                $or: [
+                    { first_name: { $regex: filter, $options: "i" } },
+                    { last_name: { $regex: filter, $options: "i" } },
+                    { email: { $regex: filter, $options: "i" } },
+                    { phone: { $regex: filter, $options: "i" } },
+                ],
+            };
+        }
+
+        const totalUsers = await Users.countDocuments(query);
+        const skip = (page - 1) * limit;
+
+        const users = await Users.find(query)
+            .sort({ [sortField]: sortOrder })
+            .skip(skip)
+            .limit(limit);
+
+        return res.status(200).json({
+            error: false,
+            message: "User fetched successfully.",
+            users,
+            currentPage: page,
+            totalPages: Math.ceil(totalUsers / limit),
+            totalUsers,
+        });
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+const updateUserStatus = async (req, res) => {
+    try {
+        const { id, status } = req.body;
+
+        const existingUser = await Users.findById({ _id: id })
+        if (!existingUser) {
+            return res.status(400).json({
+                error: true,
+                message: "User is not existing."
+            })
+        }
+
+        await Users.findByIdAndUpdate(id, { status }, { new: true, });
+        res.status(201).send({
+            error: false,
+            message: "User status updated successfully.",
+        })
+
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+module.exports = { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle, getUserCategory, updateUserCategory, getAllUsers, updateUserStatus }

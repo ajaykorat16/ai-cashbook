@@ -1,9 +1,11 @@
 const express = require('express')
 const { check } = require('express-validator');
-const { auth } = require("../middleware/auth")
+const { auth, isAdmin } = require("../middleware/auth")
 const router = express.Router()
 
-const { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle, getUserCategory, updateUserCategory } = require('../controllers/users')
+const { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle, getUserCategory, updateUserCategory, getAllUsers, updateUserStatus } = require('../controllers/users')
+
+router.get("/", auth, isAdmin, getAllUsers, updateUserStatus)
 
 router.get("/category", auth, getUserCategory)
 
@@ -49,5 +51,10 @@ router.post("/signup-by-google",
 )
 
 router.put("/update-category", auth, updateUserCategory)
+
+router.put("/update/status",
+    check('id', 'User id is required').notEmpty(),
+    check('status', 'User status is required').notEmpty(),
+    auth, isAdmin, updateUserStatus)
 
 module.exports = router
