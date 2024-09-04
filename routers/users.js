@@ -5,7 +5,7 @@ const router = express.Router()
 
 const { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle, getUserCategory, updateUserCategory, getAllUsers, updateUserStatus } = require('../controllers/users')
 
-router.get("/", auth, isAdmin, getAllUsers, updateUserStatus)
+router.get("/", auth, isAdmin, getAllUsers)
 
 router.get("/category", auth, getUserCategory)
 

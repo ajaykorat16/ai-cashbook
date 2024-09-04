@@ -260,15 +260,22 @@ const loginUserByGoogle = async (req, res) => {
     try {
         const { email } = req.body;
 
-        const existingUser = await Users.findOne({ email, active: true });
+        const existingUser = await Users.findOne({ email });
         if (existingUser) {
-            const token = jwt.sign({ user: existingUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
-            return res.status(200).send({
-                error: false,
-                message: "Login successfully!",
-                user: existingUser,
-                token,
-            });
+            if (!existingUser.active) {
+                return res.status(200).json({
+                    error: true,
+                    message: "Your account has been marked as inactive. You do not have permission to log in to the system. Please contact the system administrator.",
+                });
+            } else {
+                const token = jwt.sign({ user: existingUser }, process.env.JWT_SECRET_KEY, { expiresIn: "365 days", });
+                return res.status(200).send({
+                    error: false,
+                    message: "Login successfully!",
+                    user: existingUser,
+                    token,
+                });
+            }
         } else {
             return res.status(400).send({
                 error: true,
@@ -394,14 +401,12 @@ const getAllUsers = async (req, res) => {
         let query = { role: 'user' };
 
         if (filter && filter !== "null") {
-            query += {
-                $or: [
-                    { first_name: { $regex: filter, $options: "i" } },
-                    { last_name: { $regex: filter, $options: "i" } },
-                    { email: { $regex: filter, $options: "i" } },
-                    { phone: { $regex: filter, $options: "i" } },
-                ],
-            };
+            query.$or = [
+                { first_name: { $regex: filter, $options: "i" } },
+                { last_name: { $regex: filter, $options: "i" } },
+                { email: { $regex: filter, $options: "i" } },
+                { phone: { $regex: filter, $options: "i" } },
+            ];
         }
 
         const totalUsers = await Users.countDocuments(query);

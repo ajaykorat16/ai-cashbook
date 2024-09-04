@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
         minlength: 8
     },
     phone: {
-        type: Number
+        type: String,
     },
     active: {
         type: Boolean,
