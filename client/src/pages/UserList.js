@@ -135,7 +135,7 @@ const UserList = () => {
                             <Column header="" className='action_td' align="left" body={(rowData) => (
                                 <div className='d-flex'>
                                     <button
-                                        className={`common_btn ms-4 ${rowData?.active ? 'bg-danger' : 'bg-success'}`}
+                                        className={`common_btn ms-4 status-btn ${rowData?.active ? 'bg-danger' : 'bg-success'}`}
                                         onClick={() => handleStatus(rowData._id, rowData?.active ? false : true)}
                                     >
                                         {rowData?.active ? 'Deactive' : 'Active'}
