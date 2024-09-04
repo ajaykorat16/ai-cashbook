@@ -117,7 +117,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         if (spreadsheetRef?.current) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             sheet.rows = convertedData;
-            spreadsheetRef.current.refresh();
         }
         setTimeout(() => {
             setDataLoaded(true);
