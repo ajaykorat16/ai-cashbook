@@ -7,10 +7,11 @@ import Layout from '../components/Layout';
 import CustomSelect from '../components/CustomSelect';
 import { useAuth } from '../contexts/AuthContext';
 import { Badge } from 'primereact/badge';
+import ConfirmStatus from '../components/ConfirmStatus';
 
 const UserList = () => {
     const options = [10, 20, 50, 100];
-    const { getUsers, updateStatus } = useAuth()
+    const { getUsers } = useAuth()
 
     const [users, setUsers] = useState([]);
     const [sortField, setSortField] = useState('createdAt');
@@ -20,6 +21,10 @@ const UserList = () => {
     const [totalRecords, setTotalRecords] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [filter, setFilter] = useState(null);
+    const [userInfo, setUserInfo] = useState({
+        id: "",
+        status: ""
+    })
     let debounceTimeout = null;
 
     const fetchUsers = async () => {
@@ -88,8 +93,10 @@ const UserList = () => {
     };
 
     const handleStatus = async (id, status) => {
-        await updateStatus(id, status)
-        fetchUsers()
+        setUserInfo({
+            id,
+            status
+        })
     }
 
     return (
@@ -137,6 +144,7 @@ const UserList = () => {
                                     <button
                                         className={`common_btn ms-4 status-btn ${rowData?.active ? 'bg-danger' : 'bg-success'}`}
                                         onClick={() => handleStatus(rowData._id, rowData?.active ? false : true)}
+                                        data-bs-toggle="modal" data-bs-target="#update_status"
                                     >
                                         {rowData?.active ? 'Deactive' : 'Active'}
                                     </button>
@@ -160,6 +168,11 @@ const UserList = () => {
                     onPageChange={onPageChange}
                 />
             </Layout >
+            <ConfirmStatus
+                fetchUsers={fetchUsers}
+                userInfo={userInfo}
+                setUserInfo={setUserInfo}
+            />
         </>
     );
 };
