@@ -126,7 +126,7 @@ const ClientList = () => {
             const formattedPhone = formatPhoneNumberWithSpaces(rowData[columnName]);
             return (
                 <span className="phone-number">
-                    {formattedPhone}
+                    {formattedPhone ? formattedPhone : "-"}
                 </span>
             );
         }
