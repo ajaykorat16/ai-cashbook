@@ -440,18 +440,37 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
         phone,
         email,
         user_defined,
-        address
+        address,
+        individual
     } = clientData;
 
     try {
-        if (!((first_name && first_name.length >= 2 && last_name && last_name.length >= 2) ||
-            (entity_name && entity_name.length >= 2))) {
-            return {
-                status: 200,
-                error: true,
-                message: "Names must be at least 2 characters long."
-            };
+        if (individual == "true" || individual == "TRUE") {
+            if (!first_name || first_name.length < 2) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "First name must be at least 2 characters long."
+                };
+            }
+
+            if (!last_name || last_name.length < 2) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Last name must be at least 2 characters long."
+                };
+            }
+        } else {
+            if (!entity_name || entity_name.length < 2) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Entity name must be at least 2 characters long."
+                };
+            }
         }
+
         if (email) {
             if (!isValidEmail(email)) {
                 return {
@@ -539,17 +558,35 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
         email,
         client_code,
         user_defined,
-        address
+        address,
+        individual
     } = clientData;
 
     try {
-        if (!((first_name && first_name.length >= 2 && last_name && last_name.length >= 2) ||
-            (entity_name && entity_name.length >= 2))) {
-            return {
-                status: 200,
-                error: true,
-                message: "Names must be at least 2 characters long."
-            };
+        if (individual == "true" || individual == "TRUE") {
+            if (!first_name || first_name.length < 2) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "First name must be at least 2 characters long."
+                };
+            }
+
+            if (!last_name || last_name.length < 2) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Last name must be at least 2 characters long."
+                };
+            }
+        } else {
+            if (!entity_name || entity_name.length < 2) {
+                return {
+                    status: 200,
+                    error: true,
+                    message: "Entity name must be at least 2 characters long."
+                };
+            }
         }
 
         if (email) {
