@@ -208,14 +208,14 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-    const importClient = async (clients) => {
+    const importClient = async (clients, isInsert) => {
         try {
-            const { data } = await axios.post(`${baseURL}/client/import`, { clients }, { headers });
-            if (data.error === false) {
+            const { data } = await axios.post(`${baseURL}/client/import`, { clients, isInsert }, { headers });
+            if (data.error === false && isInsert) {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
                 }, 500);
-            } else {
+            } else if (isInsert) {
                 toast.current?.show({ severity: 'error', summary: 'Client', detail: data.message, life: 3000 })
             }
             return data

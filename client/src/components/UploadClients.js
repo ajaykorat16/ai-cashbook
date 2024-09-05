@@ -2,22 +2,23 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Layout from './Layout';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { useClient } from '../contexts/ClientContexts';
 import Loader from './Loader'
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 
 const UploadCsv = () => {
     const navigate = useNavigate()
-    const { auth } = useAuth()
     const { importClient } = useClient()
-
     const [isLoading, setIsLoading] = useState(false)
     const [files, setFiles] = useState([])
     const [fileName, setFileName] = useState("")
+    const [failedImports, setFailedImports] = useState([])
 
     const onDrop = useCallback((acceptedFiles) => {
         setFileName(acceptedFiles[0]?.name)
         setFiles(acceptedFiles)
+        handleUpload(acceptedFiles, false);
     }, []);
 
     const csvToObject = (csvData) => {
@@ -68,12 +69,12 @@ const UploadCsv = () => {
         }
     };
 
-    const handleUpload = async () => {
+    const handleUpload = async (csvFiles, isInsert) => {
         const clientsToImport = []
         setIsLoading(true);
 
-        for (const fileIndex in files) {
-            const file = files[fileIndex];
+        for (const fileIndex in csvFiles) {
+            const file = csvFiles[fileIndex];
             const reader = new FileReader();
 
             reader.onload = async (event) => {
@@ -87,15 +88,17 @@ const UploadCsv = () => {
                         clientsToImport.push(clientInfo)
                     }
 
-                    if (parseInt(fileIndex) === files.length - 1 && parseInt(rowIndex) === rowData.length - 1) {
-                        await importClient(JSON.stringify(clientsToImport))
+                    if (parseInt(fileIndex) === csvFiles.length - 1 && parseInt(rowIndex) === rowData.length - 1) {
+                        const data = await importClient(JSON.stringify(clientsToImport), isInsert)
+                        setFailedImports(data.failedClients)
                         setIsLoading(false);
-                        setFiles([]);
-                        navigate("/user/clients");
+                        if (isInsert) {
+                            setFiles([]);
+                            navigate("/user/clients");
+                        }
                     }
                 }
             };
-
             reader.readAsText(file);
             await new Promise((resolve) => reader.onloadend = resolve);
         }
@@ -108,6 +111,11 @@ const UploadCsv = () => {
         },
         multiple: false
     });
+
+    const customBodyTemplate = (rowData, columnName) => {
+        return rowData[columnName] ? rowData[columnName] : "-";
+    };
+
     return (
         <>
             <Layout>
@@ -158,8 +166,31 @@ const UploadCsv = () => {
                             {fileName && (
                                 <p>{fileName}</p>
                             )}
+                            {failedImports.length > 0 && (
+                                <div className="main_table mt-3">
+                                    <DataTable
+                                        className="dataTable"
+                                        value={failedImports}
+                                        dataKey="client_code"
+                                        emptyMessage="No users found."
+                                        responsiveLayout="scroll"
+                                    >
+                                        <Column field="first_name" header="First name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} />
+                                        <Column field="last_name" header="Last name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} />
+                                        <Column field="entity_name" header="Entity name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} />
+                                        <Column field="preferred_name" header="Preferred name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} />
+                                        <Column field="abn_number" header="ABN number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} />
+                                        <Column field="email" className='table-email-field' header="Email address" body={(rowData) => customBodyTemplate(rowData, 'email')} />
+                                        <Column field="phone" header="Phone number" body={(rowData) => customBodyTemplate(rowData, 'phone')} />
+                                        <Column field="address" header="Address" body={(rowData) => customBodyTemplate(rowData, 'address')} />
+                                        <Column field="client_code" header="Client code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} />
+                                        <Column field="user_defined" header="User defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} />
+                                        <Column field="message" header="Message" />
+                                    </DataTable>
+                                </div>
+                            )}
                             <div className="flex_btn">
-                                <button className={`common_btn ${files.length <= 0 && 'opacity-50'}`} onClick={() => handleUpload()} disabled={files.length <= 0}>Upload</button>
+                                <button className={`common_btn ${files.length <= 0 && 'opacity-50'}`} onClick={() => handleUpload(files, true)} disabled={files.length <= 0}>Upload</button>
                             </div>
                         </>
                     )}

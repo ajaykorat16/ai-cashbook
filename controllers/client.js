@@ -430,7 +430,7 @@ const deleteClient = async (req, res) => {
     }
 }
 
-const validateAndUpdateClient = async (clientData, id, user_id) => {
+const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
     const {
         first_name,
         last_name,
@@ -491,33 +491,33 @@ const validateAndUpdateClient = async (clientData, id, user_id) => {
             }
         }
 
-        const updateData = {
-            user_id,
-            abn_number,
-            preferred_name,
-            phone,
-            email,
-            user_defined,
-            address
-        };
+        if (isInsert) {
+            const updateData = {
+                user_id,
+                abn_number,
+                preferred_name,
+                phone,
+                email,
+                user_defined,
+                address
+            };
 
-        if (entity_name) {
-            updateData.entity_name = entity_name;
-            updateData.first_name = "";
-            updateData.last_name = "";
-        } else {
-            updateData.first_name = first_name;
-            updateData.last_name = last_name;
-            updateData.entity_name = "";
+            if (entity_name) {
+                updateData.entity_name = entity_name;
+                updateData.first_name = "";
+                updateData.last_name = "";
+            } else {
+                updateData.first_name = first_name;
+                updateData.last_name = last_name;
+                updateData.entity_name = "";
+            }
+            await Clients.findByIdAndUpdate(id, updateData, { new: true });
         }
-
-        const updatedClient = await Clients.findByIdAndUpdate(id, updateData, { new: true });
 
         return {
             status: 201,
             error: false,
             message: "Client updated successfully.",
-            updatedClient
         };
     } catch (error) {
         return {
@@ -528,7 +528,7 @@ const validateAndUpdateClient = async (clientData, id, user_id) => {
     }
 }
 
-const validateAndCreateClient = async (clientData, user_id) => {
+const validateAndCreateClient = async (clientData, user_id, isInsert) => {
     const {
         first_name,
         last_name,
@@ -604,35 +604,36 @@ const validateAndCreateClient = async (clientData, user_id) => {
             }
         }
 
-        const lastClient = await generateClientCode(user_id);
-        newClientCode = `${(entity_name ? entity_name.slice(0, 2) : last_name.slice(0, 2)).toUpperCase()}${lastClient.clientCode.toUpperCase()}`;
+        if (isInsert) {
+            const lastClient = await generateClientCode(user_id);
+            newClientCode = `${(entity_name ? entity_name.slice(0, 2) : last_name.slice(0, 2)).toUpperCase()}${lastClient.clientCode.toUpperCase()}`;
 
-        const newClientData = {
-            user_id,
-            abn_number,
-            preferred_name,
-            phone,
-            email,
-            client_code: newClientCode,
-            user_defined,
-            address,
-            first_name,
-            last_name,
-            entity_name
-        };
+            const newClientData = {
+                user_id,
+                abn_number,
+                preferred_name,
+                phone,
+                email,
+                client_code: newClientCode,
+                user_defined,
+                address,
+                first_name,
+                last_name,
+                entity_name
+            };
 
-        const newClient = await new Clients(newClientData).save();
+            const newClient = await new Clients(newClientData).save();
 
-        const user = await Users.findById(user_id);
-        if (user) {
-            await createUserClientCategoryCollection(user, newClient?._id)
-            await createBlankSpreadsheet(user?.email, newClient?._id)
+            const user = await Users.findById(user_id);
+            if (user) {
+                await createUserClientCategoryCollection(user, newClient?._id)
+                await createBlankSpreadsheet(user?.email, newClient?._id)
+            }
         }
 
         return {
             error: false,
             message: "Client created successfully.",
-            client: newClient
         };
     } catch (error) {
         console.error(error.message);
@@ -647,9 +648,10 @@ const clientImport = async (req, res) => {
     try {
         let successImports = 0
         let failedImports = 0
-        let { clients } = req.body
+        let { clients, isInsert } = req.body
         const user_id = req.user._id
         clients = JSON.parse(clients)
+        const failedClients = []
 
         for (const client of clients) {
             const { client_code } = client
@@ -657,16 +659,18 @@ const clientImport = async (req, res) => {
             const [existingClient] = await Clients.find({ client_code, user_id })
 
             if (existingClient) {
-                const updatedClient = await validateAndUpdateClient(client, existingClient?._id, user_id)
+                const updatedClient = await validateAndUpdateClient(client, existingClient?._id, user_id, isInsert)
                 if (updatedClient.error) {
                     failedImports += 1
+                    failedClients.push({ ...client, message: updatedClient.message })
                 } else {
                     successImports += 1
                 }
             } else {
-                const newClient = await validateAndCreateClient(client, user_id)
+                const newClient = await validateAndCreateClient(client, user_id, isInsert)
                 if (newClient.error) {
                     failedImports += 1
+                    failedClients.push({ ...client, message: newClient.message })
                 } else {
                     successImports += 1
                 }
@@ -677,6 +681,7 @@ const clientImport = async (req, res) => {
         return res.status(200).json({
             error: false,
             message: `${successImports} clients imported successfully${failedImports > 0 ? `, ${failedImports} skipped with error.` : "."} `,
+            failedClients
         })
     } catch (error) {
         console.log(error.message)
