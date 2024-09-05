@@ -450,7 +450,7 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
                 return {
                     status: 200,
                     error: true,
-                    message: "First name must be at least 2 characters long.",
+                    message: "First name is required and must be at least two characters long.",
                     field: "first_name"
                 };
             }
@@ -459,7 +459,7 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
                 return {
                     status: 200,
                     error: true,
-                    message: "Last name must be at least 2 characters long.",
+                    message: "Last name is required and must be at least two characters long.",
                     field: "last_name"
                 };
             }
@@ -468,7 +468,7 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
                 return {
                     status: 200,
                     error: true,
-                    message: "Entity name must be at least 2 characters long.",
+                    message: "Entity name is required and must be at least two characters long.",
                     field: "entity_name"
                 };
             }
@@ -575,7 +575,7 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
                 return {
                     status: 200,
                     error: true,
-                    message: "First name must be at least 2 characters long.",
+                    message: "First name is required and must be at least two characters long.",
                     field: "first_name"
                 };
             }
@@ -584,7 +584,7 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
                 return {
                     status: 200,
                     error: true,
-                    message: "Last name must be at least 2 characters long.",
+                    message: "Last name is required and must be at least two characters long.",
                     field: "last_name"
                 };
             }
@@ -593,7 +593,7 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
                 return {
                     status: 200,
                     error: true,
-                    message: "Entity name must be at least 2 characters long.",
+                    message: "Entity name is required and must be at least two characters long.",
                     field: "entity_name"
                 };
             }
