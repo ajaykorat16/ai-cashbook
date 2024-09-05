@@ -662,19 +662,18 @@ const clientImport = async (req, res) => {
                 const updatedClient = await validateAndUpdateClient(client, existingClient?._id, user_id, isInsert)
                 if (updatedClient.error) {
                     failedImports += 1
-                    failedClients.push({ ...client, message: updatedClient.message })
                 } else {
                     successImports += 1
                 }
+                failedClients.push({ ...client, message: updatedClient.message === "Client updated successfully." ? "-" : updatedClient.message })
             } else {
                 const newClient = await validateAndCreateClient(client, user_id, isInsert)
                 if (newClient.error) {
                     failedImports += 1
-                    failedClients.push({ ...client, message: newClient.message })
                 } else {
                     successImports += 1
                 }
-
+                failedClients.push({ ...client, message: newClient.message === "Client created successfully." ? "-" : newClient.message })
             }
         };
 
