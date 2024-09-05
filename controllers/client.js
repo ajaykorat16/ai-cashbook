@@ -444,77 +444,87 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
         individual
     } = clientData;
 
+    const errors = [];
+
     try {
         if (individual == "true" || individual == "TRUE") {
             if (!first_name || first_name.length < 2) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "First name is required and must be at least two characters long.",
-                    field: "first_name"
+                const errorObj = {
+                    field: "first_name",
+                    message: "First name is required and must be at least two characters long."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
 
             if (!last_name || last_name.length < 2) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Last name is required and must be at least two characters long.",
-                    field: "last_name"
+                const errorObj = {
+                    field: "last_name",
+                    message: "Last name is required and must be at least two characters long."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         } else {
             if (!entity_name || entity_name.length < 2) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Entity name is required and must be at least two characters long.",
-                    field: "entity_name"
+                const errorObj = {
+                    field: "entity_name",
+                    message: "Entity name is required and must be at least two characters long."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         }
 
         if (email) {
             if (!isValidEmail(email)) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Please enter a valid email.",
-                    field: "email"
+                const errorObj = {
+                    field: "email",
+                    message: "Please enter a valid email."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
             const existingEmail = await Clients.findOne({ email, user_id, _id: { $ne: id } });
             if (existingEmail) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Client already created with this email.",
-                    field: "email"
+                const errorObj = {
+                    field: "email",
+                    message: "Client already created with this email."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         }
 
         if (phone) {
             if (phone.length < 10 || phone.length > 13) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Please enter a valid phone number.",
-                    field: "phone"
+                const errorObj = {
+                    field: "phone",
+                    message: "Please enter a valid phone number."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         }
 
         if (abn_number) {
             const existingAbnNumber = await Clients.findOne({ abn_number, user_id, _id: { $ne: id } });
             if (existingAbnNumber) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Abn number should be unique.",
-                    field: "abn_number"
+                const errorObj = {
+                    field: "abn_number",
+                    message: "Abn number should be unique."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
+        }
+
+        if (!isInsert && errors.length > 0) {
+            return {
+                status: 200,
+                error: true,
+                errors
+            };
         }
 
         if (isInsert) {
@@ -537,13 +547,14 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
                 updateData.last_name = last_name;
                 updateData.entity_name = "";
             }
+
             await Clients.findByIdAndUpdate(id, updateData, { new: true });
         }
 
         return {
             status: 201,
             error: false,
-            message: "Client updated successfully.",
+            message: "Client updated successfully."
         };
     } catch (error) {
         return {
@@ -552,7 +563,8 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
             message: 'Server error'
         };
     }
-}
+};
+
 
 const validateAndCreateClient = async (clientData, user_id, isInsert) => {
     const {
@@ -569,96 +581,105 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
         individual
     } = clientData;
 
+    const errors = [];
+
     try {
         if (individual == "true" || individual == "TRUE") {
             if (!first_name || first_name.length < 2) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "First name is required and must be at least two characters long.",
-                    field: "first_name"
+                const errorObj = {
+                    field: "first_name",
+                    message: "First name is required and must be at least two characters long."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
 
             if (!last_name || last_name.length < 2) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Last name is required and must be at least two characters long.",
-                    field: "last_name"
+                const errorObj = {
+                    field: "last_name",
+                    message: "Last name is required and must be at least two characters long."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         } else {
             if (!entity_name || entity_name.length < 2) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Entity name is required and must be at least two characters long.",
-                    field: "entity_name"
+                const errorObj = {
+                    field: "entity_name",
+                    message: "Entity name is required and must be at least two characters long."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         }
 
         if (email) {
             if (!isValidEmail(email)) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Please enter a valid email.",
-                    field: "email"
+                const errorObj = {
+                    field: "email",
+                    message: "Please enter a valid email."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
             const existingEmail = await Clients.findOne({ email, user_id });
             if (existingEmail) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Client already created with this email.",
-                    field: "email"
+                const errorObj = {
+                    field: "email",
+                    message: "Client already created with this email."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         }
 
         if (phone) {
             if (phone.length < 10 || phone.length > 13) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Please enter a valid phone number.",
-                    field: "phone"
+                const errorObj = {
+                    field: "phone",
+                    message: "Please enter a valid phone number."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         }
 
         if (abn_number) {
             const existingAbnNumber = await Clients.findOne({ abn_number, user_id });
             if (existingAbnNumber) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Abn number should be unique.",
-                    field: "abn_number"
+                const errorObj = {
+                    field: "abn_number",
+                    message: "Abn number should be unique."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
         }
 
-        let newClientCode;
         if (client_code) {
             const trimmedClientCode = client_code.trim();
             const existingClientCode = await Clients.findOne({ client_code: trimmedClientCode, user_id });
             if (existingClientCode) {
-                return {
-                    status: 200,
-                    error: true,
-                    message: "Client code should be unique.",
-                    field: "client_code"
+                const errorObj = {
+                    field: "client_code",
+                    message: "Client code should be unique."
                 };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
             }
+        }
+
+        if (!isInsert && errors.length > 0) {
+            return {
+                status: 200,
+                error: true,
+                errors
+            };
         }
 
         if (isInsert) {
             const lastClient = await generateClientCode(user_id);
-            newClientCode = `${(entity_name ? entity_name.slice(0, 2) : last_name.slice(0, 2)).toUpperCase()}${lastClient.clientCode.toUpperCase()}`;
+            const newClientCode = `${(entity_name ? entity_name.slice(0, 2) : last_name.slice(0, 2)).toUpperCase()}${lastClient.clientCode.toUpperCase()}`;
 
             const newClientData = {
                 user_id,
@@ -678,14 +699,14 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
 
             const user = await Users.findById(user_id);
             if (user) {
-                await createUserClientCategoryCollection(user, newClient?._id)
-                await createBlankSpreadsheet(user?.email, newClient?._id)
+                await createUserClientCategoryCollection(user, newClient?._id);
+                await createBlankSpreadsheet(user?.email, newClient?._id);
             }
         }
 
         return {
             error: false,
-            message: "Client created successfully.",
+            message: "Client created successfully."
         };
     } catch (error) {
         console.error(error.message);
@@ -719,8 +740,7 @@ const clientImport = async (req, res) => {
                 }
                 failedClients.push({
                     ...client,
-                    message: updatedClient.message === "Client updated successfully." ? "-" : updatedClient.message,
-                    field: updatedClient?.field ? updatedClient?.field : ""
+                    errors: updatedClient?.errors
                 })
             } else {
                 const newClient = await validateAndCreateClient(client, user_id, isInsert)
@@ -731,8 +751,7 @@ const clientImport = async (req, res) => {
                 }
                 failedClients.push({
                     ...client,
-                    message: newClient.message === "Client created successfully." ? "-" : newClient.message,
-                    field: newClient?.field ? newClient?.field : ""
+                    errors: newClient?.errors
                 })
             }
         };

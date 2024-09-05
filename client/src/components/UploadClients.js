@@ -119,16 +119,19 @@ const UploadCsv = () => {
         multiple: false
     });
 
-    const customBodyTemplate = (rowData, columnName) => {
-        if (rowData?.field === columnName) {
-            setDiasbledUpload(true)
+    const customBodyTemplate = (rowData, columnName, errors) => {
+        const error = rowData?.errors?.find(errorObj => errorObj.field === columnName);
+
+        if (error) {
+            setDiasbledUpload(true);
             return (
                 <div className='d-flex flex-column'>
-                    <span> {rowData[columnName]}</span>
-                    <span className='text-danger small'>{rowData?.message}</span>
+                    <span>{rowData[columnName] || "-"}</span>
+                    <span className='text-danger small'>{error.message}</span>
                 </div>
-            )
+            );
         }
+
         return rowData[columnName] ? rowData[columnName] : "-";
     };
 
