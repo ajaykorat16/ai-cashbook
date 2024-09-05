@@ -14,11 +14,17 @@ const UploadCsv = () => {
     const [files, setFiles] = useState([])
     const [fileName, setFileName] = useState("")
     const [failedImports, setFailedImports] = useState([])
+    const [disabledUpload, setDiasbledUpload] = useState(true)
 
     const onDrop = useCallback((acceptedFiles) => {
         setFileName(acceptedFiles[0]?.name)
         setFiles(acceptedFiles)
         handleUpload(acceptedFiles, false);
+        if (acceptedFiles.length <= 0) {
+            setDiasbledUpload(true)
+        } else if (acceptedFiles.length > 0) {
+            setDiasbledUpload(false)
+        }
     }, []);
 
     const csvToObject = (csvData) => {
@@ -114,6 +120,15 @@ const UploadCsv = () => {
     });
 
     const customBodyTemplate = (rowData, columnName) => {
+        if (rowData?.field === columnName) {
+            setDiasbledUpload(true)
+            return (
+                <div className='d-flex flex-column'>
+                    <span> {rowData[columnName]}</span>
+                    <span className='text-danger small'>{rowData?.message}</span>
+                </div>
+            )
+        }
         return rowData[columnName] ? rowData[columnName] : "-";
     };
 
@@ -186,12 +201,11 @@ const UploadCsv = () => {
                                         <Column field="address" header="Address" body={(rowData) => customBodyTemplate(rowData, 'address')} />
                                         <Column field="client_code" header="Client code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} />
                                         <Column field="user_defined" header="User defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} />
-                                        <Column field="message" header="Message" />
                                     </DataTable>
                                 </div>
                             )}
                             <div className="flex_btn">
-                                <button className={`common_btn ${files.length <= 0 && 'opacity-50'}`} onClick={() => handleUpload(files, true)} disabled={files.length <= 0}>Upload</button>
+                                <button className={`common_btn ${disabledUpload && 'opacity-50'}`} onClick={() => handleUpload(files, true)} disabled={disabledUpload}>Upload</button>
                             </div>
                         </>
                     )}
