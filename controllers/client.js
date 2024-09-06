@@ -756,11 +756,27 @@ const clientImport = async (req, res) => {
             }
         };
 
-        return res.status(200).json({
-            error: false,
-            message: `${successImports} clients imported successfully${failedImports > 0 ? `, ${failedImports} skipped with error.` : "."} `,
-            failedClients
-        })
+        if (isInsert) {
+            return res.status(200).json({
+                error: false,
+                message: `${successImports} clients imported successfully${failedImports > 0 ? `, ${failedImports} skipped with error.` : "."} `,
+                failedClients
+            })
+        } else {
+            if (failedImports > 0) {
+                return res.status(200).json({
+                    error: true,
+                    message: `You have error in your file, please improve the data and upload again.`,
+                    failedClients
+                })
+            } else {
+                return res.status(200).json({
+                    error: false,
+                    message: `You file is  validated and ready to import, please verify data and press upload.`,
+                    failedClients
+                })
+            }
+        }
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server error');

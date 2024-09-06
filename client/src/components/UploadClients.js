@@ -6,10 +6,12 @@ import { useClient } from '../contexts/ClientContexts';
 import Loader from './Loader'
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { useAuth } from '../contexts/AuthContext';
 
 const UploadCsv = () => {
     const navigate = useNavigate()
     const { importClient } = useClient()
+    const { toast } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [files, setFiles] = useState([])
     const [fileName, setFileName] = useState("")
@@ -102,6 +104,12 @@ const UploadCsv = () => {
                         if (isInsert) {
                             setFiles([]);
                             navigate("/user/clients");
+                        } else {
+                            if (data?.error) {
+                                toast.current?.show({ severity: 'error', summary: 'Client', detail: data.message, life: 3000 })
+                            } else {
+                                toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
+                            }
                         }
                     }
                 }
@@ -131,7 +139,6 @@ const UploadCsv = () => {
                 </div>
             );
         }
-
         return rowData[columnName] ? rowData[columnName] : "-";
     };
 
