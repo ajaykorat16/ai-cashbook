@@ -119,7 +119,7 @@ const UserList = () => {
                         <Loader />
                     ) : (
                         <DataTable
-                            className="dataTable"
+                            className="dataTable user-table"
                             totalRecords={totalRecords}
                             lazy
                             sortField={sortField}

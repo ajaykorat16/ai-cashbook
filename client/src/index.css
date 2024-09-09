@@ -1004,7 +1004,7 @@ div[style*="z-index: 99999"] {
   width: max-content;
 }
 
-.e-toolbar-items .e-toolbar-item[data-id = "tabitem_5"] {
+.e-toolbar-items .e-toolbar-item[data-id="tabitem_5"] {
   display: none;
 }
 
@@ -1015,6 +1015,12 @@ div[style*="z-index: 99999"] {
 .status-btn {
   width: 100%;
 }
+
+.user-table .p-datatable-wrapper .p-datatable-emptymessage td {
+  text-align: center;
+  padding: 10px 0 10px 0;
+}
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
