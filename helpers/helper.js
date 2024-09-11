@@ -81,19 +81,19 @@ const createUserClientCategoryCollection = async (user, client_id) => {
         if (userCategoryData?.data) {
 
             const collections = await database.listCollections().toArray();
-    
+
             const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_category`);
             if (!collectionExists) {
                 await database.createCollection(`${user?.email.split("@")[0]}_client_category`);
             }
-    
+
             const userCategory = database.collection(`${user?.email.split("@")[0]}_client_category`);
-    
+
             const clientCategoryData = {
                 client_id,
                 data: userCategoryData.data
             }
-    
+
             await userCategory.insertOne(clientCategoryData);
         }
     } catch (error) {
@@ -118,8 +118,9 @@ const createBlankSpreadsheet = async (email, id) => {
 
         const spreadsheet = {
             client_id: id,
-            data: []
+            data: [["Account", "SQ", "Date", "Narrative", "Amt  ", "Tax_Category", "Business%", "TaxableAmt", "GST_Code", "BAS_Code", "GST_Amt", "Excl.GST_Amt", "FY", "QTR", "ITR_Label", "BAS_LabN"]]
         }
+
         await userSpreadsheet.insertOne(spreadsheet);
     } catch (parseErr) {
         console.error('Error parsing JSON:', parseErr);

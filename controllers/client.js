@@ -867,65 +867,92 @@ const getSpreadsheet = async (req, res) => {
 
 const createClientSpreadsheet = async (req, res) => {
     try {
-        const { id } = req.params
-        const { data } = req.body
+        const { id } = req.params;
+        const { data } = req.body;
 
-        const client = await getClient(id)
+        const client = await getClient(id);
         if (!client) {
             return res.status(400).json({
                 error: true,
-                message: "Client is not existing."
-            })
+                message: "Client does not exist.",
+            });
         }
 
-        if (!Array.isArray(data)) {
-            return res.status(200).json({
+        if (!Array.isArray(data) || data.length === 0) {
+            return res.status(400).json({
                 error: true,
-                message: "Data must be array and not empty.",
-            })
+                message: "Data must be an array and not empty.",
+            });
         }
 
         const user = await Users.findById(client?.user_id);
         await mongoClient.connect();
-
         const database = mongoClient.db(process.env.DATABASE_NAME);
+        
         const collections = await database.listCollections().toArray();
         const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
+
         if (!collectionExists) {
             await database.createCollection(`${user?.email.split("@")[0]}_client_spreadsheet`);
         }
 
         const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
         const spreadsheet = await clientSpreadsheet.findOne({ client_id: new ObjectId(id) });
+
+        const userCategory = database.collection(`${user?.email.split("@")[0]}_master_category`);
+        const categories = await userCategory.findOne({ user_id: new ObjectId(user?._id) });
+
+        if (!categories || !Array.isArray(categories.data) || categories.data.length === 0) {
+            return res.status(400).json({
+                error: true,
+                message: "No categories data found."
+            });
+        }
+
         if (spreadsheet) {
-            if (spreadsheet?.data.length > 0) {
-                data.shift()
-            }
-            const newData = spreadsheet?.data.concat(data)
+            const lastIndex = spreadsheet.data.length - 1;
+
+            const formattedData = data.slice(1);
+
+            formattedData.forEach((item, index) => {
+                const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
+                const categoryName = randomCategoryArray[0];
+                const categoryGstCode = randomCategoryArray[2];
+                const categoryBasCode = randomCategoryArray[3];
+                const categoryItrLabel = randomCategoryArray[4];
+
+                if (Array.isArray(item) && item.length > 1) {
+                    const newIndex = lastIndex + index + 1;
+                    item.splice(2, 0, item[1]); 
+                    item[1] = newIndex; 
+                    item[5] = categoryName || "";
+                    item[8] = categoryGstCode || "";
+                    item[9] = categoryBasCode || "";
+                    item[14] = categoryItrLabel || "";
+                }
+            });
+
+            const updatedData = spreadsheet.data.concat(formattedData);
+
             await clientSpreadsheet.findOneAndUpdate(
                 { client_id: new ObjectId(id) },
-                { $set: { data: newData } },
+                { $set: { data: updatedData } },
                 { returnOriginal: false }
             );
-        } else {
-            const spreadsheetData = {
-                client_id: new ObjectId(id),
-                data
-            }
-            await clientSpreadsheet.insertOne(spreadsheetData);
         }
 
         return res.status(200).json({
             error: false,
             message: "Client category created successfully.",
-        })
+        });
     } catch (error) {
-        console.log(error.message)
-        res.status(500).send('Server error');
+        console.log(error.message);
+        res.status(500).send("Server error");
     } finally {
         await mongoClient.close();
     }
-}
+};
+
 
 const updateClientSpreadsheet = async (req, res) => {
     try {
