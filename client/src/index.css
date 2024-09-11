@@ -1021,6 +1021,10 @@ div[style*="z-index: 99999"] {
   padding: 10px 0 10px 0;
 }
 
+.spreadsheet-loader {
+  justify-content: end;
+}
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
@@ -1109,6 +1113,10 @@ div[style*="z-index: 99999"] {
   .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
     text-align: center;
     padding: 10px 695px 10px 0;
+  }
+
+  .spreadsheet-loader {
+    justify-content: center;
   }
 }
 
@@ -1219,19 +1227,37 @@ div[style*="z-index: 99999"] {
   .paginate_container {
     width: 140px;
   }
+
+  .spreadsheet-loader {
+    justify-content: center;
+  }
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (min-width: 1024px) {
   .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
     text-align: center;
     padding: 10px 720px 10px 0;
   }
+
+  .spreadsheet-loader {
+    justify-content: end;
+  }
 }
+
+@media screen and (max-width: 768) {
+  .spreadsheet-loader {
+    justify-content: center;
+  }
+ }
 
 @media screen and (max-width: 426px) {
   .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
     text-align: center;
     padding: 10px 990px 10px 0;
+  }
+
+  .spreadsheet-loader {
+    justify-content: center;
   }
 }
 
@@ -1240,11 +1266,19 @@ div[style*="z-index: 99999"] {
     text-align: center;
     padding: 10px 1040px 10px 0;
   }
+
+  .spreadsheet-loader {
+    justify-content: center;
+  }
 }
 
 @media screen and (max-width: 320px) {
   .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
     text-align: center;
     padding: 10px 1095px 10px 0;
+  }
+
+  .spreadsheet-loader {
+    justify-content: center;
   }
 }

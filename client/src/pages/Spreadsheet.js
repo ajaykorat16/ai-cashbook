@@ -21,7 +21,7 @@ const Spreadsheet = () => {
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const getSheetData = async () => {
         if (spreadsheetRef.current) {
@@ -54,7 +54,6 @@ const Spreadsheet = () => {
 
         const sortedRows = Array.from(rows).sort((a, b) => a - b);
         const sortedCols = Array.from(cols).sort();
-
         sortedRows.forEach(() => result.push([]));
 
         data.forEach((value, key) => {
@@ -75,11 +74,6 @@ const Spreadsheet = () => {
         return convertedData
     };
 
-    const handleCellSave = async () => {
-        const formattedData = await getSheetData()
-        await updateSpreadsheet(params?.id, formattedData);
-    }
-
     const fetchCsvLoaded = async () => {
         setIsLoading(true)
         const csvDetail = await getSpreadsheet(params?.id);
@@ -93,8 +87,7 @@ const Spreadsheet = () => {
         }
         setTimeout(() => {
             setDataLoaded(true);
-        }, 1000);
-        setIsLoading(false)
+        }, 3500);
     }
 
     useEffect(() => {
@@ -105,9 +98,62 @@ const Spreadsheet = () => {
 
     useEffect(() => {
         if (dataLoaded) {
-            getSheetData()
+            formateSheet()
+            getSheetData();
+            applyFilterOnColumn('A')
         }
-    }, [dataLoaded])
+    }, [dataLoaded]);
+
+    const handleActionComplete = async (args) => {
+        if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
+            args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert') {
+            const formattedData = await getSheetData();
+            await updateSpreadsheet(params?.id, formattedData);
+            formateSheet()
+        }
+    };
+
+    const formateSheet = () => {
+        if (spreadsheetRef.current) {
+            const sheet = spreadsheetRef.current.getActiveSheet();
+            const colCount = sheet.usedRange.colIndex + 1;
+            const rowCount = sheet.usedRange.rowIndex + 1;
+
+            const firstRowRange = `A1:${String.fromCharCode(64 + colCount)}1`;
+            spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
+
+            spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
+
+            // const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
+            // spreadsheetRef.current.cellFormat({ border: 'none', borderBottom: '1px solid #FFFFFF' }, range);
+
+            // const outerBorderRange = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
+            // spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, outerBorderRange, 'Outer');
+
+            // const horizontalBorderRange = `A2:${String.fromCharCode(64 + colCount)}${rowCount}`;
+            // spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
+            setIsLoading(false);
+        }
+    };
+
+    const applyFilterOnColumn = (columnLetter) => {
+        if (spreadsheetRef.current) {
+            const sheet = spreadsheetRef.current.getActiveSheet();
+            const colCount = sheet.usedRange.colIndex + 1;
+            const rowCount = sheet.usedRange.rowIndex + 1;
+            const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
+
+            spreadsheetRef.current.applyFilter(
+                [{
+                    field: columnLetter,
+                    operator: 'notEqual',
+                    value: ''
+                }],
+                range
+            );
+            spreadsheetRef.current.refresh();
+        }
+    };
 
     return (
         <section className="data_sheet">
@@ -134,25 +180,27 @@ const Spreadsheet = () => {
                         <button className="common_btn w-100 mb-20">Custom 1 </button>
                         <button className="common_btn w-100 mb-20">Custom 2 </button>
                         <button className="common_btn w-100 mb-20">Apply </button>
-                        <button className="common_btn w-100 mb-20" onClick={() => navigate("/user/clients")}>Back </button>
+                        <button className="common_btn w-100 mb-20" onClick={() => navigate("/user/clients")}>Back to list</button>
                     </div>
                     {params?.id && (
                         <>
                             {isLoading && (
-                                <div className='d-flex justify-content-center align-item-center w-100'>
+                                <div className='d-flex align-item-center w-100 spreadsheet-loader'>
                                     <Loader />
                                 </div>
                             )}
-                            <div className={`sheet_data ${isLoading && 'd-none'}`}>
+                            <div className={`sheet_data ${isLoading && 'invisible'}`}>
                                 <SpreadsheetComponent
                                     ref={spreadsheetRef}
-                                    cellSave={handleCellSave}
+                                    actionComplete={handleActionComplete}
                                     showSheetTabs={false}
+                                    allowSorting={true}
+                                    allowFiltering={true}
                                 >
                                     <SheetsDirective>
-                                        <SheetDirective >
+                                        <SheetDirective frozenRows={1}>
                                             <RangesDirective>
-                                                <RangeDirective ></RangeDirective>
+                                                <RangeDirective></RangeDirective>
                                             </RangesDirective>
                                         </SheetDirective>
                                     </SheetsDirective>
