@@ -54,25 +54,62 @@ const Spreadsheet = () => {
 
         const sortedRows = Array.from(rows).sort((a, b) => a - b);
         const sortedCols = Array.from(cols).sort();
-        sortedRows.forEach(() => result.push([]));
 
+        sortedRows.forEach(() => result.push([]));
         data.forEach((value, key) => {
             const col = key.charAt(0);
             const row = parseInt(key.substring(1), 10) - 1;
             const colIndex = sortedCols.indexOf(col);
-            const cellValue = value.value || '';
+            let cellValue = value?.value || '';
+
+            const style = value?.style || {};
+            if (Object.keys(style).length > 0 && cellValue) {
+                if (style.fontWeight === 'bold') {
+                    cellValue = `<b>${cellValue}</b>`;
+                }
+                if (style.fontStyle === 'italic') {
+                    cellValue = `<i>${cellValue}</i>`;
+                }
+                if (style.textDecoration === 'underline') {
+                    cellValue = `<u>${cellValue}</u>`;
+                }
+            }
+
             result[row][colIndex] = cellValue;
         });
-
         return result;
     };
 
     const convertToCellFormat = (data) => {
         const convertedData = data?.map(row => ({
-            cells: row.map(cell => ({ value: cell }))
+            cells: row.map(cell => {
+                let value = cell || '';
+                const style = {};
+
+                if (typeof value !== 'string') {
+                    value = String(value);
+                }
+
+                if (value.includes('<b>')) {
+                    style.fontWeight = 'bold';
+                    value = value.replace(/<\/?b>/g, '');
+                }
+                if (value.includes('<i>')) {
+                    style.fontStyle = 'italic';
+                    value = value.replace(/<\/?i>/g, '');
+                }
+                if (value.includes('<u>')) {
+                    style.textDecoration = 'underline';
+                    value = value.replace(/<\/?u>/g, '');
+                }
+
+                return { value, style };
+            })
         }));
-        return convertedData
+
+        return convertedData;
     };
+
 
     const fetchCsvLoaded = async () => {
         setIsLoading(true)
