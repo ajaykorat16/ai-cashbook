@@ -56,11 +56,17 @@ const Spreadsheet = () => {
         const sortedCols = Array.from(cols).sort();
 
         sortedRows.forEach(() => result.push([]));
+
         data.forEach((value, key) => {
             const col = key.charAt(0);
             const row = parseInt(key.substring(1), 10) - 1;
             const colIndex = sortedCols.indexOf(col);
             let cellValue = value?.value || '';
+            const format = value?.format || '';
+
+            if (format.includes('$')) {
+                cellValue = `$${parseFloat(cellValue).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+            }
 
             const style = value?.style || {};
             if (Object.keys(style).length > 0 && cellValue) {
