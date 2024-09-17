@@ -4,9 +4,10 @@ const { MongoClient, ObjectId } = require('mongodb');
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
 const { validationResult } = require('express-validator');
 const { isValidEmail, createUserClientCategoryCollection, createBlankSpreadsheet } = require("../helpers/helper");
+const { createObjectCsvWriter } = require('csv-writer');
 const fs = require('fs');
 const path = require('path');
-const { createObjectCsvWriter } = require('csv-writer');
+const moment = require('moment');
 
 const createClient = async (req, res) => {
     const errors = validationResult(req);
@@ -1069,7 +1070,8 @@ const createClientSpreadsheet = async (req, res) => {
             fs.mkdirSync(folderPath, { recursive: true });
         }
 
-        const filePath = path.join(folderPath, `${id}-${new Date()}.csv`);
+        const formattedDate = moment().format('DD-MM-YYYY-HH-mm');
+        const filePath = path.join(folderPath, `${id}-${formattedDate}.csv`);
 
         const csvWriter = createObjectCsvWriter({
             path: filePath,
