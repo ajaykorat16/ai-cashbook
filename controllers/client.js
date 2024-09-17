@@ -992,25 +992,43 @@ const createClientSpreadsheet = async (req, res) => {
                 newCsv.push([bankAccount, date, narrative, amount, category]);
             })
         } else {
+            const user = await Users.findById(client?.user_id);
+            await mongoClient.connect();
+            const database = mongoClient.db(process.env.DATABASE_NAME);
+
+            const userCategory = database.collection(`${user?.email.split("@")[0]}_master_category`);
+            const categories = await userCategory.findOne({ user_id: new ObjectId(user?._id) });
+
+            if (!categories || !Array.isArray(categories.data) || categories.data.length === 0) {
+                return res.status(400).json({
+                    error: true,
+                    message: "No categories data found."
+                });
+            }
+
             if (data[0].length === 3) {
                 data.forEach(row => {
                     const [date, amount, narrative] = row;
                     let formattedAmount = '';
+
                     if (amount < 0) {
                         formattedAmount = `-$${Math.abs(parseFloat(amount)).toFixed(2)}`;
                     } else {
                         formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
                     }
 
-                    newCsv.push(["", date, narrative, formattedAmount, ""]);
+                    const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
+                    newCsv.push(["", date, narrative, formattedAmount, randomCategoryArray[0]]);
                 });
             } else if (data[0].length === 4) {
                 if (data[0][0] === "Account History for Account:") {
                     const accountNumber = data[0][1].split("-")[1].trim();
                     data.splice(0, 2);
+
                     data.forEach(row => {
                         const [date, narrative, amount] = row;
-                        newCsv.push([accountNumber, date, narrative, amount, ""]);
+                        const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
+                        newCsv.push([accountNumber, date, narrative, amount, randomCategoryArray[0]]);
                     });
                 } else {
                     data.forEach(row => {
@@ -1023,7 +1041,8 @@ const createClientSpreadsheet = async (req, res) => {
                             formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
                         }
 
-                        newCsv.push(["", date, narrative, formattedAmount, ""]);
+                        const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
+                        newCsv.push(["", date, narrative, formattedAmount, randomCategoryArray[0]]);
                     });
                 }
             } else if (data[0].length === 7) {
@@ -1037,7 +1056,8 @@ const createClientSpreadsheet = async (req, res) => {
                     }
                     const narrative = `${narrative2} ${narrative1}`;
 
-                    newCsv.push(["", date, narrative, formattedAmount, ""]);
+                    const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
+                    newCsv.push(["", date, narrative, formattedAmount, randomCategoryArray[0]]);
                 });
             }
         }
@@ -1049,7 +1069,7 @@ const createClientSpreadsheet = async (req, res) => {
             fs.mkdirSync(folderPath, { recursive: true });
         }
 
-        const filePath = path.join(folderPath, `${id}_${new Date()}.csv`);
+        const filePath = path.join(folderPath, `${id}-${new Date()}.csv`);
 
         const csvWriter = createObjectCsvWriter({
             path: filePath,
