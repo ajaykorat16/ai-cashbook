@@ -4,6 +4,9 @@ const { MongoClient, ObjectId } = require('mongodb');
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
 const { validationResult } = require('express-validator');
 const { isValidEmail, createUserClientCategoryCollection, createBlankSpreadsheet } = require("../helpers/helper");
+const fs = require('fs');
+const path = require('path');
+const { createObjectCsvWriter } = require('csv-writer');
 
 const createClient = async (req, res) => {
     const errors = validationResult(req);
@@ -865,6 +868,94 @@ const getSpreadsheet = async (req, res) => {
     }
 }
 
+// const createClientSpreadsheet = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const { data } = req.body;
+
+//         const client = await getClient(id);
+//         if (!client) {
+//             return res.status(400).json({
+//                 error: true,
+//                 message: "Client does not exist.",
+//             });
+//         }
+
+//         if (!Array.isArray(data) || data.length === 0) {
+//             return res.status(400).json({
+//                 error: true,
+//                 message: "Data must be an array and not empty.",
+//             });
+//         }
+
+//         const user = await Users.findById(client?.user_id);
+//         await mongoClient.connect();
+//         const database = mongoClient.db(process.env.DATABASE_NAME);
+
+//         const collections = await database.listCollections().toArray();
+//         const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
+
+//         if (!collectionExists) {
+//             await database.createCollection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+//         }
+
+//         const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+//         const spreadsheet = await clientSpreadsheet.findOne({ client_id: new ObjectId(id) });
+
+//         const userCategory = database.collection(`${user?.email.split("@")[0]}_master_category`);
+//         const categories = await userCategory.findOne({ user_id: new ObjectId(user?._id) });
+
+//         if (!categories || !Array.isArray(categories.data) || categories.data.length === 0) {
+//             return res.status(400).json({
+//                 error: true,
+//                 message: "No categories data found."
+//             });
+//         }
+
+//         if (spreadsheet) {
+//             const lastIndex = spreadsheet.data.length - 1;
+
+//             const formattedData = data.slice(1);
+
+//             formattedData.forEach((item, index) => {
+//                 const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
+//                 const categoryName = randomCategoryArray[0];
+//                 const categoryGstCode = randomCategoryArray[2];
+//                 const categoryBasCode = randomCategoryArray[3];
+//                 const categoryItrLabel = randomCategoryArray[4];
+
+//                 if (Array.isArray(item) && item.length > 1) {
+//                     const newIndex = lastIndex + index + 1;
+//                     item.splice(2, 0, item[1]); 
+//                     item[1] = newIndex; 
+//                     item[5] = categoryName || "";
+//                     item[8] = categoryGstCode || "";
+//                     item[9] = categoryBasCode || "";
+//                     item[14] = categoryItrLabel || "";
+//                 }
+//             });
+
+//             const updatedData = spreadsheet.data.concat(formattedData);
+
+//             await clientSpreadsheet.findOneAndUpdate(
+//                 { client_id: new ObjectId(id) },
+//                 { $set: { data: updatedData } },
+//                 { returnOriginal: false }
+//             );
+//         }
+
+//         return res.status(200).json({
+//             error: false,
+//             message: "Client spreadsheet created successfully.",
+//         });
+//     } catch (error) {
+//         console.log(error.message);
+//         res.status(500).send("Server error");
+//     } finally {
+//         await mongoClient.close();
+//     }
+// };
+
 const createClientSpreadsheet = async (req, res) => {
     try {
         const { id } = req.params;
@@ -885,74 +976,98 @@ const createClientSpreadsheet = async (req, res) => {
             });
         }
 
-        const user = await Users.findById(client?.user_id);
-        await mongoClient.connect();
-        const database = mongoClient.db(process.env.DATABASE_NAME);
-        
-        const collections = await database.listCollections().toArray();
-        const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
+        const newCsv = [["Bank Account", "Date", "Narrative", "Amt", "Categories"]]
 
-        if (!collectionExists) {
-            await database.createCollection(`${user?.email.split("@")[0]}_client_spreadsheet`);
-        }
-
-        const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
-        const spreadsheet = await clientSpreadsheet.findOne({ client_id: new ObjectId(id) });
-
-        const userCategory = database.collection(`${user?.email.split("@")[0]}_master_category`);
-        const categories = await userCategory.findOne({ user_id: new ObjectId(user?._id) });
-
-        if (!categories || !Array.isArray(categories.data) || categories.data.length === 0) {
-            return res.status(400).json({
-                error: true,
-                message: "No categories data found."
-            });
-        }
-
-        if (spreadsheet) {
-            const lastIndex = spreadsheet.data.length - 1;
-
-            const formattedData = data.slice(1);
-
-            formattedData.forEach((item, index) => {
-                const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
-                const categoryName = randomCategoryArray[0];
-                const categoryGstCode = randomCategoryArray[2];
-                const categoryBasCode = randomCategoryArray[3];
-                const categoryItrLabel = randomCategoryArray[4];
-
-                if (Array.isArray(item) && item.length > 1) {
-                    const newIndex = lastIndex + index + 1;
-                    item.splice(2, 0, item[1]); 
-                    item[1] = newIndex; 
-                    item[5] = categoryName || "";
-                    item[8] = categoryGstCode || "";
-                    item[9] = categoryBasCode || "";
-                    item[14] = categoryItrLabel || "";
+        if (data[0][0] === "Bank Account") {
+            data.shift();
+            data.forEach(row => {
+                const [bankAccount, date, narrative, debitAmt, creditAmt, category] = row;
+                let amount = '';
+                if (creditAmt) {
+                    amount = `$${parseFloat(creditAmt).toLocaleString()}`;
+                } else if (debitAmt) {
+                    amount = `-$${parseFloat(debitAmt).toLocaleString()}`;
                 }
-            });
 
-            const updatedData = spreadsheet.data.concat(formattedData);
+                newCsv.push([bankAccount, date, narrative, amount, category]);
+            })
+        } else {
+            if (data[0].length === 3) {
+                data.forEach(row => {
+                    const [date, amount, narrative] = row;
+                    let formattedAmount = '';
+                    if (amount < 0) {
+                        formattedAmount = `-$${Math.abs(parseFloat(amount)).toFixed(2)}`;
+                    } else {
+                        formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
+                    }
 
-            await clientSpreadsheet.findOneAndUpdate(
-                { client_id: new ObjectId(id) },
-                { $set: { data: updatedData } },
-                { returnOriginal: false }
-            );
+                    newCsv.push(["", date, narrative, formattedAmount, ""]);
+                });
+            } else if (data[0].length === 4) {
+                if (data[0][0] === "Account History for Account:") {
+                    const accountNumber = data[0][1].split("-")[1].trim();
+                    data.splice(0, 2);
+                    data.forEach(row => {
+                        const [date, narrative, amount] = row;
+                        newCsv.push([accountNumber, date, narrative, amount, ""]);
+                    });
+                } else {
+                    data.forEach(row => {
+                        const [date, amount, narrative] = row;
+
+                        let formattedAmount = '';
+                        if (amount < 0) {
+                            formattedAmount = `-$${Math.abs(parseFloat(amount)).toFixed(2)}`;
+                        } else {
+                            formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
+                        }
+
+                        newCsv.push(["", date, narrative, formattedAmount, ""]);
+                    });
+                }
+            } else if (data[0].length === 7) {
+                data.forEach(row => {
+                    const [date, amount, str1, str2, narrative1, narrative2] = row;
+                    let formattedAmount = '';
+                    if (amount < 0) {
+                        formattedAmount = `-$${Math.abs(parseFloat(amount)).toFixed(2)}`;
+                    } else {
+                        formattedAmount = `$${parseFloat(amount).toFixed(2)}`;
+                    }
+                    const narrative = `${narrative2} ${narrative1}`;
+
+                    newCsv.push(["", date, narrative, formattedAmount, ""]);
+                });
+            }
         }
+
+        const parentDirectory = path.join(__dirname, '..');
+        const folderPath = path.join(parentDirectory, 'spreadsheet');
+
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true });
+        }
+
+        const filePath = path.join(folderPath, `${id}_${new Date()}.csv`);
+
+        const csvWriter = createObjectCsvWriter({
+            path: filePath,
+            header: newCsv[0].map((header, index) => ({ id: index.toString(), title: header })),
+        });
+
+        await csvWriter.writeRecords(newCsv.slice(1));
 
         return res.status(200).json({
             error: false,
-            message: "Client category created successfully.",
+            message: "Client spreadsheet created successfully.",
         });
+
     } catch (error) {
         console.log(error.message);
         res.status(500).send("Server error");
-    } finally {
-        await mongoClient.close();
     }
-};
-
+}
 
 const updateClientSpreadsheet = async (req, res) => {
     try {
