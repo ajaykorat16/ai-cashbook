@@ -1019,7 +1019,8 @@ const createClientSpreadsheet = async (req, res) => {
                     }
 
                     const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
-                    newCsv.push(["", date, narrative, formattedAmount, randomCategoryArray[0]]);
+                    const category = randomCategoryArray[0].replace(/<\/?[^>]+(>|$)/g, "")
+                    newCsv.push(["", date, narrative, formattedAmount, category]);
                 });
             } else if (data[0].length === 4) {
                 if (data[0][0] === "Account History for Account:") {
@@ -1029,7 +1030,8 @@ const createClientSpreadsheet = async (req, res) => {
                     data.forEach(row => {
                         const [date, narrative, amount] = row;
                         const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
-                        newCsv.push([accountNumber, date, narrative, amount, randomCategoryArray[0]]);
+                        const category = randomCategoryArray[0].replace(/<\/?[^>]+(>|$)/g, "")
+                        newCsv.push([accountNumber, date, narrative, amount, category]);
                     });
                 } else {
                     data.forEach(row => {
@@ -1043,7 +1045,8 @@ const createClientSpreadsheet = async (req, res) => {
                         }
 
                         const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
-                        newCsv.push(["", date, narrative, formattedAmount, randomCategoryArray[0]]);
+                        const category = randomCategoryArray[0].replace(/<\/?[^>]+(>|$)/g, "")
+                        newCsv.push(["", date, narrative, formattedAmount, category]);
                     });
                 }
             } else if (data[0].length === 7) {
@@ -1058,7 +1061,8 @@ const createClientSpreadsheet = async (req, res) => {
                     const narrative = `${narrative2} ${narrative1}`;
 
                     const randomCategoryArray = categories.data[Math.floor(Math.random() * categories.data.length)];
-                    newCsv.push(["", date, narrative, formattedAmount, randomCategoryArray[0]]);
+                    const category = randomCategoryArray[0].replace(/<\/?[^>]+(>|$)/g, "")
+                    newCsv.push(["", date, narrative, formattedAmount, category]);
                 });
             }
         }
