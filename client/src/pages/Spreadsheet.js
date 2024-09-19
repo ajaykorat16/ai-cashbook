@@ -13,15 +13,23 @@ import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, Sprea
 import Loader from '../components/Loader';
 import { useClient } from '../contexts/ClientContexts';
 import { useNavigate, useParams } from 'react-router-dom';
+import { DatePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import dayjs from 'dayjs';
+
 
 const Spreadsheet = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const params = useParams();
-    const { getSpreadsheet, updateSpreadsheet } = useClient()
+    const { getSpreadsheet, updateSpreadsheet } = useClient();
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [fromDate, setFromDate] = useState(null);
+    const [toDate, setToDate] = useState(null);
 
     const getSheetData = async () => {
         if (spreadsheetRef.current) {
@@ -33,7 +41,7 @@ const Spreadsheet = () => {
 
                 const data = await spreadsheetRef.current.getData(`${sheet.name}!${range}`);
                 const formattedData = convertData(data);
-                return formattedData
+                return formattedData;
             } catch (error) {
                 console.error('Error fetching sheet data:', error);
             }
@@ -135,15 +143,15 @@ const Spreadsheet = () => {
 
     useEffect(() => {
         if (params?.id) {
-            fetchCsvLoaded()
+            fetchCsvLoaded();
         }
-    }, [params?.id])
+    }, [params?.id]);
 
     useEffect(() => {
         if (dataLoaded) {
-            formateSheet()
+            formateSheet();
             getSheetData();
-            applyFilterOnColumn('A')
+            applyFilterOnColumn('A');
         }
     }, [dataLoaded]);
 
@@ -152,7 +160,7 @@ const Spreadsheet = () => {
             args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert') {
             const formattedData = await getSheetData();
             await updateSpreadsheet(params?.id, formattedData);
-            formateSheet()
+            formateSheet();
         }
     };
 
@@ -207,22 +215,32 @@ const Spreadsheet = () => {
                             <div className="row">
                                 <div className="col-md-12">
                                     <div className="form-floating">
-                                        <input type="email" className="form-control date_icn" id="floatingInput" placeholder="From" />
-                                        <label for="floatingInput">From</label>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker
+                                                label="From"
+                                                value={fromDate}
+                                                onChange={(newValue) => setFromDate(newValue)}
+                                            />
+                                        </LocalizationProvider>
                                     </div>
                                 </div>
                                 <div className="col-md-12">
                                     <div className="form-floating">
-                                        <input type="email" className="form-control date_icn" id="floatingInput" placeholder="To" />
-                                        <label for="floatingInput">To</label>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <DatePicker
+                                                label="To"
+                                                value={toDate}
+                                                onChange={(newValue) => setToDate(newValue)}
+                                            />
+                                        </LocalizationProvider>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <button className="common_btn w-100 mb-20">summary </button>
-                        <button className="common_btn w-100 mb-20">Custom 1 </button>
-                        <button className="common_btn w-100 mb-20">Custom 2 </button>
-                        <button className="common_btn w-100 mb-20">Apply </button>
+                        <button className="common_btn w-100 mb-20">Summary</button>
+                        <button className="common_btn w-100 mb-20">Custom 1</button>
+                        <button className="common_btn w-100 mb-20">Custom 2</button>
+                        <button className="common_btn w-100 mb-20">Apply</button>
                         <button className="common_btn w-100 mb-20" onClick={() => navigate("/user/clients")}>Back to list</button>
                     </div>
                     {params?.id && (
@@ -254,9 +272,7 @@ const Spreadsheet = () => {
                 </div>
             </div>
         </section>
+    );
+};
 
-    )
-}
-
-
-export default Spreadsheet
+export default Spreadsheet;

@@ -1248,7 +1248,7 @@ div[style*="z-index: 99999"] {
   .spreadsheet-loader {
     justify-content: center;
   }
- }
+}
 
 @media screen and (max-width: 426px) {
   .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
@@ -1281,4 +1281,8 @@ div[style*="z-index: 99999"] {
   .spreadsheet-loader {
     justify-content: center;
   }
+}
+
+.css-20bmp1-MuiSvgIcon-root {
+  color: #26BB8B;
 }
