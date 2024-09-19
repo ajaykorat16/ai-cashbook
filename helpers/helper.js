@@ -118,7 +118,9 @@ const createBlankSpreadsheet = async (email, id) => {
 
         const spreadsheet = {
             client_id: id,
-            data: [["Account", "SQ", "Date", "Narrative", "Amt  ", "Tax_Category", "Business%", "TaxableAmt", "GST_Code", "BAS_Code", "GST_Amt", "Excl.GST_Amt", "FY", "QTR", "ITR_Label", "BAS_LabN"]]
+            data:[["Bank Account", "Date", "Narrative", "Amt", "Categories"]],
+            createdAt: new Date(),
+            updatedAt: new Date()
         }
 
         await userSpreadsheet.insertOne(spreadsheet);
