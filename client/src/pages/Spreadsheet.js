@@ -166,9 +166,13 @@ const Spreadsheet = () => {
                 const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
                 editedData.push(editedRow)
             } else if (args?.eventArgs?.modelType === 'Row') {
-                const sheetArgs = args?.eventArgs
-                const deletedRowId = sheetArgs.deletedModel[0].cells[0].value
-                editedData.push([deletedRowId])
+                if (args?.action === 'insert') {
+                    editedData.push([])
+                } else {
+                    const sheetArgs = args?.eventArgs
+                    const deletedRowId = sheetArgs.deletedModel[0].cells[0].value
+                    editedData.push([deletedRowId])
+                }
             } else if (args?.eventArgs?.modelType === 'Column') {
                 for (let row = 0; row <= sheet.rows.length; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row]);
