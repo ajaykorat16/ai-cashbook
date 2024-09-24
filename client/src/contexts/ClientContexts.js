@@ -137,9 +137,9 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-    const getSpreadsheet = async (id) => {
+    const getSpreadsheet = async (id, fromDate, toDate) => {
         try {
-            let { data } = await axios.get(`${baseURL}/client/spreasheet/${id}`, { headers })
+            let { data } = await axios.get(`${baseURL}/client/spreasheet/${id}?fromDate=${fromDate}&&toDate=${toDate}`, { headers })
             if (data.error === false) {
                 return data?.spreadsheet
             }

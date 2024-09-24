@@ -42,7 +42,7 @@ const UploadCsv = () => {
                         setClientObject("")
                         setFile(null)
                         setFileName("")
-                        // navigate(`/user/spreadsheet/${clientObject?.value}`)
+                        navigate(`/user/spreadsheet/${clientObject?.value}`)
                     }
 
                 }
