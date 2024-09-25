@@ -1031,7 +1031,7 @@ div[style*="z-index: 99999"] {
 }
 .spreadsheet .e-spreadsheet .e-header-panel .e-table tr .e-header-cell.e-colresize[aria-colindex="2"] {
   background-color: rgba(0, 0, 255, 0.1); 
-  cursor: auto;
+  cursor: cell;
 }
 
 @media screen and (max-width: 1550px) {
