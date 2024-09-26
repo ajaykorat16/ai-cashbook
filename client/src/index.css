@@ -1295,7 +1295,7 @@ div[style*="z-index: 99999"] {
   .title_part {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
     justify-content: center;
     width: 100%;
   }
