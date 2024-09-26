@@ -1026,12 +1026,35 @@ div[style*="z-index: 99999"] {
 }
 
 .spreadsheet .e-spreadsheet .e-header-panel .e-table tr .e-header-cell.e-colresize[aria-colindex="1"] {
-  background-color: rgba(0, 0, 255, 0.1); 
+  background-color: rgba(0, 0, 255, 0.1);
   cursor: auto;
 }
+
 .spreadsheet .e-spreadsheet .e-header-panel .e-table tr .e-header-cell.e-colresize[aria-colindex="2"] {
-  background-color: rgba(0, 0, 255, 0.1); 
+  background-color: rgba(0, 0, 255, 0.1);
   cursor: cell;
+}
+
+.title_part {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  width: 100%;
+}
+
+.date_title {
+  display: flex;
+  flex-direction: row;
+  font-size: 18px;
+}
+
+.date_title .date_label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.date_title.date_part {
+  margin-right: 20px;
 }
 
 @media screen and (max-width: 1550px) {
@@ -1268,6 +1291,19 @@ div[style*="z-index: 99999"] {
   .spreadsheet-loader {
     justify-content: center;
   }
+
+  .title_part {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .date_title .date_label {
+    min-width: 50px;
+  }
+  
 }
 
 @media screen and (max-width: 376px) {

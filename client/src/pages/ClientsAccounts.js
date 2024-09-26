@@ -3,7 +3,7 @@ import Accounts from '../components/Accounts'
 import { useClient } from '../contexts/ClientContexts'
 
 const ClientsAccounts = () => {
-    const { getAllClients, clientObject, setClientObject } = useClient()
+    const { getAllClients, clientObject, setClientObject, getClientCategory, updateClientCatrgory } = useClient()
 
     const fetchClient = async () => {
         const { clients } = await getAllClients(1, 1, "_id", -1, "")
@@ -25,7 +25,7 @@ const ClientsAccounts = () => {
 
     return (
         <>
-            <Accounts clientId={clientObject?.value} showSelection={true} />
+            <Accounts clientId={clientObject?.value} showSelection={true} getCsvData={getClientCategory} updateCsvData={updateClientCatrgory} />
         </>
     )
 }

@@ -166,6 +166,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             const horizontalBorderRange = `A2:${String.fromCharCode(64 + colCount)}${rowCount}`;
             spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
             setIsLoading(false);
+            setDataLoaded(false)
         }
     };
 

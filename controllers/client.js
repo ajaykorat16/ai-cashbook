@@ -8,6 +8,7 @@ const { createObjectCsvWriter } = require('csv-writer');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
+const csv = require('csv-parser');
 
 const createClient = async (req, res) => {
     const errors = validationResult(req);
@@ -886,6 +887,23 @@ const getSpreadsheet = async (req, res) => {
     }
 };
 
+const readCsv = async (filePath) => {
+    const csvFile = fs.createReadStream(filePath);
+    const results = [];
+
+    return new Promise((resolve, reject) => {
+        csvFile
+            .pipe(csv())
+            .on('data', (data) => results.push(data)) 
+            .on('end', () => {
+                resolve(results);
+            })
+            .on('error', (err) => {
+                reject(err); 
+            });
+    });
+};
+
 const train = async (oldData, id) => {
     const parentDirectory = path.join(__dirname, '..');
     const folderPath = path.join(parentDirectory, 'spreadsheet');
@@ -921,6 +939,9 @@ const classify = async (newData, id) => {
     });
 
     await csvWriter.writeRecords(newData.slice(1));
+
+    // const data = await readCsv(filePath);
+    // console.log('data---',data)
 }
 
 const createClientSpreadsheet = async (req, res) => {
@@ -1007,11 +1028,13 @@ const createClientSpreadsheet = async (req, res) => {
         const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
 
         const filteredData = spreadsheetCursor.filter((record) => {
-            const dateInString = record.data[1];
-            const dateInRecord = moment(dateInString, 'MM/DD/YYYY');
-
-            if (dateInRecord.isValid()) {
-                return dateInRecord.isBetween(startDate, endDate, null, '[]');
+            if(record.data[4]) {
+                const dateInString = record.data[1];
+                const dateInRecord = moment(dateInString, 'MM/DD/YYYY');
+    
+                if (dateInRecord.isValid()) {
+                    return dateInRecord.isBetween(startDate, endDate, null, '[]');
+                }
             }
         });
 
@@ -1019,11 +1042,11 @@ const createClientSpreadsheet = async (req, res) => {
             return row.data;
         });
 
-        const oldData = [["ID", "Bank Account", "Date", "Narrative", "Amt", "Categories"], ...formattedData]
+        const oldData = [["bank_account", "date", "narrative", "amt", "categories"], ...formattedData]
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
         if (oldData.length > 1) {
             await train(oldData, id)
-            classify(trimmedNewCsv, id)
+            classify([oldData[0],...trimmedNewCsv], id)
         } else {
 
             const insertData = trimmedNewCsv.map((data) => {
