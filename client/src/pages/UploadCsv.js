@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Layout from '../components/Layout';
 import Loader from '../components/Loader';
@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useClient } from '../contexts/ClientContexts';
 
 const UploadCsv = () => {
-    const { clientObject, setClientObject, createSpreadsheet } = useClient()
+    const { clientObject, setClientObject, createSpreadsheet, getAllClients } = useClient()
     const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +61,24 @@ const UploadCsv = () => {
         },
         multiple: false
     });
+
+    const fetchClient = async () => {
+        const { clients } = await getAllClients(1, 1, "_id", -1, "")
+        if (clients.length > 0) {
+            setClientObject({
+                label: clients[0].entity_name ? clients[0].entity_name : `${clients[0].first_name} ${clients[0].last_name}`,
+                value: clients[0]._id,
+            })
+        }
+    }
+
+    useEffect(() => {
+        fetchClient()
+
+        return () => {
+            setClientObject({});
+        };
+    }, [])
 
     return (
         <>
