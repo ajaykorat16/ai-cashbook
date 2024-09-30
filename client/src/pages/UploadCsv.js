@@ -73,11 +73,14 @@ const UploadCsv = () => {
     }
 
     useEffect(() => {
-        fetchClient()
-
-        return () => {
-            setClientObject({});
-        };
+        if (!clientObject?.value) {
+            fetchClient()
+        } else {
+            setClientObject({
+                label: clientObject?.label,
+                value: clientObject?.value,
+            })
+        }
     }, [])
 
     return (

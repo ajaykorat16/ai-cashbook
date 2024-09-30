@@ -19,6 +19,7 @@ import UploadCsv from './pages/UploadCsv';
 import Spreadsheet from './pages/Spreadsheet';
 import UserCategory from './pages/UserCategory';
 import UserList from './pages/UserList';
+import Report from './pages/Report';
 
 const App = () => {
   return (
@@ -37,6 +38,7 @@ const App = () => {
           <Route path="upload-clients" element={<UploadClients />} />
           <Route path="upload-csv" element={<UploadCsv />} />
           <Route path="spreadsheet/:id" element={<Spreadsheet />} />
+          <Route path="report" element={<Report />} />
         </Route>
         <Route path="/admin/*" element={<UserRoutes />}>
           <Route path="users" element={<UserList />} />

@@ -16,13 +16,15 @@ const ClientsAccounts = () => {
     }
 
     useEffect(() => {
-        fetchClient()
-
-        return () => {
-            setClientObject({});
-        };
+        if (!clientObject?.value) {
+            fetchClient()
+        } else {
+            setClientObject({
+                label: clientObject?.label,
+                value: clientObject?.value,
+            })
+        }
     }, [])
-
     return (
         <>
             <Accounts clientId={clientObject?.value} showSelection={true} getCsvData={getClientCategory} updateCsvData={updateClientCatrgory} />

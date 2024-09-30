@@ -540,6 +540,7 @@ tbody tr[role="row"] {
   padding: 10px;
   width: 100%;
   display: none;
+  z-index: 50;
 }
 
 .login_open button {
@@ -1057,6 +1058,160 @@ div[style*="z-index: 99999"] {
   margin-right: 20px;
 }
 
+.box_brd_down {
+  border: 1px solid var(--gray-color);
+  border-radius: 8px !important;
+  min-height: 58px;
+  background-image: url("../public/images/down.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+}
+
+.open_box_down_icon {
+  border: 1px solid var(--gray-color);
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px;
+  position: absolute;
+  top: 0;
+  right: 12px;
+  width: 400px;
+  top: 65px;
+  display: none;
+}
+
+.profit_loss h2 {
+  font-size: 20px;
+  line-height: 30px;
+  font-weight: 600;
+  color: var(--black-color);
+  margin: 0 0 7px 0;
+  text-transform: capitalize;
+}
+
+.profit_loss h3,
+.profit_loss h4 {
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 400;
+  color: var(--black-color);
+  margin: 0 0 7px 0;
+  text-transform: capitalize;
+}
+
+.profit_loss table {
+  width: 100%;
+  margin: 16px 0 0 0;
+}
+
+.profit_loss table th:first-child {
+  width: 300px;
+}
+
+.profit_loss table th {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--black-color);
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 10px 20px 10px 0px;
+  border-bottom: 1px solid #000;
+}
+
+.profit_loss table td {
+  font-size: 14px;
+  line-height: 18px;
+  color: #555;
+  font-weight: 400;
+  text-transform: capitalize;
+  padding: 10px 20px 10px 0px;
+  word-wrap: break-word;
+  border-bottom: 1px solid #000;
+}
+
+.profit_loss table td.table_bold_txt {
+  font-size: 18px;
+  line-height: 18px;
+  color: #000;
+  font-weight: 600;
+  text-transform: capitalize;
+  border-bottom: 2px solid #000;
+}
+
+.profit_loss table td.table_bold_txt_sub {
+  font-size: 14px;
+  line-height: 18px;
+  color: #000;
+  font-weight: 600;
+  text-transform: capitalize;
+
+}
+
+.profit_loss table td.font-16 {
+  font-size: 18px;
+}
+
+.date_main_box div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #000;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 15px;
+  cursor: pointer;
+
+}
+
+.date_main_box div:last-child {
+  margin-bottom: 0;
+}
+
+.date_main_box div:hover {
+  background: var(--green-color);
+  font-weight: 600;
+  color: #fff;
+}
+
+.date_main_box {
+  border-bottom: 1px solid;
+  padding: 0 0 15px 0;
+  margin-bottom: 15px;
+}
+
+.date_main_box:last-child {
+  border-bottom: none;
+  padding: 0;
+  margin: 0;
+}
+
+.form-floating {
+  position: relative;
+}
+
+.form-floating input {
+  height: calc(3rem + 2px);
+  padding: 0.5rem 0.75rem;
+}
+
+.floating-label {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.5rem;
+  transition: 0.2s ease all;
+  color: #999;
+  pointer-events: none;
+}
+
+.form-floating input:focus+.floating-label,
+.form-floating input:not(:placeholder-shown)+.floating-label {
+  top: -0.75rem;
+  left: 0.75rem;
+  font-size: 0.75rem;
+  color: black;
+}
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
@@ -1263,6 +1418,23 @@ div[style*="z-index: 99999"] {
   .spreadsheet-loader {
     justify-content: center;
   }
+
+  .open_box_down_icon {
+    width: 100%;
+    right: 0;
+  }
+
+  .date_main_box div {
+    font-size: 13px;
+  }
+
+  .profit_loss table th:first-child {
+    min-width: 220px;
+  }
+
+  .profit_loss h2 {
+    margin-top: 25px;
+  }
 }
 
 @media screen and (min-width: 1024px) {
@@ -1299,11 +1471,11 @@ div[style*="z-index: 99999"] {
     justify-content: center;
     width: 100%;
   }
-  
+
   .date_title .date_label {
     min-width: 50px;
   }
-  
+
 }
 
 @media screen and (max-width: 376px) {

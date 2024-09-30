@@ -245,7 +245,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                 const rangeToProtect = `A1:A${rowCount}`;
                 spreadsheetRef.current.lockCells(rangeToProtect, true);
 
-                const dateColumnRange = `C2:C${rowCount}`;
+                // const dateColumnRange = `C2:C${rowCount}`;
                 // spreadsheetRef.current.numberFormat('dd/mm/yyyy', dateColumnRange);
                 setIsLoading(false);
             }

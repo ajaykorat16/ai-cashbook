@@ -30,6 +30,8 @@
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
     "dayjs": "^1.11.13",
+    "jquery": "^3.7.1",
+    "jquery-ui-dist": "^1.13.3",
     "papaparse": "^5.4.1",
     "primeicons": "^7.0.0",
     "primereact": "^10.7.0",

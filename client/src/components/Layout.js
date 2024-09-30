@@ -6,14 +6,12 @@ import ClientSelection from './ClientSelection';
 
 const Layout = ({ children, showSelection = false }) => {
     const { toast, logout, auth } = useAuth()
-
-    const [showMenu, setShowMenu] = useState(false)
-
     const navigate = useNavigate();
     const location = useLocation();
     const sidebarRef = useRef(null);
     const contentRef = useRef(null);
     const slidebarArrowRef = useRef(null);
+    const [showMenu, setShowMenu] = useState(false)
 
     const user_name = auth?.user?.first_name.length > 7 ? `${auth?.user?.first_name.slice(0, 5)}...` : auth?.user?.first_name
 
@@ -67,6 +65,7 @@ const Layout = ({ children, showSelection = false }) => {
                                         <img className="login_click" src="/images/down_white.svg" alt="" />
                                     </button>
                                     <div className={`login_open ${showMenu ? 'd-block' : 'd-none'}`}>
+                                        <button onClick={() => navigate("/user/report")}>Report</button>
                                         <button onClick={() => handleLogout()}>Logout</button>
                                     </div>
                                 </div>
