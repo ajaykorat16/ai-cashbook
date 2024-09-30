@@ -97,7 +97,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
     }, [dataLoaded]);
 
     const setDefaultSelection = () => {
-        const inputElement = document.getElementById('spreadsheet_1836146846_0_name_box');
+        const inputElement = document.getElementById('spreadsheet_2012300138_0_name_box');
         if (inputElement) {
             inputElement.value = 'B1';
         }
