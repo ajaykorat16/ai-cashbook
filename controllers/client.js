@@ -4,11 +4,12 @@ const { MongoClient, ObjectId } = require('mongodb');
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
 const { validationResult } = require('express-validator');
 const { isValidEmail, createUserClientCategoryCollection, createBlankSpreadsheet } = require("../helpers/helper");
-const { createObjectCsvWriter } = require('csv-writer');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
-const csv = require('csv-parser');
+const { createArrayCsvWriter } = require('csv-writer');
+const { createReadStream } = require('fs');
+const csvParser = require('csv-parser');
 
 const createClient = async (req, res) => {
     const errors = validationResult(req);
@@ -888,13 +889,16 @@ const getSpreadsheet = async (req, res) => {
 };
 
 const readCsv = async (filePath) => {
-    const csvFile = fs.createReadStream(filePath);
     const results = [];
 
     return new Promise((resolve, reject) => {
+        const csvFile = createReadStream(filePath);
+
         csvFile
-            .pipe(csv())
-            .on('data', (data) => results.push(data)) 
+            .pipe(csvParser({ headers: false })) 
+            .on('data', (data) => {
+                results.push(Object.values(data));
+            })
             .on('end', () => {
                 resolve(results);
             })
@@ -903,7 +907,6 @@ const readCsv = async (filePath) => {
             });
     });
 };
-
 const train = async (oldData, id) => {
     const parentDirectory = path.join(__dirname, '..');
     const folderPath = path.join(parentDirectory, 'spreadsheet');
@@ -914,11 +917,11 @@ const train = async (oldData, id) => {
 
     const formattedDate = moment().format('DD-MM-YYYY-HH-mm');
     const filePath = path.join(folderPath, `${id}-${formattedDate}-train.csv`);
-    const csvWriter = createObjectCsvWriter({
-        path: filePath,
-        header: oldData[0].map((header, index) => ({ id: index.toString(), title: header })),
-    });
 
+    const csvWriter = createArrayCsvWriter({
+        path: filePath,
+        header: false  
+    });
     await csvWriter.writeRecords(oldData.slice(1));
 };
 
@@ -933,9 +936,10 @@ const classify = async (newData, id) => {
 
     const formattedDate = moment().format('DD-MM-YYYY-HH-mm');
     const filePath = path.join(folderPath, `${id}-${formattedDate}-classify.csv`);
-    const csvWriter = createObjectCsvWriter({
+
+    const csvWriter = createArrayCsvWriter({
         path: filePath,
-        header: newData[0].map((header, index) => ({ id: index.toString(), title: header })),
+        header: false 
     });
 
     await csvWriter.writeRecords(newData.slice(1));
