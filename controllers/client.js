@@ -942,10 +942,11 @@ const classify = async (newData, id) => {
         header: false 
     });
 
-    await csvWriter.writeRecords(newData.slice(1));
+    await csvWriter.writeRecords(newData);
 
     // const data = await readCsv(filePath);
     // console.log('data---',data)
+    // return data
 }
 
 const createClientSpreadsheet = async (req, res) => {
@@ -1050,7 +1051,17 @@ const createClientSpreadsheet = async (req, res) => {
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
         if (oldData.length > 1) {
             await train(oldData, id)
-            classify([oldData[0],...trimmedNewCsv], id)
+            const classifiedData = await classify(trimmedNewCsv, id)
+            // const newData = classifiedData.map((data) => {
+            //     return {
+            //         client_id: new ObjectId(id),
+            //         data,
+            //         createdAt: new Date(),
+            //         updatedAt: new Date(),
+            //     }
+            // })
+
+            // await userSpreadsheet.insertMany(newData)
         } else {
 
             const insertData = trimmedNewCsv.map((data) => {
