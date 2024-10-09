@@ -3,7 +3,7 @@ import { useClient } from '../contexts/ClientContexts'
 import { Modal } from 'bootstrap';
 
 const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrentPage, clientDelId, setClientDelId }) => {
-    const { deleteClient } = useClient()
+    const { deleteClient, setClientObject } = useClient()
 
     const handleClose = () => {
         const modalElement = document.getElementById('delete_client');
@@ -44,6 +44,7 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
                 await deleteClient(clientDelId);
                 handleClose()
                 fetchClients();
+                setClientObject({});
                 if (clientsLength === 1) {
                     setCurrentPage(currentPage - 1)
                 }

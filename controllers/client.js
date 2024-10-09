@@ -7,9 +7,10 @@ const { isValidEmail, createUserClientCategoryCollection, createBlankSpreadsheet
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
-const { createArrayCsvWriter } = require('csv-writer');
-const { createReadStream } = require('fs');
-const csvParser = require('csv-parser');
+const csv = require('csv-parser');
+const { createObjectCsvWriter } = require('csv-writer');
+const { spawn } = require("child_process");
+
 
 const createClient = async (req, res) => {
     const errors = validationResult(req);
@@ -853,13 +854,13 @@ const getSpreadsheet = async (req, res) => {
         const database = mongoClient.db(process.env.DATABASE_NAME);
         const userSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
 
-        const startDate = fromDate ? moment(fromDate, 'MM/DD/YYYY') : moment().startOf('year');
-        const endDate = toDate ? moment(toDate, 'MM/DD/YYYY') : moment().endOf('year');
+        const startDate = fromDate ? moment(fromDate, 'YYYY-MM-DD') : moment().startOf('year');
+        const endDate = toDate ? moment(toDate, 'YYYY-MM-DD') : moment().endOf('year');
         const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
 
         const filteredData = spreadsheetCursor.filter((record) => {
             const dateInString = record.data[1];
-            const dateInRecord = moment(dateInString, 'MM/DD/YYYY');
+            const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
             if (dateInRecord.isValid()) {
                 return dateInRecord.isBetween(startDate, endDate, null, '[]');
@@ -888,25 +889,53 @@ const getSpreadsheet = async (req, res) => {
     }
 };
 
+function runPythonScript(operation, userId, filePath) {
+    return new Promise((resolve, reject) => {
+        const parentDirectory = path.join(__dirname, '../ac-text-classifier/');
+        const pythonScriptPath = path.join(parentDirectory, "main.py");
+
+        const args = [pythonScriptPath, operation, userId, filePath];
+
+        const pythonProcess = spawn("python3.10", args);
+
+        let outputData = '';
+        let errorData = '';
+
+        pythonProcess.stdout.on("data", (data) => {
+            outputData += data.toString();
+        });
+
+        pythonProcess.stderr.on("data", (data) => {
+            errorData += data.toString();
+        });
+
+        pythonProcess.on("error", (error) => {
+            reject(`Error starting Python script: ${error.message}`);
+        });
+
+        pythonProcess.on("close", (code) => {
+            if (code !== 0) {
+                reject(`Python script exited with code ${code}: ${errorData}`);
+            } else {
+                resolve(outputData);
+            }
+        });
+    });
+}
 const readCsv = async (filePath) => {
+    const csvFile = fs.createReadStream(filePath);
     const results = [];
 
     return new Promise((resolve, reject) => {
-        const csvFile = createReadStream(filePath);
-
         csvFile
-            .pipe(csvParser({ headers: false })) 
-            .on('data', (data) => {
-                results.push(Object.values(data));
-            })
+            .pipe(csv())
+            .on('data', (data) => results.push(data))
             .on('end', () => {
                 resolve(results);
             })
-            .on('error', (err) => {
-                reject(err); 
-            });
     });
-};
+}
+
 const train = async (oldData, id) => {
     const parentDirectory = path.join(__dirname, '..');
     const folderPath = path.join(parentDirectory, 'spreadsheet');
@@ -917,12 +946,18 @@ const train = async (oldData, id) => {
 
     const formattedDate = moment().format('DD-MM-YYYY-HH-mm');
     const filePath = path.join(folderPath, `${id}-${formattedDate}-train.csv`);
-
-    const csvWriter = createArrayCsvWriter({
+    const csvWriter = createObjectCsvWriter({
         path: filePath,
-        header: false  
+        header: oldData[0].map((header, index) => ({ id: index.toString(), title: header })),
     });
+
     await csvWriter.writeRecords(oldData.slice(1));
+    await runPythonScript("train", id, filePath);
+
+    // Delete the CSV file after the Python script has run
+    if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+    }
 };
 
 
@@ -936,17 +971,37 @@ const classify = async (newData, id) => {
 
     const formattedDate = moment().format('DD-MM-YYYY-HH-mm');
     const filePath = path.join(folderPath, `${id}-${formattedDate}-classify.csv`);
-
-    const csvWriter = createArrayCsvWriter({
+    const csvWriter = createObjectCsvWriter({
         path: filePath,
-        header: false 
+        header: newData[0].map((header, index) => ({ id: index.toString(), title: header })),
     });
 
-    await csvWriter.writeRecords(newData);
+    await csvWriter.writeRecords(newData.slice(1));
+    await runPythonScript("classify", id, filePath);
 
-    // const data = await readCsv(filePath);
-    // console.log('data---',data)
-    // return data
+    const data = await readCsv(filePath);
+    const fromattedData = data.map(row => [
+        row.account,
+        row.date,
+        row.amount,
+        row.category
+    ]);
+
+    // Delete the CSV file after the Python script has run
+    if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+    }
+    // const modelDirectory = path.join(__dirname, '../ac-text-classifier/models/');
+    // const modelPath = path.join(modelDirectory, `${id}`);
+    // if (fs.existsSync(modelPath)) {
+    //     try {
+    //         fs.rmSync(modelPath, { recursive: true, force: true });
+    //         console.log(`${modelPath} is deleted successfully.`);
+    //     } catch (err) {
+    //         console.error(`Error while deleting ${modelPath}`, err);
+    //     }
+    // }
+    return fromattedData
 }
 
 const createClientSpreadsheet = async (req, res) => {
@@ -969,7 +1024,7 @@ const createClientSpreadsheet = async (req, res) => {
             });
         }
 
-        const newCsv = [["Bank Account", "Date", "Narrative", "Amt", "Categories"]]
+        const newCsv = [["Bank Account", "Date", "Amt", "Categories"]]
 
         const user = await Users.findById(client?.user_id);
         await mongoClient.connect();
@@ -986,13 +1041,19 @@ const createClientSpreadsheet = async (req, res) => {
                     amount = `-${parseFloat(debitAmt).toLocaleString()}`;
                 }
 
-                newCsv.push([bankAccount, date, narrative, amount, category]);
+                if (date) {
+                    const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                    newCsv.push([bankAccount, formattedDate, amount, category]);
+                }
             })
         } else {
             if (data[0].length === 3) {
                 data.forEach(row => {
                     const [date, amount, narrative] = row;
-                    newCsv.push(["", date, narrative, amount]);
+                    if (date) {
+                        const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                        newCsv.push(["", formattedDate, amount]);
+                    }
                 });
             } else if (data[0].length === 4) {
                 if (data[0][0] === "Account History for Account:") {
@@ -1001,20 +1062,28 @@ const createClientSpreadsheet = async (req, res) => {
 
                     data.forEach(row => {
                         const [date, narrative, amount] = row;
-                        newCsv.push([accountNumber, date, narrative, amount]);
+                        if (date) {
+                            const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                            newCsv.push([accountNumber, formattedDate, amount]);
+                        }
                     });
                 } else {
                     data.forEach(row => {
                         const [date, amount, narrative] = row;
-                        newCsv.push(["", date, narrative, amount]);
+                        if (date) {
+                            const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                            newCsv.push(["", formattedDate, amount]);
+                        }
                     });
                 }
             } else if (data[0].length === 7) {
                 data.forEach(row => {
                     const [date, amount, str1, str2, narrative1, narrative2] = row;
-                    const narrative = `${narrative2} ${narrative1}`;
-
-                    newCsv.push(["", date, narrative, amount]);
+                    // const narrative = `${narrative2} ${narrative1}`;
+                    if (date) {
+                        const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                        newCsv.push(["", formattedDate, amount]);
+                    }
                 });
             }
         }
@@ -1033,37 +1102,37 @@ const createClientSpreadsheet = async (req, res) => {
         const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
 
         const filteredData = spreadsheetCursor.filter((record) => {
-            if(record.data[4]) {
+            if (record.data[3]) {
                 const dateInString = record.data[1];
-                const dateInRecord = moment(dateInString, 'MM/DD/YYYY');
-    
+                const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
                 if (dateInRecord.isValid()) {
-                    return dateInRecord.isBetween(startDate, endDate, null, '[]');
+                    return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
                 }
             }
         });
 
         const formattedData = filteredData.map((row) => {
-            return row.data;
+            const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
+            return [row.data[0], formattedDate, ...row.data.slice(2)];
         });
 
-        const oldData = [["bank_account", "date", "narrative", "amt", "categories"], ...formattedData]
+        const oldData = [["account", "date", "amount", "category"], ...formattedData]
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
         if (oldData.length > 1) {
             await train(oldData, id)
-            const classifiedData = await classify(trimmedNewCsv, id)
-            // const newData = classifiedData.map((data) => {
-            //     return {
-            //         client_id: new ObjectId(id),
-            //         data,
-            //         createdAt: new Date(),
-            //         updatedAt: new Date(),
-            //     }
-            // })
+            const classifiedData = await classify([oldData[0], ...trimmedNewCsv], id)
+            const newData = classifiedData.map((data) => {
+                return {
+                    client_id: new ObjectId(id),
+                    data,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }
+            })
 
-            // await userSpreadsheet.insertMany(newData)
+            await userSpreadsheet.insertMany(newData)
         } else {
-
             const insertData = trimmedNewCsv.map((data) => {
                 return {
                     client_id: new ObjectId(id),
@@ -1143,8 +1212,13 @@ const updateClientSpreadsheet = async (req, res) => {
                         const isItemBlank = Object.values(item).every(value => value === '' || value === null || value === undefined);
 
                         if (isItemBlank) {
+                            console.log("id--",id)
                             await clientSpreadsheet.deleteOne({ _id: new ObjectId(id) });
                         } else {
+                            if (item[1]) {
+                                item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
+                            }
+
                             await clientSpreadsheet.updateOne(
                                 { _id: new ObjectId(id) },
                                 {
@@ -1156,6 +1230,10 @@ const updateClientSpreadsheet = async (req, res) => {
                             );
                         }
                     } else {
+                        if (item[1]) {
+                            item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
+                        }
+
                         const insertedId = await clientSpreadsheet.insertOne({
                             data: item,
                             createdAt: new Date(),

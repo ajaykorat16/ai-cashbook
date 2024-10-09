@@ -67,7 +67,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
     const fetchCsvLoaded = async () => {
         setIsLoading(true)
-        const csvDetail = await getSpreadsheet(clientId, fromDate.format('MM/DD/YYYY'), toDate.format('MM/DD/YYYY'));
+        const csvDetail = await getSpreadsheet(clientId, fromDate.format('YYYY-MM-DD'), toDate.format('YYYY-MM-DD'));
         const csv = csvDetail || []
         const convertedData = convertToCellFormat(csv);
 
@@ -98,6 +98,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
     const setDefaultSelection = () => {
         const inputElement = document.getElementById('spreadsheet_2012300138_0_name_box');
+            
         if (inputElement) {
             inputElement.value = 'B1';
         }
@@ -127,7 +128,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     cellValue = `<u>${cellValue}</u>`;
                 }
             }
-            return cellValue;
+            return cellValue ? cellValue : '';
         });
     };
 
@@ -155,12 +156,23 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
             if (args?.eventArgs?.address) {
                 const cellAddress = args.eventArgs.address
-                const cellAddressWithoutSheet = cellAddress.split('!')[1];
+                if (args.action === 'cellDelete') {
+                    const [firstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
+                    const firstRowNumber = parseInt(firstAddress.match(/\d+/)[0], 10);
+                    const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
 
-                const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
-                const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-                const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
-                editedData.push(editedRow)
+                    for (let row = firstRowNumber; row <= secondRowNumber; row++) {
+                        const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
+                        editedData.push(currentRowData);
+                    }
+                } else {
+                    const cellAddressWithoutSheet = cellAddress.split('!')[1];
+
+                    const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
+                    const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+                    const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
+                    editedData.push(editedRow)
+                }
             } else if (args?.eventArgs?.modelType === 'Row') {
                 if (args?.action === 'insert') {
                     editedData.push([])
@@ -182,19 +194,19 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     cellAddress = args.eventArgs.range
                 }
                 const [firtstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
-                const firstRowNumber = firtstAddress.match(/\d+/)[0];
-                const secondRowNumber = secondAddress.match(/\d+/)[0];
+                const firstRowNumber = parseInt(firtstAddress.match(/\d+/)[0], 10);
+                const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
 
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
                     editedData.push(currentRowData);
                 }
             }
-            if (editedData.length > 0) {
+            if (editedData?.length > 0) {
                 const data = await updateSpreadsheet(clientId, editedData);
 
-                if (data.insertedDataId.length > 0) {
-                    if (args?.eventArgs?.address) {
+                if (data?.insertedDataId.length > 0) {
+                    if (args?.eventArgs?.address && args.action !== 'cellDelete') {
                         const cellAddress = args.eventArgs.address
                         const cellAddressWithoutSheet = cellAddress.split('!')[1];
 
@@ -245,8 +257,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
                 const rangeToProtect = `A1:A${rowCount}`;
                 spreadsheetRef.current.lockCells(rangeToProtect, true);
 
-                // const dateColumnRange = `C2:C${rowCount}`;
-                // spreadsheetRef.current.numberFormat('dd/mm/yyyy', dateColumnRange);
                 setIsLoading(false);
             }
         }
@@ -272,15 +282,15 @@ const SheetComponent = ({ clientId, showSelection }) => {
     };
 
     const applyDropdown = () => {
-        if (spreadsheetRef.current) {
+        if (spreadsheetRef.current && categortList.length > 0) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
-            const dropdownRange = `F2:F${rowCount}`;
+            const dropdownRange = `E2:E${rowCount}`;
             spreadsheetRef.current.addDataValidation({
                 type: 'List',
                 operator: 'InBetween',
                 value1: categortList.join(','),
-                ignoreBlank: true
+                ignoreBlank: false
             }, dropdownRange);
         }
     };
@@ -312,11 +322,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                             <span className='date_part'>{toDate.format('DD/MM/YYYY')}</span>
                         </div>
                     </div>
-                    {/* <div className="right_flex">
-                        <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>Back to list</button>
-                    </div> */}
                 </div>
-                {/* {clientId && ( */}
                 <>
                     {isLoading && (
                         <Loader />
@@ -342,7 +348,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
                         </SpreadsheetComponent>
                     </div>
                 </>
-                {/* )} */}
             </Layout>
         </div>
     );

@@ -3,7 +3,7 @@ import { useClient } from '../contexts/ClientContexts'
 import { Modal } from 'bootstrap';
 
 const ConfirmMultiDelete = ({ fetchClients, clientsLength, currentPage, setCurrentPage, selectedClients, setSelectedClients }) => {
-    const { multipleDeleteClient } = useClient()
+    const { multipleDeleteClient, setClientObject } = useClient()
 
     const handleClose = () => {
         const modalElement = document.getElementById('delete_multi_client');
@@ -45,6 +45,7 @@ const ConfirmMultiDelete = ({ fetchClients, clientsLength, currentPage, setCurre
                 setSelectedClients([])
                 fetchClients();
                 handleClose()
+                setClientObject({});
                 if (clientsLength === 1) {
                     setCurrentPage(currentPage - 1)
                 }
