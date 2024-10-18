@@ -13,6 +13,12 @@ import Layout from '../components/Layout';
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+
+const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
+    '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
+    '2.5-Interest paid Australia', '2.5-Interest paid Overseas', '2.5-Rent', '5.1-Depreciation', '2.6-Lease payments Australia', '5.1-Depreciation', '5.2-MV Expenses',
+    '5.3-Repair and Maintenance', '9.1-All Other Expenses', '9.3-Director Fees', '9.2-Non Deductible Expenses']
 
 const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title }) => {
     const navigate = useNavigate();
@@ -134,6 +140,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             formateSheet()
             getSheetData();
             applyFilterOnColumn('A')
+            applyGstDropdown()
         }
     }, [dataLoaded]);
 
@@ -167,6 +174,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
             setIsLoading(false);
             setDataLoaded(false)
+            applyGstDropdown()
         }
     };
 
@@ -185,6 +193,59 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 }],
                 range
             );
+        }
+    };
+
+    const applyGstDropdown = async () => {
+        if (spreadsheetRef.current) {
+            const sheet = spreadsheetRef.current.getActiveSheet();
+            const rowCount = sheet.usedRange.rowIndex + 1;
+            const dropdownRange = `C2:C${rowCount}`;
+            const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
+            const data = await gstList.join(',')
+
+            await spreadsheetRef.current.addDataValidation({
+                type: 'List',
+                operator: 'InBetween',
+                value1: data,
+                ignoreBlank: false
+            }, dropdownRange);
+        }
+    };
+
+    const handleDataBound = () => {
+        const spreadsheet = spreadsheetRef.current;
+        if (spreadsheet) {
+            const sheet = spreadsheet.getActiveSheet();
+            const rowCount = sheet.usedRange.rowIndex + 1;
+            for (let row = 2; row <= rowCount; row++) {
+                const cell = spreadsheet.getCell(row - 1, 4);
+                
+
+                if (cell) {
+                    const cellValue = cell.getAttribute('aria-label');
+                const cleanedValue = cellValue?.replace(/\s+[A-Z]\d+$/, '');
+                    new DropDownList({
+                        placeholder: '',
+                        value: cleanedValue || null,
+                        change: async (args) => {
+                            cell.innerText = args?.value
+                            const data = await getSheetData();
+                            const formattedData = data.map((rowData, rowIndex) => {
+                                if (rowIndex === row - 1) { 
+                                    rowData[3] = args?.value; 
+                                }
+                                return rowData;
+                            });
+                           
+                            await updateCsvData(clientId, formattedData);
+                            formateSheet()
+                        },
+                        dataSource: itrList,
+                    },
+                        cell);
+                }
+            }
         }
     };
 
@@ -209,6 +270,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                 showSheetTabs={false}
                                 allowSorting={true}
                                 allowFiltering={true}
+                                dataBound={handleDataBound}
                             >
                                 <SheetsDirective>
                                     <SheetDirective frozenRows={1}>

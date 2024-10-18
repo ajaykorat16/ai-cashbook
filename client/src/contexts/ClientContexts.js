@@ -243,10 +243,32 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const getGstReport = async (id, fromDate, toDate) => {
+        try {
+            let { data } = await axios.get(`${baseURL}/client/gst-report/${id}?fromDate=${fromDate}&&toDate=${toDate}`, { headers })
+            if (data.error === false) {
+                return data.data
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+    
+    const getItrReport = async (id, fromDate, toDate) => {
+        try {
+            let { data } = await axios.get(`${baseURL}/client/itr-report/${id}?fromDate=${fromDate}&&toDate=${toDate}`, { headers })
+            if (data.error === false) {
+                return data.data
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
     return (
         <ClientContext.Provider value={{
             createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, getSpreadsheet, updateSpreadsheet, createSpreadsheet,
-            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, importClient, multipleDeleteClient, getLastClientCode
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, importClient, multipleDeleteClient, getLastClientCode, getItrReport,getGstReport
         }}>
             {children}
         </ClientContext.Provider>

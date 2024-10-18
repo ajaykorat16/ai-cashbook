@@ -118,7 +118,7 @@ const createBlankSpreadsheet = async (email, id) => {
 
         const spreadsheet = {
             client_id: id,
-            data:["Id","Bank Account", "Date", "Amt", "Categories"],
+            data:["Id","Bank Account", "Date", "Amt", "Categories",'Business%','TaxableAmt','GST_Code','BAS_Code','GST_Amt','Excl.GST_Amt','FY','QTR','ITR_Label','BAS_LabN'],
             createdAt: new Date(),
             updatedAt: new Date()
         }

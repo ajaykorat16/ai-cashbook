@@ -6,12 +6,15 @@ import $ from 'jquery';
 import 'jquery-ui-dist/jquery-ui.css';
 import 'jquery-ui-dist/jquery-ui';
 
-const Report = () => {
-    const { getAllClients, clientObject, setClientObject } = useClient()
+const ItrReport = () => {
+    const { getAllClients, clientObject, setClientObject, getItrReport } = useClient()
 
     const [showMenu, setShowMenu] = useState(false)
     const [fromDate, setFromDate] = useState()
     const [toDate, setToDate] = useState()
+    const [itrReport, setItrRport] = useState([])
+    const [totalExcGst, setTotaltotalExcGst] = useState([])
+
 
     useEffect(() => {
         $('#datepicker').datepicker({
@@ -194,6 +197,28 @@ const Report = () => {
         return rangeText
     };
 
+    const getReportData = async () => {
+        const formattedFromDate = moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD');
+        const formattedToDate = moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD');
+        const data = await getItrReport(clientObject?.value, formattedFromDate, formattedToDate)
+        setItrRport(data?.excGstResult)
+        setTotaltotalExcGst(data?.grandTotalExcGst)
+        console.log("data--", data)
+    }
+
+    useEffect(() => {
+        if (clientObject?.value) {
+            getReportData()
+        }
+    }, [clientObject?.value])
+
+    useEffect(() => {
+        if (clientObject?.value && fromDate && toDate) {
+            getReportData()
+        }
+    }, [clientObject?.value, fromDate, toDate])
+
+
     return (
         <Layout showSelection={true}>
             <div className="special_flex mb-25">
@@ -287,143 +312,40 @@ const Report = () => {
                 <h4>For the year ended 30 June 2025</h4>
                 <div className="table-responsive">
                     <table>
-                        <tr>
-                            <th></th>
-                            <th>2025</th>
-                            <th>2024</th>
-                            <th>2023</th>
-                            <th>2022</th>
-                            <th>2021</th>
-                        </tr>
-                        <tr>
-                            <td colSpan="6" className="table_bold_txt">Trading Income</td>
-                        </tr>
-                        <tr>
-                            <td>Sales</td>
-                            <td>17,447.32</td>
-                            <td>35,931.00</td>
-                            <td>4,200.00</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td className="table_bold_txt_sub">Total Trading Income</td>
-                            <td>17,447.32</td>
-                            <td>35,931.00</td>
-                            <td>4,200.00</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td colSpan="6" className="table_bold_txt pt-4">Cost of Sales</td>
-                        </tr>
-                        <tr>
-                            <td>Purchases</td>
-                            <td>763.64</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td className="table_bold_txt_sub">Total Cost of Sales</td>
-                            <td>763.64</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td className="table_bold_txt_sub font-16">Gross Profit</td>
-                            <td className="table_bold_txt_sub">16,683.68</td>
-                            <td className="table_bold_txt_sub">35,931.00</td>
-                            <td className="table_bold_txt_sub">4,200.00</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-
-
-                        <tr>
-                            <td colSpan="6" className="table_bold_txt pt-4">Other Income</td>
-                        </tr>
-                        <tr>
-                            <td>Interest Income</td>
-                            <td>97.05</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td className="table_bold_txt_sub">Total Other Income</td>
-                            <td className="table_bold_txt_sub">97.05</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-
-
-
-                        <tr>
-                            <td colSpan="6" className="table_bold_txt pt-4">Operating Expenses</td>
-                        </tr>
-                        <tr>
-                            <td>Advertising</td>
-                            <td>2,272.73</td>
-                            <td>1,830.18</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>Bank Fees</td>
-                            <td>300.00</td>
-                            <td>31.50</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>Cleaning</td>
-                            <td>155.00</td>
-                            <td>310.00</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>Consulting & Accounting</td>
-                            <td>49.00</td>
-                            <td>49.00</td>
-                            <td>3,600.00</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>Entertainment</td>
-                            <td>-</td>
-                            <td>277.20</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td className="table_bold_txt_sub">Total Operating Expensest</td>
-                            <td className="table_bold_txt_sub">14,754.34</td>
-                            <td className="table_bold_txt_sub">46,091.84</td>
-                            <td className="table_bold_txt_sub">12,112.00</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td className="table_bold_txt_sub font-16 pt-4">Net Profit</td>
-                            <td className="table_bold_txt_sub pt-4">2,026.39</td>
-                            <td className="table_bold_txt_sub pt-4">(10,160.84)</td>
-                            <td className="table_bold_txt_sub pt-4">(7,912.00)</td>
-                            <td>-</td>
-                            <td>-</td>
-                        </tr>
+                        <thead>
+                            <tr>
+                                <th>Itr Label</th>
+                                <th>Tax Category</th>
+                                <th>Sum of Excl.GST_Amt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {itrReport && itrReport.map((itr, index) => (
+                                <React.Fragment key={index}>
+                                    {itr.ITR_Label && (
+                                        <tr>
+                                            <td>{itr.ITR_Label}</td>
+                                            <td>{itr.Tax_Category}</td>
+                                            <td>{itr.Sum_of_Exc_GST_Amt}</td>
+                                        </tr>
+                                    )}
+                                    {!itr.ITR_Label && (
+                                        <tr>
+                                            <td></td>
+                                            <td>{itr.Tax_Category}</td>
+                                            <td>{itr.Sum_of_Exc_GST_Amt}</td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                            {totalExcGst && (
+                                <tr>
+                                    <td>Total</td>
+                                    <td></td>
+                                    <td>{totalExcGst}</td>
+                                </tr>
+                            )}
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -431,4 +353,4 @@ const Report = () => {
     )
 }
 
-export default Report
+export default ItrReport

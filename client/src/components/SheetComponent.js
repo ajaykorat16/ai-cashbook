@@ -12,16 +12,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent, ColumnsDirective, ColumnDirective } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
 import { useClient } from '../contexts/ClientContexts';
-import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { useAuth } from '../contexts/AuthContext';
 import Layout from './Layout';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 
 const SheetComponent = ({ clientId, showSelection }) => {
-    const navigate = useNavigate();
-    const { getSpreadsheet, updateSpreadsheet } = useClient();
-    const { getUserCategory } = useAuth()
+    const { getSpreadsheet, updateSpreadsheet, getClientCategory } = useClient();
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
@@ -31,6 +28,8 @@ const SheetComponent = ({ clientId, showSelection }) => {
     const [fromDate, setFromDate] = useState(currentYearStart);
     const [toDate, setToDate] = useState(currentYearEnd);
     const [categortList, setCategoryList] = useState([])
+    const [categoryData, setCategoryData] = useState({});
+    const [categoryHeaders, setCategoryHeaders] = useState({});
 
     const convertToCellFormat = (data) => {
         const convertedData = data?.map(row => ({
@@ -91,14 +90,14 @@ const SheetComponent = ({ clientId, showSelection }) => {
             formateSheet();
             applyFilterOnColumn('B');
             setDefaultSelection()
-            applyDropdown()
+            applyCalculations()
             setDataLoaded(false);
         }
     }, [dataLoaded]);
 
     const setDefaultSelection = () => {
         const inputElement = document.getElementById('spreadsheet_2012300138_0_name_box');
-            
+
         if (inputElement) {
             inputElement.value = 'B1';
         }
@@ -232,7 +231,29 @@ const SheetComponent = ({ clientId, showSelection }) => {
                 }
             }
             formateSheet();
-            applyDropdown()
+        }
+    };
+
+    const applyCalculations = () => {
+        if (spreadsheetRef.current) {
+            const sheet = spreadsheetRef.current.getActiveSheet();
+            const rowCount = sheet.usedRange.rowIndex + 1;
+
+            for (let row = 2; row <= rowCount; row++) {
+                const formula = `=ROUND(D${row}/F${row}, 2)`;
+                spreadsheetRef.current.updateCell({ formula }, `G${row}`);
+
+                const gstFormula = `=ROUND(G${row}/11, 2)`;
+                spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
+
+                const excGstFormula = `=ROUND(G${row}-J${row}, 2)`;
+                spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
+
+                const baslabnFormula = `=IF(J${row} > 0, "1A", "1B")`;
+                spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
+            }
+
+            spreadsheetRef.current.refresh();
         }
     };
 
@@ -257,6 +278,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                 const rangeToProtect = `A1:A${rowCount}`;
                 spreadsheetRef.current.lockCells(rangeToProtect, true);
 
+                applyGstDropdown()
                 setIsLoading(false);
             }
         }
@@ -281,32 +303,151 @@ const SheetComponent = ({ clientId, showSelection }) => {
         }
     };
 
-    const applyDropdown = () => {
-        if (spreadsheetRef.current && categortList.length > 0) {
+    const applyGstDropdown = async () => {
+        if (spreadsheetRef.current) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
-            const dropdownRange = `E2:E${rowCount}`;
-            spreadsheetRef.current.addDataValidation({
+            const dropdownRange = `H2:H${rowCount}`;
+            const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
+            const data = await gstList.join(',')
+
+            await spreadsheetRef.current.addDataValidation({
                 type: 'List',
                 operator: 'InBetween',
-                value1: categortList.join(','),
+                value1: data,
                 ignoreBlank: false
             }, dropdownRange);
         }
     };
 
-    const fetchMasterCategory = async () => {
-        const { data } = await getUserCategory()
+    const fetchClientCategory = async () => {
+        const { data } = await getClientCategory(clientId);
+        const headers = data.shift();
+        headers.splice(0, 1)
+        const removeHtmlTags = (text) => {
+            return text.replace(/<[^>]*>/g, '');
+        };
+
+        const cleanedHeaders = headers.map(removeHtmlTags);
+        setCategoryHeaders(cleanedHeaders);
+
         const newArray = data.map(subArray => {
-            const cleanedFirstElement = subArray[0].replace(/<\/?b>/g, '').replace(/<\/?i>/g, '').replace(/<\/?u>/g, '');
+            if (!subArray[1] || !subArray[2] || !subArray[3]) {
+                return null;
+            }
+
+            const cleanedFirstElement = subArray[0]
+                .replace(/<\/?b>/g, '')
+                .replace(/<\/?i>/g, '')
+                .replace(/<\/?u>/g, '');
+
             return cleanedFirstElement;
-        });
+        }).filter(Boolean);
         setCategoryList(newArray)
-    }
+
+        const categoryMap = data.reduce((acc, subArray) => {
+            const cleanedCategory = subArray[0].replace(/<\/?b>/g, '').replace(/<\/?i>/g, '').replace(/<\/?u>/g, '');
+            acc[cleanedCategory] = subArray.slice(1);
+            return acc;
+        }, {});
+
+        setCategoryList(Object.keys(categoryMap));
+        setCategoryData(categoryMap);
+    };
+
 
     useEffect(() => {
-        fetchMasterCategory()
-    }, [])
+        if (clientId) {
+            fetchClientCategory()
+        }
+    }, [clientId])
+
+    const numberToAlphabet = (num) => {
+        let temp;
+        let letter = '';
+
+        while (num > 0) {
+            temp = (num - 1) % 26;
+            letter = String.fromCharCode(temp + 65) + letter;
+            num = Math.floor((num - temp) / 26);
+        }
+
+        return letter;
+    };
+
+    const handleDropdown = async (cellAddress, value) => {
+        const sheet = spreadsheetRef.current.getActiveSheet();
+        const rowNumberMatch = cellAddress.match(/\d+/);
+        const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+        const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
+        if (editedRow && editedRow.length >= 4) {
+            editedRow[4] = value;
+        }
+        await updateSpreadsheet(clientId, [editedRow]);
+    }
+
+    const handleDataBound = () => {
+        const spreadsheet = spreadsheetRef.current;
+        if (spreadsheet) {
+            const sheet = spreadsheet.getActiveSheet();
+            const rowCount = sheet.usedRange.rowIndex + 1;
+            for (let row = 2; row <= rowCount; row++) {
+                const cellAddress = `E${row}`;
+                const cell = spreadsheet.getCell(row - 1, 4);
+                const cellValue = cell.getAttribute('aria-label');
+                const cleanedValue = cellValue?.replace(/\s+[A-Z]\d+$/, '');
+
+                if (cell) {
+                    new DropDownList({
+                        placeholder: '   ',
+                        value: cleanedValue || null,
+                        change: async (args) => {
+                            cell.innerText = args?.value
+                            formateSheet()
+
+                            const selectedValue = args.value;
+                            const headings = convertCellsToValues(sheet.rows[0]);
+                            const removeHtmlTags = (text) => {
+                                return text.replace(/<[^>]*>/g, '');
+                            };
+
+                            const headers = headings.map(removeHtmlTags);
+                            const matchingValues = headers.filter(header =>
+                                categoryHeaders.includes(header)
+                            );
+
+                            const correspondingData = categoryData[selectedValue];
+
+                            if (matchingValues.length > 0 && correspondingData) {
+                                const rowIndexMatch = cellAddress.match(/\d+/);
+                                const rowIndex = rowIndexMatch ? parseInt(rowIndexMatch[0], 10) : null;
+
+                                matchingValues.forEach(value => {
+                                    const index = headers.indexOf(value);
+                                    const address = `${numberToAlphabet(index + 1)}${rowIndex}`;
+
+                                    const categoryHeaderIndex = categoryHeaders.indexOf(value);
+                                    const headerValue = correspondingData[categoryHeaderIndex];
+
+                                    if (headerValue && spreadsheetRef.current) {
+                                        try {
+                                            spreadsheetRef.current.updateCell({ value: headerValue }, address);
+                                        } catch (error) {
+                                            console.error(`Error updating cell ${address}:`, error);
+                                        }
+                                    }
+                                });
+                            }
+                            await handleDropdown(cellAddress, args?.value)
+                        },
+                        dataSource: categortList,
+                    },
+                        cell);
+                }
+            }
+        }
+    };
+
 
     return (
         <div>
@@ -334,6 +475,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                             showSheetTabs={false}
                             allowSorting={true}
                             allowFiltering={true}
+                            dataBound={handleDataBound}
                         >
                             <SheetsDirective>
                                 <SheetDirective frozenRows={1}>

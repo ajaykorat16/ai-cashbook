@@ -65,7 +65,8 @@ const Layout = ({ children, showSelection = false }) => {
                                         <img className="login_click" src="/images/down_white.svg" alt="" />
                                     </button>
                                     <div className={`login_open ${showMenu ? 'd-block' : 'd-none'}`}>
-                                        <button onClick={() => navigate("/user/report")}>Report</button>
+                                        <button onClick={() => navigate("/user/gst-report")}>Gst Report</button>
+                                        <button onClick={() => navigate("/user/itr-report")}>Itr Report</button>
                                         <button onClick={() => handleLogout()}>Logout</button>
                                     </div>
                                 </div>

@@ -19,7 +19,8 @@ import UploadCsv from './pages/UploadCsv';
 import Spreadsheet from './pages/Spreadsheet';
 import UserCategory from './pages/UserCategory';
 import UserList from './pages/UserList';
-import Report from './pages/Report';
+import GstReport from './pages/GstReport';
+import ItrReport from './pages/ItrReport';
 
 const App = () => {
   return (
@@ -38,7 +39,8 @@ const App = () => {
           <Route path="upload-clients" element={<UploadClients />} />
           <Route path="upload-csv" element={<UploadCsv />} />
           <Route path="spreadsheet/:id" element={<Spreadsheet />} />
-          <Route path="report" element={<Report />} />
+          <Route path="gst-report" element={<GstReport />} />
+          <Route path="itr-report" element={<ItrReport />} />
         </Route>
         <Route path="/admin/*" element={<UserRoutes />}>
           <Route path="users" element={<UserList />} />

@@ -1102,7 +1102,7 @@ div[style*="z-index: 99999"] {
 
 .profit_loss table {
   width: 100%;
-  margin: 16px 0 0 0;
+  margin: 0 0 0 0;
 }
 
 .profit_loss table th:first-child {
@@ -1210,6 +1210,23 @@ div[style*="z-index: 99999"] {
   left: 0.75rem;
   font-size: 0.75rem;
   color: black;
+}
+
+.e-input-group.e-ddl{
+  height: inherit !important;
+  padding: 0;
+  margin-bottom: 0 !important;    
+  border-color: #e0e0e0 !important;
+  border-right: solid 1px #e0e0e0 !important;
+}
+
+.e-ddl.e-input-group input[readonly].e-input, .e-ddl.e-input-group input[readonly] {
+  padding: 1px 0px 0px 2px; 
+  font-family: "Calibri";
+}
+
+.gst_report_label {
+  margin-top: 50px;
 }
 
 @media screen and (max-width: 1550px) {

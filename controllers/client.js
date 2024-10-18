@@ -1024,7 +1024,7 @@ const createClientSpreadsheet = async (req, res) => {
             });
         }
 
-        const newCsv = [["Bank Account", "Date", "Amt", "Categories"]]
+        const newCsv = [["Bank Account", "Date", "Amt", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'BAS_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']]
 
         const user = await Users.findById(client?.user_id);
         await mongoClient.connect();
@@ -1033,56 +1033,186 @@ const createClientSpreadsheet = async (req, res) => {
         if (data[0][0] === "Bank Account") {
             data.shift();
             data.forEach(row => {
-                const [bankAccount, date, narrative, debitAmt, creditAmt, category] = row;
+                const [bankAccount, date, narrative, debitAmt, creditAmt, serial, business] = row;
                 let amount = '';
                 if (creditAmt) {
-                    amount = `${parseFloat(creditAmt).toLocaleString()}`;
+                    amount = parseFloat(creditAmt.replace(/,/g, ''));
                 } else if (debitAmt) {
-                    amount = `-${parseFloat(debitAmt).toLocaleString()}`;
+                    amount = -parseFloat(debitAmt.replace(/,/g, ''));
                 }
+
+                const businessRate = parseInt(business.replace('%', ''));
+                const taxable_amt = (amount / businessRate).toFixed(2);
+                const gst_amt = (taxable_amt / 11).toFixed(2);
+                const exc_gst = (taxable_amt - gst_amt).toFixed(2);
+                const bs_labn = gst_amt > 0 ? "1A" : "1B"
 
                 if (date) {
                     const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
-                    newCsv.push([bankAccount, formattedDate, amount, category]);
+                    const financialYear = moment(formattedDate).year();
+                    const month = moment(formattedDate).month() + 1;
+
+                    let quarter;
+                    let quarterRange;
+
+                    if (month >= 1 && month <= 3) {
+                        quarter = 1;
+                        quarterRange = 'Jan-Mar';
+                    } else if (month >= 4 && month <= 6) {
+                        quarter = 2;
+                        quarterRange = 'Apr-Jun';
+                    } else if (month >= 7 && month <= 9) {
+                        quarter = 3;
+                        quarterRange = 'Jul-Sep';
+                    } else {
+                        quarter = 4;
+                        quarterRange = 'Oct-Dec';
+                    }
+
+                    newCsv.push([bankAccount, formattedDate, amount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
                 }
             })
         } else {
-            if (data[0].length === 3) {
+            if (data[0].length === 4) {
                 data.forEach(row => {
-                    const [date, amount, narrative] = row;
+                    const [date, amount, narrative, business] = row;
+                    const businessRate = parseInt(business.replace('%', ''));
+                    const taxable_amt = (amount / businessRate).toFixed(2);
+                    const gst_amt = (taxable_amt / 11).toFixed(2);
+                    const exc_gst = (taxable_amt - gst_amt).toFixed(2);
+                    const bs_labn = gst_amt > 0 ? "1A" : "1B"
+
                     if (date) {
                         const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
-                        newCsv.push(["", formattedDate, amount]);
+                        const financialYear = moment(formattedDate).year();
+                        const month = moment(formattedDate).month() + 1;
+
+                        let quarter;
+                        let quarterRange;
+
+                        if (month >= 1 && month <= 3) {
+                            quarter = 1;
+                            quarterRange = 'Jan-Mar';
+                        } else if (month >= 4 && month <= 6) {
+                            quarter = 2;
+                            quarterRange = 'Apr-Jun';
+                        } else if (month >= 7 && month <= 9) {
+                            quarter = 3;
+                            quarterRange = 'Jul-Sep';
+                        } else {
+                            quarter = 4;
+                            quarterRange = 'Oct-Dec';
+                        }
+                        newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
                     }
                 });
-            } else if (data[0].length === 4) {
+            } else if (data[0].length === 5) {
                 if (data[0][0] === "Account History for Account:") {
                     const accountNumber = data[0][1].split("-")[1].trim();
                     data.splice(0, 2);
 
                     data.forEach(row => {
-                        const [date, narrative, amount] = row;
+                        const [date, narrative, amount, otherAmt, business] = row;
+                        const cleanAmount = parseFloat(amount.replace(/[$,]/g, ''));
+                        const businessRate = parseInt(business.replace('%', ''));
+                        const taxable_amt = (amount / businessRate).toFixed(2);
+                        const gst_amt = (taxable_amt / 11).toFixed(2);
+                        const exc_gst = (taxable_amt - gst_amt).toFixed(2);
+                        const bs_labn = gst_amt > 0 ? "1A" : "1B"
+
                         if (date) {
                             const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
-                            newCsv.push([accountNumber, formattedDate, amount]);
+                            const financialYear = moment(formattedDate).year();
+                            const month = moment(formattedDate).month() + 1;
+
+                            let quarter;
+                            let quarterRange;
+
+                            if (month >= 1 && month <= 3) {
+                                quarter = 1;
+                                quarterRange = 'Jan-Mar';
+                            } else if (month >= 4 && month <= 6) {
+                                quarter = 2;
+                                quarterRange = 'Apr-Jun';
+                            } else if (month >= 7 && month <= 9) {
+                                quarter = 3;
+                                quarterRange = 'Jul-Sep';
+                            } else {
+                                quarter = 4;
+                                quarterRange = 'Oct-Dec';
+                            }
+
+                            newCsv.push([accountNumber, formattedDate, cleanAmount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
                         }
                     });
                 } else {
                     data.forEach(row => {
-                        const [date, amount, narrative] = row;
+                        const [date, amount, narrative, otherAmt, business] = row;
+
+                        const businessRate = parseInt(business.replace('%', ''));
+                        const taxable_amt = (amount / businessRate).toFixed(2);
+                        const gst_amt = (taxable_amt / 11).toFixed(2);
+                        const exc_gst = (taxable_amt - gst_amt).toFixed(2);
+                        const bs_labn = gst_amt > 0 ? "1A" : "1B"
+
                         if (date) {
                             const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
-                            newCsv.push(["", formattedDate, amount]);
+                            const financialYear = moment(formattedDate).year();
+                            const month = moment(formattedDate).month() + 1;
+
+                            let quarter;
+                            let quarterRange;
+
+                            if (month >= 1 && month <= 3) {
+                                quarter = 1;
+                                quarterRange = 'Jan-Mar';
+                            } else if (month >= 4 && month <= 6) {
+                                quarter = 2;
+                                quarterRange = 'Apr-Jun';
+                            } else if (month >= 7 && month <= 9) {
+                                quarter = 3;
+                                quarterRange = 'Jul-Sep';
+                            } else {
+                                quarter = 4;
+                                quarterRange = 'Oct-Dec';
+                            }
+
+                            newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
                         }
                     });
                 }
-            } else if (data[0].length === 7) {
+            } else if (data[0].length === 8) {
                 data.forEach(row => {
-                    const [date, amount, str1, str2, narrative1, narrative2] = row;
-                    // const narrative = `${narrative2} ${narrative1}`;
+                    const [date, amount, str1, str2, narrative1, narrative2, otherAmt, business] = row;
+                    const businessRate = parseInt(business.replace('%', ''));
+                    const taxable_amt = (amount / businessRate).toFixed(2);
+                    const gst_amt = (taxable_amt / 11).toFixed(2);
+                    const exc_gst = (taxable_amt - gst_amt).toFixed(2);
+                    const bs_labn = gst_amt > 0 ? "1A" : "1B"
+
                     if (date) {
                         const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
-                        newCsv.push(["", formattedDate, amount]);
+                        const financialYear = moment(formattedDate).year();
+                        const month = moment(formattedDate).month() + 1;
+
+                        let quarter;
+                        let quarterRange;
+
+                        if (month >= 1 && month <= 3) {
+                            quarter = 1;
+                            quarterRange = 'Jan-Mar';
+                        } else if (month >= 4 && month <= 6) {
+                            quarter = 2;
+                            quarterRange = 'Apr-Jun';
+                        } else if (month >= 7 && month <= 9) {
+                            quarter = 3;
+                            quarterRange = 'Jul-Sep';
+                        } else {
+                            quarter = 4;
+                            quarterRange = 'Oct-Dec';
+                        }
+
+                        newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
                     }
                 });
             }
@@ -1117,7 +1247,7 @@ const createClientSpreadsheet = async (req, res) => {
             return [row.data[0], formattedDate, ...row.data.slice(2)];
         });
 
-        const oldData = [["account", "date", "amount", "category"], ...formattedData]
+        const oldData = [["account", "date", "amount", "category",], ...formattedData]
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
         if (oldData.length > 1) {
             await train(oldData, id)
@@ -1141,7 +1271,6 @@ const createClientSpreadsheet = async (req, res) => {
                     updatedAt: new Date(),
                 }
             })
-
             await userSpreadsheet.insertMany(insertData)
         }
 
@@ -1212,7 +1341,6 @@ const updateClientSpreadsheet = async (req, res) => {
                         const isItemBlank = Object.values(item).every(value => value === '' || value === null || value === undefined);
 
                         if (isItemBlank) {
-                            console.log("id--",id)
                             await clientSpreadsheet.deleteOne({ _id: new ObjectId(id) });
                         } else {
                             if (item[1]) {
@@ -1300,7 +1428,322 @@ const getLastClient = async (req, res) => {
     }
 }
 
+const getGstReport = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fromDate, toDate } = req.query;
+
+        const client = await getClient(id);
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client does not exist."
+            });
+        }
+
+        const user = await Users.findById(client?.user_id);
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+
+        let startDate, endDate;
+        if (fromDate && moment(fromDate, 'YYYY-MM-DD', true).isValid()) {
+            startDate = moment(fromDate, 'YYYY-MM-DD');
+        } else {
+            startDate = moment().startOf('year');
+        }
+
+        if (toDate && moment(toDate, 'YYYY-MM-DD', true).isValid()) {
+            endDate = moment(toDate, 'YYYY-MM-DD');
+        } else {
+            endDate = moment().endOf('year');
+        }
+
+        const quarters = [];
+        let current = moment(startDate).startOf('quarter');
+        const end = moment(endDate).endOf('quarter');
+
+        while (current.isBefore(end) || current.isSame(end, 'quarter')) {
+            quarters.push(`${current.year()}_Q${current.quarter()}`);
+            current.add(1, 'quarter');
+        }
+
+        const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
+
+        const filteredData = spreadsheetCursor.filter((record) => {
+            const dateInString = record.data[1];
+            const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
+            return (
+                dateInRecord.isValid() &&
+                dateInRecord.isBetween(startDate, endDate, null, '[]')
+            );
+        });
+
+        const basCodeObject = {};
+        const basLabNObject = {};
+
+        const getQuarter = (date) => {
+            return `${date.year()}_Q${date.quarter()}`;
+        };
+
+        const initializeQuarterResults = () => {
+            return quarters.reduce((acc, quarter) => {
+                acc[quarter] = 0;
+                return acc;
+            }, {});
+        };
+
+
+        filteredData.forEach(record => {
+            const dateInString = record.data[1];
+            const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
+            const taxableAmt = typeof record.data[5] === 'string' ? parseFloat(record.data[5].replace(/,/g, '')) : parseFloat(record.data[5]);
+            const gstAmt = typeof record.data[8] === 'string' ? parseFloat(record.data[8].replace(/,/g, '')) : parseFloat(record.data[8]);
+            const category = record.data[3];
+            const basCode = record.data[7];
+            const basLabn = record.data[13];
+            const quarter = getQuarter(dateInRecord);
+
+            if (!basCodeObject[basCode]) {
+                basCodeObject[basCode] = { categories: {}, totals: initializeQuarterResults() };
+            }
+
+            if (!basCodeObject[basCode].categories[category]) {
+                basCodeObject[basCode].categories[category] = { ...initializeQuarterResults(), total: 0 };
+            }
+
+            if (!basLabNObject[basLabn]) {
+                basLabNObject[basLabn] = { categories: {}, totals: initializeQuarterResults() };
+            }
+
+            if (!basLabNObject[basLabn].categories[category]) {
+                basLabNObject[basLabn].categories[category] = { ...initializeQuarterResults(), total: 0 };
+            }
+
+            if (taxableAmt && basCode && category) {
+                basCodeObject[basCode].categories[category][quarter] += taxableAmt;
+                basCodeObject[basCode].categories[category].total += taxableAmt;
+                basCodeObject[basCode].totals[quarter] += taxableAmt;
+
+                // Format totals to 2 decimal places
+                basCodeObject[basCode].categories[category][quarter] = parseFloat(basCodeObject[basCode].categories[category][quarter].toFixed(2));
+                basCodeObject[basCode].categories[category].total = parseFloat(basCodeObject[basCode].categories[category].total.toFixed(2));
+                basCodeObject[basCode].totals[quarter] = parseFloat(basCodeObject[basCode].totals[quarter].toFixed(2));
+            }
+
+            if (gstAmt && basLabn && category) {
+                basLabNObject[basLabn].categories[category][quarter] += gstAmt;
+                basLabNObject[basLabn].categories[category].total += gstAmt;
+                basLabNObject[basLabn].totals[quarter] += gstAmt;
+
+                // Format totals to 2 decimal places
+                basLabNObject[basLabn].categories[category][quarter] = parseFloat(basLabNObject[basLabn].categories[category][quarter].toFixed(2));
+                basLabNObject[basLabn].categories[category].total = parseFloat(basLabNObject[basLabn].categories[category].total.toFixed(2));
+                basLabNObject[basLabn].totals[quarter] = parseFloat(basLabNObject[basLabn].totals[quarter].toFixed(2));
+            }
+        });
+
+        const formatResult = (resultObject) => {
+            return Object.keys(resultObject).map(key => {
+                if (!key) {
+                    return null;
+                }
+
+                const categories = resultObject[key].categories;
+                const totals = resultObject[key].totals;
+
+                if (Object.keys(categories).length === 0) {
+                    return null;
+                }
+
+                const categoryRows = Object.keys(categories).map(category => ({
+                    BAS_Name: key,
+                    Tax_Category: category,
+                    ...Object.fromEntries(
+                        Object.entries(categories[category]).map(([k, v]) => [k, v.toFixed(2)])
+                    )
+                }));
+
+                return {
+                    basLabn: key,
+                    categoryRows,
+                    totalRow: {
+                        BAS_Name: key,
+                        Tax_Category: "Total Result",
+                        ...Object.fromEntries(
+                            Object.entries(totals).map(([k, v]) => [k, v.toFixed(2)])
+                        ),
+                        Total_Result: Object.values(totals).reduce((acc, val) => acc + val, 0).toFixed(2)
+                    }
+                };
+            }).filter(result => result !== null)
+        };
+
+
+        const basCodeResult = formatResult(basCodeObject);
+        const basLabnResult = formatResult(basLabNObject);
+
+        const basCodeGrandTotal = initializeQuarterResults();
+        const basLabnGrandTotal = initializeQuarterResults();
+
+        basCodeResult.forEach(bas => {
+            Object.keys(bas.totalRow).forEach(key => {
+                if (key && key !== 'BAS_Name' && key !== 'Total_Result' && key !== 'Tax_Category') {
+                    basCodeGrandTotal[key] += parseFloat(bas.totalRow[key]);
+                }
+            });
+        });
+
+        basLabnResult.forEach(bas => {
+            Object.keys(bas.totalRow).forEach(key => {
+                if (key && key !== 'BAS_Name' && key !== 'Total_Result' && key !== 'Tax_Category') {
+                    basLabnGrandTotal[key] += parseFloat(bas.totalRow[key]);
+                }
+            });
+        });
+
+        basCodeGrandTotal.Total_Result = (filteredData.length > 0) ? Object.values(basCodeGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2) : "";
+        basLabnGrandTotal.Total_Result = (filteredData.length > 0) ? Object.values(basLabnGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2) : "";
+
+        const formatGrandTotal = (grandTotal, label) => {
+            Object.keys(grandTotal).forEach(key => {
+                if (typeof grandTotal[key] === 'number') {
+                    grandTotal[key] = grandTotal[key].toFixed(2);
+                }
+            });
+            return {
+                ...grandTotal,
+                BAS_Name: label,
+                Tax_Category: "",
+            };
+        };
+
+        const formattedBasLabnGrandTotal = formatGrandTotal(basLabnGrandTotal, "Total");
+        const formattedBasCodeGrandTotal = formatGrandTotal(basCodeGrandTotal, "Total");
+
+        res.json({
+            error: false,
+            message: "Client report fetched successfully.",
+            data: {
+                taxableAmtReport: {
+                    basCodeResult,
+                    basCodeGrandTotal: formattedBasCodeGrandTotal
+                },
+                gstAmtReport: {
+                    basLabnResult,
+                    basLabnGrandTotal: formattedBasLabnGrandTotal
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
+    }
+};
+
+const getItrReport = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { fromDate, toDate } = req.query;
+
+        const client = await getClient(id);
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client does not exist."
+            });
+        }
+
+        const user = await Users.findById(client?.user_id);
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+
+        let startDate, endDate;
+        if (fromDate && moment(fromDate, 'YYYY-MM-DD', true).isValid()) {
+            startDate = moment(fromDate, 'YYYY-MM-DD');
+        } else {
+            startDate = moment().startOf('year');
+        }
+
+        if (toDate && moment(toDate, 'YYYY-MM-DD', true).isValid()) {
+            endDate = moment(toDate, 'YYYY-MM-DD');
+        } else {
+            endDate = moment().endOf('year');
+        }
+
+        const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
+
+        const filteredData = spreadsheetCursor.filter((record) => {
+            const dateInString = record.data[1];
+            const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+            return dateInRecord.isValid() && dateInRecord.isBetween(startDate, endDate, null, '[]');
+        });
+
+        const itrLabelObject = {};
+        let grandTotalExcGst = 0;
+
+        filteredData.forEach(record => {
+            const excGstAmt = record.data[5] ? parseFloat(record.data[5].replace(/,/g, '')) : 0;
+            const category = record.data[3]
+            const itrLabel = record.data[12]
+
+            if (itrLabel && excGstAmt && category) {
+
+                grandTotalExcGst += excGstAmt;
+
+                if (!itrLabelObject[itrLabel]) {
+                    itrLabelObject[itrLabel] = { categories: {}, total: 0 };
+                }
+
+                if (!itrLabelObject[itrLabel].categories[category]) {
+                    itrLabelObject[itrLabel].categories[category] = 0;
+                }
+
+                itrLabelObject[itrLabel].categories[category] += excGstAmt;
+                itrLabelObject[itrLabel].total += excGstAmt;
+            }
+        });
+
+        const formattedResult = [];
+
+        Object.keys(itrLabelObject).forEach(itrLabel => {
+            const categories = itrLabelObject[itrLabel].categories;
+
+            formattedResult.push({
+                ITR_Label: itrLabel,
+                Tax_Category: '',
+                Sum_of_Exc_GST_Amt: itrLabelObject[itrLabel].total.toFixed(2)
+            });
+
+            Object.keys(categories).forEach(category => {
+                formattedResult.push({
+                    ITR_Label: '',
+                    Tax_Category: category,
+                    Sum_of_Exc_GST_Amt: categories[category].toFixed(2),
+                });
+            });
+        });
+
+        res.json({
+            error: false,
+            message: "Client ITR report fetched successfully.",
+            data: {
+                excGstResult: formattedResult,
+                grandTotalExcGst: grandTotalExcGst.toFixed(2)
+            }
+        });
+
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send('Server error');
+    }
+};
+
 module.exports = {
     createClient, getSingleClient, getClientCategory, getAllClients, exportClient, createClientSpreadsheet, getSpreadsheet,
-    updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete, updateClientSpreadsheet, getLastClient
+    updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete, updateClientSpreadsheet, getLastClient, getGstReport, getItrReport
 }
