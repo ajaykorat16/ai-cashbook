@@ -243,7 +243,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
             const rowCount = sheet.usedRange.rowIndex + 1;
     
             for (let row = 2; row <= rowCount; row++) {
-                const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(F${row})), ROUND(D${row}/F${row}, 2), "")`;
+                const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(F${row})), ROUND((D${row}*F${row})/100, 2), "")`;
                 spreadsheetRef.current.updateCell({ formula }, `G${row}`);
     
                 const gstFormula = `=IF(ISNUMBER(G${row}), ROUND(G${row}/11, 2), "")`;

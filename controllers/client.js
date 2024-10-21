@@ -1070,7 +1070,7 @@ const createClientSpreadsheet = async (req, res) => {
                 }
 
                 const businessRate = parseInt(business.replace('%', ''));
-                const taxable_amt = (amount / businessRate).toFixed(2);
+                const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
                 const gst_amt = (taxable_amt / 11).toFixed(2);
                 const exc_gst = (taxable_amt - gst_amt).toFixed(2);
                 const bs_labn = gst_amt > 0 ? "1A" : "1B"
@@ -1105,7 +1105,7 @@ const createClientSpreadsheet = async (req, res) => {
                 data.forEach(row => {
                     const [date, amount, narrative, business] = row;
                     const businessRate = parseInt(business.replace('%', ''));
-                    const taxable_amt = (amount / businessRate).toFixed(2);
+                    const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
                     const gst_amt = (taxable_amt / 11).toFixed(2);
                     const exc_gst = (taxable_amt - gst_amt).toFixed(2);
                     const bs_labn = gst_amt > 0 ? "1A" : "1B"
@@ -1143,7 +1143,7 @@ const createClientSpreadsheet = async (req, res) => {
                         const [date, narrative, amount, otherAmt, business] = row;
                         const cleanAmount = parseFloat(amount.replace(/[$,]/g, ''));
                         const businessRate = parseInt(business.replace('%', ''));
-                        const taxable_amt = (amount / businessRate).toFixed(2);
+                        const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
                         const gst_amt = (taxable_amt / 11).toFixed(2);
                         const exc_gst = (taxable_amt - gst_amt).toFixed(2);
                         const bs_labn = gst_amt > 0 ? "1A" : "1B"
@@ -1178,7 +1178,7 @@ const createClientSpreadsheet = async (req, res) => {
                         const [date, amount, narrative, otherAmt, business] = row;
 
                         const businessRate = parseInt(business.replace('%', ''));
-                        const taxable_amt = (amount / businessRate).toFixed(2);
+                        const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
                         const gst_amt = (taxable_amt / 11).toFixed(2);
                         const exc_gst = (taxable_amt - gst_amt).toFixed(2);
                         const bs_labn = gst_amt > 0 ? "1A" : "1B"
@@ -1213,7 +1213,7 @@ const createClientSpreadsheet = async (req, res) => {
                 data.forEach(row => {
                     const [date, amount, str1, str2, narrative1, narrative2, otherAmt, business] = row;
                     const businessRate = parseInt(business.replace('%', ''));
-                    const taxable_amt = (amount / businessRate).toFixed(2);
+                    const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
                     const gst_amt = (taxable_amt / 11).toFixed(2);
                     const exc_gst = (taxable_amt - gst_amt).toFixed(2);
                     const bs_labn = gst_amt > 0 ? "1A" : "1B"
