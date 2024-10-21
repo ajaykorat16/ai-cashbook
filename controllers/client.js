@@ -961,7 +961,7 @@ const train = async (oldData, id) => {
 };
 
 
-const classify = async (newData, id) => {
+const classify = async (newData, id, database, email) => {
     const parentDirectory = path.join(__dirname, '..');
     const folderPath = path.join(parentDirectory, 'spreadsheet');
 
@@ -980,12 +980,40 @@ const classify = async (newData, id) => {
     await runPythonScript("classify", id, filePath);
 
     const data = await readCsv(filePath);
-    const fromattedData = data.map(row => [
-        row.account,
-        row.date,
-        row.amount,
-        row.category
-    ]);
+
+    const userCategory = database.collection(`${email.split("@")[0]}_client_category`);
+    const clientCategory = await userCategory.findOne({ client_id: new ObjectId(id) });
+
+
+    const fromattedData = data.map(row => {
+        let gst_code = ''
+        let bas_code = ''
+        let itr_label = ''
+
+        if (row?.category) {
+            const [category] = clientCategory.data.filter(c => c[0] == row.category);
+            gst_code = category[2]
+            bas_code = category[3]
+            itr_label = category[4]
+        }
+
+        return [
+            row.account,
+            row.date,
+            row.amount,
+            row.category,
+            row.business,
+            row.taxableAmt,
+            gst_code,
+            bas_code,
+            row.gst_amt,
+            row.excl_gst_amt,
+            row.fy,
+            row.qtr,
+            itr_label,
+            row.bas_labn,
+        ]
+    });
 
     // Delete the CSV file after the Python script has run
     if (fs.existsSync(filePath)) {
@@ -1033,7 +1061,7 @@ const createClientSpreadsheet = async (req, res) => {
         if (data[0][0] === "Bank Account") {
             data.shift();
             data.forEach(row => {
-                const [bankAccount, date, narrative, debitAmt, creditAmt, serial, business] = row;
+                const [bankAccount, date, narrative, debitAmt, creditAmt, otherCat, serial, business] = row;
                 let amount = '';
                 if (creditAmt) {
                     amount = parseFloat(creditAmt.replace(/,/g, ''));
@@ -1247,11 +1275,11 @@ const createClientSpreadsheet = async (req, res) => {
             return [row.data[0], formattedDate, ...row.data.slice(2)];
         });
 
-        const oldData = [["account", "date", "amount", "category",], ...formattedData]
+        const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'bas_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn'], ...formattedData]
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
         if (oldData.length > 1) {
             await train(oldData, id)
-            const classifiedData = await classify([oldData[0], ...trimmedNewCsv], id)
+            const classifiedData = await classify([oldData[0], ...trimmedNewCsv], id, database, user?.email)
             const newData = classifiedData.map((data) => {
                 return {
                     client_id: new ObjectId(id),

@@ -213,40 +213,53 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
     };
 
-    const handleDataBound = () => {
-        const spreadsheet = spreadsheetRef.current;
-        if (spreadsheet) {
-            const sheet = spreadsheet.getActiveSheet();
-            const rowCount = sheet.usedRange.rowIndex + 1;
-            for (let row = 2; row <= rowCount; row++) {
-                const cell = spreadsheet.getCell(row - 1, 4);
-                
+    const numberToAlphabet = (num) => {
+        let temp;
+        let letter = '';
 
-                if (cell) {
-                    const cellValue = cell.getAttribute('aria-label');
-                const cleanedValue = cellValue?.replace(/\s+[A-Z]\d+$/, '');
-                    new DropDownList({
-                        placeholder: '',
-                        value: cleanedValue || null,
-                        change: async (args) => {
-                            cell.innerText = args?.value
-                            const data = await getSheetData();
-                            const formattedData = data.map((rowData, rowIndex) => {
-                                if (rowIndex === row - 1) { 
-                                    rowData[3] = args?.value; 
-                                }
-                                return rowData;
-                            });
-                           
-                            await updateCsvData(clientId, formattedData);
-                            formateSheet()
-                        },
-                        dataSource: itrList,
-                    },
-                        cell);
-                }
-            }
+        while (num > 0) {
+            temp = (num - 1) % 26;
+            letter = String.fromCharCode(temp + 65) + letter;
+            num = Math.floor((num - temp) / 26);
         }
+
+        return letter;
+    };
+
+    const handleCellRender = (args) => {
+        const columnLetter = numberToAlphabet(args.colIndex + 1);
+        const rowNumber = args.rowIndex + 1;
+        const sheet = spreadsheetRef.current.getActiveSheet();
+        const rowCount = sheet.usedRange.rowIndex + 1;
+
+        if (columnLetter === 'E' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+            const selectElement = document.createElement('select');
+            selectElement.style.width = '100%';
+
+            itrList.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                option.textContent = item;
+                selectElement.appendChild(option);
+            });
+
+            selectElement.value = args.cell?.value || '';
+
+            selectElement.onchange = async (event) => {
+                const selectedValue = event.target.value;
+                const cellAddress = `${columnLetter}${rowNumber}`;
+
+                spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+                const formattedData = await getSheetData();
+                await updateCsvData(clientId, formattedData);
+                formateSheet()
+            };
+
+            args.element.innerHTML = '';
+            args.element.appendChild(selectElement);
+        }
+
+
     };
 
     return (
@@ -270,7 +283,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                 showSheetTabs={false}
                                 allowSorting={true}
                                 allowFiltering={true}
-                                dataBound={handleDataBound}
+                                beforeCellRender={handleCellRender}
                             >
                                 <SheetsDirective>
                                     <SheetDirective frozenRows={1}>
