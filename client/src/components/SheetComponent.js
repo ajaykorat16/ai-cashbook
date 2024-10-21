@@ -241,25 +241,25 @@ const SheetComponent = ({ clientId, showSelection }) => {
         if (spreadsheetRef.current) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
-
+    
             for (let row = 2; row <= rowCount; row++) {
-                const formula = `=ROUND(D${row}/F${row}, 2)`;
+                const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(F${row})), ROUND(D${row}/F${row}, 2), "")`;
                 spreadsheetRef.current.updateCell({ formula }, `G${row}`);
-
-                const gstFormula = `=ROUND(G${row}/11, 2)`;
+    
+                const gstFormula = `=IF(ISNUMBER(G${row}), ROUND(G${row}/11, 2), "")`;
                 spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
-
-                const excGstFormula = `=ROUND(G${row}-J${row}, 2)`;
+    
+                const excGstFormula = `=IF(AND(ISNUMBER(G${row}), ISNUMBER(J${row})), ROUND(G${row}-J${row}, 2), "")`;
                 spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
-
-                const baslabnFormula = `=IF(J${row} > 0, "1A", "1B")`;
+    
+                const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
                 spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
             }
-
+    
             spreadsheetRef.current.refresh();
         }
     };
-
+    
     const formateSheet = () => {
         if (spreadsheetRef.current) {
             const sheet = spreadsheetRef.current.getActiveSheet();
@@ -468,6 +468,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     });
                 }
                 handleDropdown(cellAddress, selectedValue);
+                formateSheet()
             };
 
             args.element.innerHTML = '';
