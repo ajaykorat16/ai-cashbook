@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useClient } from '../contexts/ClientContexts'
 import SheetComponent from '../components/SheetComponent'
 import { useParams } from 'react-router-dom'
+import Layout from '../components/Layout'
 
 const Spreadsheet = () => {
   const params = useParams()
@@ -30,7 +31,9 @@ const Spreadsheet = () => {
 
   return (
     <>
-      <SheetComponent clientId={clientObject?.value} showSelection={true} />
+      <Layout showSelection={true}>
+        <SheetComponent clientId={clientObject?.value} showSelection={true} />
+      </Layout>
     </>
   )
 }

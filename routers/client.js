@@ -3,7 +3,7 @@ const router = express.Router();
 const { auth } = require("../middleware/auth")
 
 const { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, updateClient, updateClientCategory, getSpreadsheet, getLastClient,
-    deleteClient, clientImport, bulkClientDelete, createClientSpreadsheet, updateClientSpreadsheet, getGstReport, getItrReport } = require("../controllers/client")
+    deleteClient, clientImport, bulkClientDelete, createClientSpreadsheet, updateClientSpreadsheet, getGstReport, getItrReport, autoCategorize } = require("../controllers/client")
 
 router.get("/", auth, getAllClients)
 
@@ -24,6 +24,8 @@ router.get("/itr-report/:id", auth, getItrReport)
 router.post("/create", auth, createClient)
 
 router.post("/create-spreasheet/:id", auth, createClientSpreadsheet)
+
+router.post("/auto-categorize/:id", auth, autoCategorize)
 
 router.post("/import", auth, clientImport)
 

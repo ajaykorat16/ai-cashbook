@@ -65,8 +65,8 @@ const Layout = ({ children, showSelection = false }) => {
                                         <img className="login_click" src="/images/down_white.svg" alt="" />
                                     </button>
                                     <div className={`login_open ${showMenu ? 'd-block' : 'd-none'}`}>
-                                        <button onClick={() => navigate("/user/gst-report")}>Gst Report</button>
-                                        <button onClick={() => navigate("/user/itr-report")}>Itr Report</button>
+                                        <button onClick={() => navigate("/user/gst-report")}>GST Report</button>
+                                        <button onClick={() => navigate("/user/itr-report")}>ITR Report</button>
                                         <button onClick={() => handleLogout()}>Logout</button>
                                     </div>
                                 </div>
@@ -88,7 +88,7 @@ const Layout = ({ children, showSelection = false }) => {
                                                 <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>Category</Link></li>
                                                 <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>Upload CSV</Link></li>
                                                 <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>Chat of accounts</Link></li>
-                                                <li><Link>Auto categorize</Link></li>
+                                                <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>Auto categorize</Link></li>
                                                 <li><Link>Check inter-bank transfer</Link></li>
                                             </>
                                         ) : (

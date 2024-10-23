@@ -93,19 +93,10 @@ const SheetComponent = ({ clientId, showSelection }) => {
         if (dataLoaded) {
             formateSheet();
             applyFilterOnColumn('B');
-            setDefaultSelection()
             applyCalculations()
             setDataLoaded(false);
         }
     }, [dataLoaded]);
-
-    const setDefaultSelection = () => {
-        const inputElement = document.getElementById('spreadsheet_2012300138_0_name_box');
-
-        if (inputElement) {
-            inputElement.value = 'B1';
-        }
-    }
 
     const convertCellsToValues = (data) => {
         if (!data || !Array.isArray(data.cells)) {
@@ -241,25 +232,25 @@ const SheetComponent = ({ clientId, showSelection }) => {
         if (spreadsheetRef.current) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
-    
+
             for (let row = 2; row <= rowCount; row++) {
                 const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(F${row})), ROUND((D${row}*F${row})/100, 2), "")`;
                 spreadsheetRef.current.updateCell({ formula }, `G${row}`);
-    
+
                 const gstFormula = `=IF(ISNUMBER(G${row}), ROUND(G${row}/11, 2), "")`;
                 spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
-    
+
                 const excGstFormula = `=IF(AND(ISNUMBER(G${row}), ISNUMBER(J${row})), ROUND(G${row}-J${row}, 2), "")`;
                 spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
-    
+
                 const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
                 spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
             }
-    
+
             spreadsheetRef.current.refresh();
         }
     };
-    
+
     const formateSheet = () => {
         if (spreadsheetRef.current) {
             const sheet = spreadsheetRef.current.getActiveSheet();
@@ -503,46 +494,50 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
     return (
         <div>
-            <Layout showSelection={showSelection}>
-                <div className="special_flex mb-25">
-                    <div className='title_part'>
-                        <div className='date_title'>
-                            <span className="date_label">From:</span>
-                            <span className='date_part'>{currentYearStart.format('DD/MM/YYYY')}</span>
-                        </div>
-                        <div className='date_title'>
-                            <span className="date_label">To:</span>
-                            <span className='date_part'>{toDate.format('DD/MM/YYYY')}</span>
-                        </div>
+            <div className="special_flex mb-25">
+                <div className='title_part'>
+                    <div className='date_title'>
+                        <span className="date_label">From:</span>
+                        <span className='date_part'>{currentYearStart.format('DD/MM/YYYY')}</span>
+                    </div>
+                    <div className='date_title'>
+                        <span className="date_label">To:</span>
+                        <span className='date_part'>{toDate.format('DD/MM/YYYY')}</span>
                     </div>
                 </div>
-                <>
-                    {isLoading && (
-                        <Loader />
-                    )}
-                    <div className={`account_sheet spreadsheet ${isLoading && 'invisible'}`}>
-                        <SpreadsheetComponent
-                            ref={spreadsheetRef}
-                            actionComplete={handleActionComplete}
-                            showSheetTabs={false}
-                            allowSorting={true}
-                            allowFiltering={true}
-                            beforeCellRender={handleCellRender}
-                        >
-                            <SheetsDirective>
-                                <SheetDirective frozenRows={1}>
-                                    <RangesDirective>
-                                        <RangeDirective></RangeDirective>
-                                    </RangesDirective>
-                                    <ColumnsDirective>
-                                        <ColumnDirective width={0} allowResizing={false} headerText="ID" ></ColumnDirective>
-                                    </ColumnsDirective>
-                                </SheetDirective>
-                            </SheetsDirective>
-                        </SpreadsheetComponent>
-                    </div>
-                </>
-            </Layout>
+            </div>
+            <>
+                {isLoading && (
+                    <Loader />
+                )}
+                <div className={`account_sheet spreadsheet ${isLoading && 'invisible'}`}>
+                    <SpreadsheetComponent
+                        ref={spreadsheetRef}
+                        actionComplete={handleActionComplete}
+                        beforeCellRender={handleCellRender}
+                        showSheetTabs={false}
+                        allowSorting={true}
+                        allowFiltering={true}
+                        selectionSettings={{
+                            mode: 'Multiple'
+                        }}
+                        created={() => {
+                            spreadsheetRef.current.selectRange('B1');
+                        }}
+                    >
+                        <SheetsDirective>
+                            <SheetDirective frozenRows={1}>
+                                <RangesDirective>
+                                    <RangeDirective></RangeDirective>
+                                </RangesDirective>
+                                <ColumnsDirective>
+                                    <ColumnDirective width={0} allowResizing={false} headerText="ID" ></ColumnDirective>
+                                </ColumnsDirective>
+                            </SheetDirective>
+                        </SheetsDirective>
+                    </SpreadsheetComponent>
+                </div>
+            </>
         </div>
     );
 };

@@ -21,6 +21,7 @@ import UserCategory from './pages/UserCategory';
 import UserList from './pages/UserList';
 import GstReport from './pages/GstReport';
 import ItrReport from './pages/ItrReport';
+import AutoCategorize from './pages/AutoCategorize';
 
 const App = () => {
   return (
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="upload-clients" element={<UploadClients />} />
           <Route path="upload-csv" element={<UploadCsv />} />
           <Route path="spreadsheet/:id" element={<Spreadsheet />} />
+          <Route path="auto-categorize" element={<AutoCategorize />} />
           <Route path="gst-report" element={<GstReport />} />
           <Route path="itr-report" element={<ItrReport />} />
         </Route>

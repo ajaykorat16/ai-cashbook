@@ -191,6 +191,29 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const autoCategorize = async (id) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/client/auto-categorize/${id}`, { headers });
+            if (data.error === false) {
+                setTimeout(function () {
+                    toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
+                }, 500);
+                return data;
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: errors[0].msg, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
     const updateSpreadsheet = async (id, csvData) => {
         try {
             const { data } = await axios.put(`${baseURL}/client/update-spreasheet/${id}`, { data: csvData }, { headers });
@@ -253,7 +276,7 @@ const ClientProvider = ({ children }) => {
             toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
         }
     }
-    
+
     const getItrReport = async (id, fromDate, toDate) => {
         try {
             let { data } = await axios.get(`${baseURL}/client/itr-report/${id}?fromDate=${fromDate}&&toDate=${toDate}`, { headers })
@@ -267,8 +290,8 @@ const ClientProvider = ({ children }) => {
 
     return (
         <ClientContext.Provider value={{
-            createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, getSpreadsheet, updateSpreadsheet, createSpreadsheet,
-            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, importClient, multipleDeleteClient, getLastClientCode, getItrReport,getGstReport
+            createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, getSpreadsheet, updateSpreadsheet, createSpreadsheet, autoCategorize,
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, importClient, multipleDeleteClient, getLastClientCode, getItrReport, getGstReport
         }}>
             {children}
         </ClientContext.Provider>

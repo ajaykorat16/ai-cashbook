@@ -1012,6 +1012,7 @@ const classify = async (newData, id, database, email) => {
             row.qtr,
             itr_label,
             row.bas_labn,
+            row.id
         ]
     });
 
@@ -1283,7 +1284,7 @@ const createClientSpreadsheet = async (req, res) => {
             const newData = classifiedData.map((data) => {
                 return {
                     client_id: new ObjectId(id),
-                    data,
+                    data: data.slice(0, -1),
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 }
@@ -1313,6 +1314,102 @@ const createClientSpreadsheet = async (req, res) => {
     } finally {
         await mongoClient.close();
     }
+}
+
+
+const autoCategorize = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const client = await getClient(id);
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client does not exist.",
+            });
+        }
+
+        const user = await Users.findById(client?.user_id);
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+
+        const collections = await database.listCollections().toArray();
+        const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
+
+        if (!collectionExists) {
+            await database.createCollection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+        }
+
+        const userSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+
+        const startDate = moment().startOf('year');
+        const endDate = moment().endOf('year');
+        const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
+
+        const filteredData = spreadsheetCursor.filter((record) => {
+            if (record.data[3]) {
+                const dateInString = record.data[1];
+                const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
+                if (dateInRecord.isValid()) {
+                    return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
+                }
+            }
+        });
+
+        const formattedData = filteredData.map((row) => {
+            const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
+            return [row.data[0], formattedDate, ...row.data.slice(2), row?._id];
+        });
+
+        const newData = spreadsheetCursor.filter((record) => {
+            if (!record.data[3]) {
+                const dateInString = record.data[1];
+                const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
+                if (dateInRecord.isValid()) {
+                    return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
+                }
+            }
+        });
+
+        const newCsv = newData.map((row) => {
+            const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
+            return [row.data[0], formattedDate, ...row.data.slice(2), row?._id];
+        });
+
+        const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'bas_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn', 'id'], ...formattedData]
+
+        if (oldData.length > 1 && newCsv.length > 1) {
+            await train(oldData, id)
+            const classifiedData = await classify([oldData[0], ...newCsv], id, database, user?.email)
+            const newData = classifiedData.map((data) => {
+                const _id = data[data.length - 1];
+                const updatedData = data.slice(0, -1);
+                return {
+                    _id: new ObjectId(_id),
+                    data: updatedData,
+                    updatedAt: new Date(),
+                };
+            });
+
+            await Promise.all(
+                newData.map((item) =>
+                    userSpreadsheet.updateOne(
+                        { _id: item._id },
+                        { $set: { data: item.data, updatedAt: item.updatedAt } }
+                    )
+                )
+            );
+        }
+        return res.status(200).json({
+            error: false,
+            message: "Client spreadsheet categorize successfully.",
+        });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send("Server error");
+    } 
 }
 
 const updateClientSpreadsheet = async (req, res) => {
@@ -1772,6 +1869,6 @@ const getItrReport = async (req, res) => {
 };
 
 module.exports = {
-    createClient, getSingleClient, getClientCategory, getAllClients, exportClient, createClientSpreadsheet, getSpreadsheet,
+    createClient, getSingleClient, getClientCategory, getAllClients, exportClient, createClientSpreadsheet, getSpreadsheet, autoCategorize,
     updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete, updateClientSpreadsheet, getLastClient, getGstReport, getItrReport
 }
