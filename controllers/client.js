@@ -979,6 +979,7 @@ const classify = async (newData, id, database, email) => {
     await csvWriter.writeRecords(newData.slice(1));
     await runPythonScript("classify", id, filePath);
 
+    await new Promise(resolve => setTimeout(resolve, 3000));
     const data = await readCsv(filePath);
 
     const userCategory = database.collection(`${email.split("@")[0]}_client_category`);
@@ -1409,7 +1410,7 @@ const autoCategorize = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         res.status(500).send("Server error");
-    } 
+    }
 }
 
 const updateClientSpreadsheet = async (req, res) => {

@@ -7,7 +7,7 @@ import Loader from '../components/Loader';
 const AutoCategorize = () => {
     const { getAllClients, clientObject, setClientObject, autoCategorize } = useClient()
 
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     const fetchClient = async () => {
         const { clients } = await getAllClients(1, 1, "_id", -1, "")
@@ -20,7 +20,6 @@ const AutoCategorize = () => {
     }
 
     const categorize = async (id) => {
-        setIsLoading(true)
         const data = await autoCategorize(id)
         if (!data?.error) {
             setIsLoading(false)
@@ -39,18 +38,21 @@ const AutoCategorize = () => {
     }, [])
 
     useEffect(() => {
-        if(clientObject?.value) {
-            categorize(clientObject?.value)   
+        if (clientObject?.value) {
+            setIsLoading(true)
+            categorize(clientObject?.value)
         }
     }, [clientObject?.value])
-    
+
 
     return (
         <Layout showSelection={true}>
-            {isLoading ? (
+            {isLoading === true && !clientObject?.value ? (
                 <Loader />
             ) : (
-                <SheetComponent clientId={clientObject?.value} showSelection={true} />
+                <>
+                    <SheetComponent clientId={clientObject?.value} sheetLoading={isLoading} setSheetLoading={setIsLoading} />
+                </>
             )}
         </Layout>
     )

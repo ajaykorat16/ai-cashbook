@@ -21,7 +21,7 @@ const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '
     '2.5-Interest paid Australia', '2.5-Interest paid Overseas', '2.5-Rent', '5.1-Depreciation', '2.6-Lease payments Australia', '5.1-Depreciation', '5.2-MV Expenses',
     '5.3-Repair and Maintenance', '9.1-All Other Expenses', '9.3-Director Fees', '9.2-Non Deductible Expenses']
 
-const SheetComponent = ({ clientId, showSelection }) => {
+const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
     const { getSpreadsheet, updateSpreadsheet, getClientCategory } = useClient();
     const spreadsheetRef = useRef(null);
 
@@ -71,6 +71,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
     const fetchCsvLoaded = async () => {
         setIsLoading(true)
         const csvDetail = await getSpreadsheet(clientId, fromDate.format('YYYY-MM-DD'), toDate.format('YYYY-MM-DD'));
+        console.log("csvDetail--", csvDetail)
         const csv = csvDetail || []
         const convertedData = convertToCellFormat(csv);
 
@@ -79,15 +80,16 @@ const SheetComponent = ({ clientId, showSelection }) => {
             sheet.rows = convertedData;
             spreadsheetRef.current.refresh();
         }
+        setSheetLoading(true)
         await delay(3500);
         setDataLoaded(true);
     }
 
     useEffect(() => {
-        if (clientId) {
+        if (clientId && !sheetLoading) {
             fetchCsvLoaded();
         }
-    }, [clientId]);
+    }, [clientId, sheetLoading]);
 
     useEffect(() => {
         if (dataLoaded) {
