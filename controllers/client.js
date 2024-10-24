@@ -896,7 +896,7 @@ function runPythonScript(operation, userId, filePath) {
 
         const args = [pythonScriptPath, operation, userId, filePath];
 
-        const pythonProcess = spawn("python3.10", args);
+        const pythonProcess = spawn(process.env.PYTHON_PATH, args);
 
         let outputData = '';
         let errorData = '';
