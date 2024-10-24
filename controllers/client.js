@@ -778,6 +778,7 @@ const clientImport = async (req, res) => {
                         emailMap.set(email, []);
                     }
                     emailMap.get(email).push(index);
+                    failedImports += 1;
                 }
             }
 
@@ -789,10 +790,10 @@ const clientImport = async (req, res) => {
                         abnMap.set(abn_number, []);
                     }
                     abnMap.get(abn_number).push(index);
+                    failedImports += 1;
                 }
             }
         }
-
 
         emailMap.forEach((indexes, email) => {
             if (indexes.length > 1) {
