@@ -771,9 +771,9 @@ const clientImport = async (req, res) => {
             const { email, abn_number, client_code } = client;
 
             if (email) {
-                const existingEmail = await Clients.findOne({ email, user_id });
+                const existingEmail = await Clients.findOne({ email, user_id, client_code });
 
-                if (existingEmail && client_code !== existingEmail?.client_code) {
+                if (!existingEmail) {
                     if (!emailMap.has(email)) {
                         emailMap.set(email, []);
                     }
@@ -782,9 +782,9 @@ const clientImport = async (req, res) => {
             }
 
             if (abn_number) {
-                const existingAbn = await Clients.findOne({ abn_number, user_id });
+                const existingAbn = await Clients.findOne({ abn_number, user_id, client_code });
 
-                if (existingAbn && client_code !== existingAbn?.client_code) {
+                if (!existingAbn) {
                     if (!abnMap.has(abn_number)) {
                         abnMap.set(abn_number, []);
                     }

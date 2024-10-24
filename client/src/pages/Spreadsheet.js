@@ -42,7 +42,7 @@ const Spreadsheet = () => {
           <Loader />
         ) : (
           <>
-            <SheetComponent clientId={clientObject?.value} sheetLoading={isLoading} setSheetLoading={setIsLoading} />
+            <SheetComponent clientId={clientObject?.value} />
           </>
         )}
       </Layout>

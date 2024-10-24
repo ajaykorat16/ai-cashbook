@@ -13,15 +13,13 @@ import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, Sprea
 import Loader from '../components/Loader';
 import { useClient } from '../contexts/ClientContexts';
 import dayjs from 'dayjs';
-import Layout from './Layout';
-import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
     '2.5-Interest paid Australia', '2.5-Interest paid Overseas', '2.5-Rent', '5.1-Depreciation', '2.6-Lease payments Australia', '5.1-Depreciation', '5.2-MV Expenses',
     '5.3-Repair and Maintenance', '9.1-All Other Expenses', '9.3-Director Fees', '9.2-Non Deductible Expenses']
 
-const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
+const SheetComponent = ({ clientId }) => {
     const { getSpreadsheet, updateSpreadsheet, getClientCategory } = useClient();
     const spreadsheetRef = useRef(null);
 
@@ -79,16 +77,15 @@ const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
             sheet.rows = convertedData;
             spreadsheetRef.current.refresh();
         }
-        setSheetLoading(true)
-        await delay(3500);
+        await delay(5000);
         setDataLoaded(true);
     }
 
     useEffect(() => {
-        if (clientId && !sheetLoading) {
+        if (clientId) {
             fetchCsvLoaded();
         }
-    }, [clientId, sheetLoading]);
+    }, [clientId]);
 
     useEffect(() => {
         if (dataLoaded) {

@@ -37,6 +37,7 @@ const UploadCsv = () => {
                         headers.map(header => row[header] || '')
                     );
 
+                    setIsLoading(true)
                     const spreadsheet = await createSpreadsheet(clientObject?.value, [headers, ...formattedData])
                     if (!spreadsheet?.error) {
                         setClientObject("")
@@ -44,7 +45,7 @@ const UploadCsv = () => {
                         setFileName("")
                         navigate(`/user/spreadsheet/${clientObject?.value}`)
                     }
-
+                    setIsLoading(false)
                 }
             },
             error: (error) => {
