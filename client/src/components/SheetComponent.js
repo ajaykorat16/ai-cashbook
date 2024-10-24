@@ -77,7 +77,7 @@ const SheetComponent = ({ clientId }) => {
             sheet.rows = convertedData;
             spreadsheetRef.current.refresh();
         }
-        await delay(5000);
+        await delay(7000);
         setDataLoaded(true);
     }
 
