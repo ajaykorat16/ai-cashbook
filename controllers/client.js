@@ -896,7 +896,7 @@ function runPythonScript(operation, userId, filePath) {
 
         const args = [pythonScriptPath, operation, userId, filePath];
 
-        const pythonProcess = spawn(process.env.PYTHON_PATH, args);
+        const pythonProcess = spawn(`${process.env.PYTHON_PATH}`, args);
 
         let outputData = '';
         let errorData = '';
@@ -978,8 +978,6 @@ const classify = async (newData, id, database, email) => {
 
     await csvWriter.writeRecords(newData.slice(1));
     await runPythonScript("classify", id, filePath);
-
-    await new Promise(resolve => setTimeout(resolve, 3000));
     const data = await readCsv(filePath);
 
     const userCategory = database.collection(`${email.split("@")[0]}_client_category`);
@@ -1376,12 +1374,23 @@ const autoCategorize = async (req, res) => {
 
         const newCsv = newData.map((row) => {
             const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
-            return [row.data[0], formattedDate, ...row.data.slice(2), row?._id];
+            const newRow = [row.data[0], formattedDate];
+            if (row.data.length >= 2) {
+                for (let i = 2; i < 14; i++) {
+                    if (row.data[i]) {
+                        newRow.push(row.data[i])
+                    } else {
+                        newRow.push("")
+                    }
+                }
+            }
+            newRow.push(row?._id)
+            return newRow;
         });
 
         const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'bas_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn', 'id'], ...formattedData]
 
-        if (oldData.length > 1 && newCsv.length > 1) {
+        if (oldData.length > 0 && newCsv.length > 0) {
             await train(oldData, id)
             const classifiedData = await classify([oldData[0], ...newCsv], id, database, user?.email)
             const newData = classifiedData.map((data) => {

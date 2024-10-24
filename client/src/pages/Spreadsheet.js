@@ -27,9 +27,6 @@ const Spreadsheet = () => {
       fetchSingleClient()
     }
 
-    return () => {
-      setClientObject({});
-    };
   }, [])
 
   useEffect(() => {
