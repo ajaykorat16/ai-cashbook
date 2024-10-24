@@ -232,7 +232,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         const sheet = spreadsheetRef.current.getActiveSheet();
         const rowCount = sheet.usedRange.rowIndex + 1;
 
-        if (columnLetter === 'E' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+        if (columnLetter === 'D' && args.rowIndex > 0 && args.rowIndex < rowCount) {
             const selectElement = document.createElement('select');
             selectElement.style.width = '100%';
 

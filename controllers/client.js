@@ -519,7 +519,7 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
             if (existingAbnNumber) {
                 const errorObj = {
                     field: "abn_number",
-                    message: "Abn number should be unique."
+                    message: "This ABN number is already registered."
                 };
                 if (isInsert) return { status: 200, error: true, ...errorObj };
                 errors.push(errorObj);
@@ -656,7 +656,7 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
             if (existingAbnNumber) {
                 const errorObj = {
                     field: "abn_number",
-                    message: "Abn number should be unique."
+                    message: "This ABN number is already registered."
                 };
                 if (isInsert) return { status: 200, error: true, ...errorObj };
                 errors.push(errorObj);
@@ -726,69 +726,122 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
 
 const clientImport = async (req, res) => {
     try {
-        let successImports = 0
-        let failedImports = 0
-        let { clients, isInsert } = req.body
-        const user_id = req.user._id
-        clients = JSON.parse(clients)
-        const failedClients = []
+        let successImports = 0;
+        let failedImports = 0;
+        let { clients, isInsert } = req.body;
+        const user_id = req.user._id;
+        clients = JSON.parse(clients);
+        const failedClients = [];
 
         for (const client of clients) {
-            const { client_code } = client
+            const { client_code } = client;
 
-            const [existingClient] = await Clients.find({ client_code, user_id })
+            const [existingClient] = await Clients.find({ client_code, user_id });
 
             if (existingClient) {
-                const updatedClient = await validateAndUpdateClient(client, existingClient?._id, user_id, isInsert)
+                const updatedClient = await validateAndUpdateClient(client, existingClient?._id, user_id, isInsert);
                 if (updatedClient.error) {
-                    failedImports += 1
+                    failedImports += 1;
                 } else {
-                    successImports += 1
+                    successImports += 1;
                 }
                 failedClients.push({
                     ...client,
-                    errors: updatedClient?.errors
-                })
+                    errors: updatedClient?.errors || []
+                });
             } else {
-                const newClient = await validateAndCreateClient(client, user_id, isInsert)
+                const newClient = await validateAndCreateClient(client, user_id, isInsert);
                 if (newClient.error) {
-                    failedImports += 1
+                    failedImports += 1;
                 } else {
-                    successImports += 1
+                    successImports += 1;
                 }
                 failedClients.push({
                     ...client,
-                    errors: newClient?.errors
-                })
+                    errors: newClient?.errors || []
+                });
             }
-        };
+        }
+
+        const emailMap = new Map();
+        const abnMap = new Map();
+
+        for (let index = 0; index < failedClients.length; index++) {
+            const client = failedClients[index];
+            const { email, abn_number, client_code } = client;
+
+            if (email) {
+                const existingEmail = await Clients.findOne({ email, user_id });
+
+                if (existingEmail && client_code !== existingEmail?.client_code) {
+                    if (!emailMap.has(email)) {
+                        emailMap.set(email, []);
+                    }
+                    emailMap.get(email).push(index);
+                }
+            }
+
+            if (abn_number) {
+                const existingAbn = await Clients.findOne({ abn_number, user_id });
+
+                if (existingAbn && client_code !== existingAbn?.client_code) {
+                    if (!abnMap.has(abn_number)) {
+                        abnMap.set(abn_number, []);
+                    }
+                    abnMap.get(abn_number).push(index);
+                }
+            }
+        }
+
+
+        emailMap.forEach((indexes, email) => {
+            if (indexes.length > 1) {
+                indexes.forEach((index) => {
+                    failedClients[index].errors.push({
+                        field: "email",
+                        message: "Email should be unique."
+                    });
+                });
+            }
+        });
+
+        abnMap.forEach((indexes, abn_number) => {
+            if (indexes.length > 1) {
+                indexes.forEach((index) => {
+                    failedClients[index].errors.push({
+                        field: "abn_number",
+                        message: "ABN number should be unique."
+                    });
+                });
+            }
+        });
 
         if (isInsert) {
             return res.status(200).json({
                 error: false,
-                message: `${successImports} clients imported successfully${failedImports > 0 ? `, ${failedImports} skipped with error.` : "."} `,
+                message: `${successImports} clients imported successfully${failedImports > 0 ? `, ${failedImports} skipped with error.` : "."}`,
                 failedClients
-            })
+            });
         } else {
             if (failedImports > 0) {
                 return res.status(200).json({
                     error: true,
                     message: `You have error in your file, please improve the data and upload again.`,
                     failedClients
-                })
+                });
             } else {
                 return res.status(200).json({
                     error: false,
-                    message: `You file is  validated and ready to import, please verify data and press upload.`,
+                    message: `Your file is validated and ready to import, please verify data and press upload.`,
                     failedClients
-                })
+                });
             }
         }
     } catch (error) {
-        console.log(error.message)
+        console.log(error.message);
         res.status(500).send('Server error');
     }
-}
+};
 
 const singleClientDelete = async (id) => {
     try {
@@ -988,12 +1041,19 @@ const classify = async (newData, id, database, email) => {
         let gst_code = ''
         let bas_code = ''
         let itr_label = ''
+        let gst_amt = 0;
+        let exc_gst = 0;
+        let bs_labn = ''
 
         if (row?.category) {
             const [category] = clientCategory.data.filter(c => c[0] == row.category);
             gst_code = category[2]
-            bas_code = category[3]
-            itr_label = category[4]
+            itr_label = category[3]
+            if (gst_code) {
+                gst_amt = (row.taxableAmt / 11).toFixed(2);
+                exc_gst = (row.taxableAmt - gst_amt).toFixed(2);
+                bs_labn = gst_amt > 0 ? "1A" : "1B"
+            }
         }
 
         return [
@@ -1004,13 +1064,12 @@ const classify = async (newData, id, database, email) => {
             row.business,
             row.taxableAmt,
             gst_code,
-            bas_code,
-            row.gst_amt,
-            row.excl_gst_amt,
+            gst_amt,
+            exc_gst,
             row.fy,
             row.qtr,
             itr_label,
-            row.bas_labn,
+            bs_labn,
             row.id
         ]
     });
@@ -1052,7 +1111,7 @@ const createClientSpreadsheet = async (req, res) => {
             });
         }
 
-        const newCsv = [["Bank Account", "Date", "Amt", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'BAS_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']]
+        const newCsv = [["Bank Account", "Date", "Amt", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']]
 
         const user = await Users.findById(client?.user_id);
         await mongoClient.connect();
@@ -1071,9 +1130,6 @@ const createClientSpreadsheet = async (req, res) => {
 
                 const businessRate = parseInt(business.replace('%', ''));
                 const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
-                const gst_amt = (taxable_amt / 11).toFixed(2);
-                const exc_gst = (taxable_amt - gst_amt).toFixed(2);
-                const bs_labn = gst_amt > 0 ? "1A" : "1B"
 
                 if (date) {
                     const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
@@ -1097,7 +1153,7 @@ const createClientSpreadsheet = async (req, res) => {
                         quarterRange = 'Oct-Dec';
                     }
 
-                    newCsv.push([bankAccount, formattedDate, amount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
+                    newCsv.push([bankAccount, formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                 }
             })
         } else {
@@ -1106,9 +1162,6 @@ const createClientSpreadsheet = async (req, res) => {
                     const [date, amount, narrative, business] = row;
                     const businessRate = parseInt(business.replace('%', ''));
                     const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
-                    const gst_amt = (taxable_amt / 11).toFixed(2);
-                    const exc_gst = (taxable_amt - gst_amt).toFixed(2);
-                    const bs_labn = gst_amt > 0 ? "1A" : "1B"
 
                     if (date) {
                         const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
@@ -1131,7 +1184,7 @@ const createClientSpreadsheet = async (req, res) => {
                             quarter = 4;
                             quarterRange = 'Oct-Dec';
                         }
-                        newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
+                        newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                     }
                 });
             } else if (data[0].length === 5) {
@@ -1144,9 +1197,6 @@ const createClientSpreadsheet = async (req, res) => {
                         const cleanAmount = parseFloat(amount.replace(/[$,]/g, ''));
                         const businessRate = parseInt(business.replace('%', ''));
                         const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
-                        const gst_amt = (taxable_amt / 11).toFixed(2);
-                        const exc_gst = (taxable_amt - gst_amt).toFixed(2);
-                        const bs_labn = gst_amt > 0 ? "1A" : "1B"
 
                         if (date) {
                             const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
@@ -1170,7 +1220,7 @@ const createClientSpreadsheet = async (req, res) => {
                                 quarterRange = 'Oct-Dec';
                             }
 
-                            newCsv.push([accountNumber, formattedDate, cleanAmount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
+                            newCsv.push([accountNumber, formattedDate, cleanAmount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                         }
                     });
                 } else {
@@ -1179,9 +1229,6 @@ const createClientSpreadsheet = async (req, res) => {
 
                         const businessRate = parseInt(business.replace('%', ''));
                         const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
-                        const gst_amt = (taxable_amt / 11).toFixed(2);
-                        const exc_gst = (taxable_amt - gst_amt).toFixed(2);
-                        const bs_labn = gst_amt > 0 ? "1A" : "1B"
 
                         if (date) {
                             const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
@@ -1205,7 +1252,7 @@ const createClientSpreadsheet = async (req, res) => {
                                 quarterRange = 'Oct-Dec';
                             }
 
-                            newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
+                            newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                         }
                     });
                 }
@@ -1214,9 +1261,6 @@ const createClientSpreadsheet = async (req, res) => {
                     const [date, amount, str1, str2, narrative1, narrative2, otherAmt, business] = row;
                     const businessRate = parseInt(business.replace('%', ''));
                     const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
-                    const gst_amt = (taxable_amt / 11).toFixed(2);
-                    const exc_gst = (taxable_amt - gst_amt).toFixed(2);
-                    const bs_labn = gst_amt > 0 ? "1A" : "1B"
 
                     if (date) {
                         const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
@@ -1240,7 +1284,7 @@ const createClientSpreadsheet = async (req, res) => {
                             quarterRange = 'Oct-Dec';
                         }
 
-                        newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', gst_amt, exc_gst, financialYear, quarterRange, '', bs_labn]);
+                        newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                     }
                 });
             }
@@ -1275,7 +1319,7 @@ const createClientSpreadsheet = async (req, res) => {
             return [row.data[0], formattedDate, ...row.data.slice(2)];
         });
 
-        const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'bas_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn'], ...formattedData]
+        const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn'], ...formattedData]
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
         if (oldData.length > 1) {
             await train(oldData, id)
@@ -1376,7 +1420,7 @@ const autoCategorize = async (req, res) => {
             const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
             const newRow = [row.data[0], formattedDate];
             if (row.data.length >= 2) {
-                for (let i = 2; i < 14; i++) {
+                for (let i = 2; i < 13; i++) {
                     if (row.data[i]) {
                         newRow.push(row.data[i])
                     } else {
@@ -1388,7 +1432,7 @@ const autoCategorize = async (req, res) => {
             return newRow;
         });
 
-        const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'bas_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn', 'id'], ...formattedData]
+        const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn', 'id'], ...formattedData]
 
         if (oldData.length > 0 && newCsv.length > 0) {
             await train(oldData, id)
@@ -1615,7 +1659,7 @@ const getGstReport = async (req, res) => {
             );
         });
 
-        const basCodeObject = {};
+        const gstCodeObject = {};
         const basLabNObject = {};
 
         const getQuarter = (date) => {
@@ -1635,18 +1679,18 @@ const getGstReport = async (req, res) => {
             const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
             const taxableAmt = typeof record.data[5] === 'string' ? parseFloat(record.data[5].replace(/,/g, '')) : parseFloat(record.data[5]);
-            const gstAmt = typeof record.data[8] === 'string' ? parseFloat(record.data[8].replace(/,/g, '')) : parseFloat(record.data[8]);
+            const gstAmt = typeof record.data[7] === 'string' ? parseFloat(record.data[7].replace(/,/g, '')) : parseFloat(record.data[7]);
             const category = record.data[3];
-            const basCode = record.data[7];
-            const basLabn = record.data[13];
+            const gstCode = record.data[6];
+            const basLabn = record.data[12];
             const quarter = getQuarter(dateInRecord);
 
-            if (!basCodeObject[basCode]) {
-                basCodeObject[basCode] = { categories: {}, totals: initializeQuarterResults() };
+            if (!gstCodeObject[gstCode]) {
+                gstCodeObject[gstCode] = { categories: {}, totals: initializeQuarterResults() };
             }
 
-            if (!basCodeObject[basCode].categories[category]) {
-                basCodeObject[basCode].categories[category] = { ...initializeQuarterResults(), total: 0 };
+            if (!gstCodeObject[gstCode].categories[category]) {
+                gstCodeObject[gstCode].categories[category] = { ...initializeQuarterResults(), total: 0 };
             }
 
             if (!basLabNObject[basLabn]) {
@@ -1657,15 +1701,15 @@ const getGstReport = async (req, res) => {
                 basLabNObject[basLabn].categories[category] = { ...initializeQuarterResults(), total: 0 };
             }
 
-            if (taxableAmt && basCode && category) {
-                basCodeObject[basCode].categories[category][quarter] += taxableAmt;
-                basCodeObject[basCode].categories[category].total += taxableAmt;
-                basCodeObject[basCode].totals[quarter] += taxableAmt;
+            if (taxableAmt && gstCode && category) {
+                gstCodeObject[gstCode].categories[category][quarter] += taxableAmt;
+                gstCodeObject[gstCode].categories[category].total += taxableAmt;
+                gstCodeObject[gstCode].totals[quarter] += taxableAmt;
 
                 // Format totals to 2 decimal places
-                basCodeObject[basCode].categories[category][quarter] = parseFloat(basCodeObject[basCode].categories[category][quarter].toFixed(2));
-                basCodeObject[basCode].categories[category].total = parseFloat(basCodeObject[basCode].categories[category].total.toFixed(2));
-                basCodeObject[basCode].totals[quarter] = parseFloat(basCodeObject[basCode].totals[quarter].toFixed(2));
+                gstCodeObject[gstCode].categories[category][quarter] = parseFloat(gstCodeObject[gstCode].categories[category][quarter].toFixed(2));
+                gstCodeObject[gstCode].categories[category].total = parseFloat(gstCodeObject[gstCode].categories[category].total.toFixed(2));
+                gstCodeObject[gstCode].totals[quarter] = parseFloat(gstCodeObject[gstCode].totals[quarter].toFixed(2));
             }
 
             if (gstAmt && basLabn && category) {
@@ -1717,16 +1761,16 @@ const getGstReport = async (req, res) => {
         };
 
 
-        const basCodeResult = formatResult(basCodeObject);
+        const gstCodeResult = formatResult(gstCodeObject);
         const basLabnResult = formatResult(basLabNObject);
 
-        const basCodeGrandTotal = initializeQuarterResults();
+        const gstCodeGrandTotal = initializeQuarterResults();
         const basLabnGrandTotal = initializeQuarterResults();
 
-        basCodeResult.forEach(bas => {
+        gstCodeResult.forEach(bas => {
             Object.keys(bas.totalRow).forEach(key => {
                 if (key && key !== 'BAS_Name' && key !== 'Total_Result' && key !== 'Tax_Category') {
-                    basCodeGrandTotal[key] += parseFloat(bas.totalRow[key]);
+                    gstCodeGrandTotal[key] += parseFloat(bas.totalRow[key]);
                 }
             });
         });
@@ -1739,7 +1783,7 @@ const getGstReport = async (req, res) => {
             });
         });
 
-        basCodeGrandTotal.Total_Result = (filteredData.length > 0) ? Object.values(basCodeGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2) : "";
+        gstCodeGrandTotal.Total_Result = (filteredData.length > 0) ? Object.values(gstCodeGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2) : "";
         basLabnGrandTotal.Total_Result = (filteredData.length > 0) ? Object.values(basLabnGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2) : "";
 
         const formatGrandTotal = (grandTotal, label) => {
@@ -1756,15 +1800,15 @@ const getGstReport = async (req, res) => {
         };
 
         const formattedBasLabnGrandTotal = formatGrandTotal(basLabnGrandTotal, "Total");
-        const formattedBasCodeGrandTotal = formatGrandTotal(basCodeGrandTotal, "Total");
+        const formattedGstCodeGrandTotal = formatGrandTotal(gstCodeGrandTotal, "Total");
 
         res.json({
             error: false,
             message: "Client report fetched successfully.",
             data: {
                 taxableAmtReport: {
-                    basCodeResult,
-                    basCodeGrandTotal: formattedBasCodeGrandTotal
+                    gstCodeResult,
+                    gstCodeGrandTotal: formattedGstCodeGrandTotal
                 },
                 gstAmtReport: {
                     basLabnResult,
@@ -1824,7 +1868,7 @@ const getItrReport = async (req, res) => {
         filteredData.forEach(record => {
             const excGstAmt = record.data[5] ? parseFloat(record.data[5].replace(/,/g, '')) : 0;
             const category = record.data[3]
-            const itrLabel = record.data[12]
+            const itrLabel = record.data[11]
 
             if (itrLabel && excGstAmt && category) {
 

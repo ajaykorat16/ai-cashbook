@@ -238,14 +238,14 @@ const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
                 const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(F${row})), ROUND((D${row}*F${row})/100, 2), "")`;
                 spreadsheetRef.current.updateCell({ formula }, `G${row}`);
 
-                const gstFormula = `=IF(ISNUMBER(G${row}), ROUND(G${row}/11, 2), "")`;
-                spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
+                const gstFormula = `=IF(AND(ISNUMBER(G${row}), H${row}<>""), ROUND(G${row}/11, 2), 0)`;
+                spreadsheetRef.current.updateCell({ formula: gstFormula }, `I${row}`);
 
-                const excGstFormula = `=IF(AND(ISNUMBER(G${row}), ISNUMBER(J${row})), ROUND(G${row}-J${row}, 2), "")`;
-                spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
+                const excGstFormula = `=IF(AND(ISNUMBER(G${row}), ISNUMBER(I${row})), ROUND(G${row}-I${row}, 2), 0)`;
+                spreadsheetRef.current.updateCell({ formula: excGstFormula }, `J${row}`);
 
-                const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
-                spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
+                const baslabnFormula = `=IF(ISNUMBER(I${row}), IF(I${row} > 0, "1A", "1B"), "")`;
+                spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `N${row}`);
             }
 
             spreadsheetRef.current.refresh();
@@ -320,7 +320,7 @@ const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
         if (spreadsheetRef.current) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
-            const dropdownRange = `O2:O${rowCount}`;
+            const dropdownRange = `N2:N${rowCount}`;
             const labN = ['1A', '1B']
             const data = labN.join(',')
 
@@ -345,7 +345,7 @@ const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
         setCategoryHeaders(cleanedHeaders);
 
         const newArray = data.map(subArray => {
-            if (!subArray[1] || !subArray[2] || !subArray[3]) {
+            if (!subArray[0] || !subArray[2] || !subArray[3]) {
                 return null;
             }
 
@@ -360,7 +360,7 @@ const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
 
         const categoryMap = data.reduce((acc, subArray) => {
             const cleanedCategory = subArray[0].replace(/<\/?b>/g, '').replace(/<\/?i>/g, '').replace(/<\/?u>/g, '');
-            if (subArray[2] && subArray[3] && subArray[4]) {
+            if (subArray[2] && subArray[3]) {
                 acc[cleanedCategory] = subArray.slice(1);
                 return acc;
             }
@@ -407,7 +407,7 @@ const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
         const sheet = spreadsheetRef.current.getActiveSheet();
         const rowCount = sheet.usedRange.rowIndex + 1;
 
-        if (columnLetter === 'N' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+        if (columnLetter === 'M' && args.rowIndex > 0 && args.rowIndex < rowCount) {
             itrDropdown(args, columnLetter, rowNumber)
         }
 

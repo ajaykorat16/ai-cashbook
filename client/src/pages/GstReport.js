@@ -212,8 +212,8 @@ const GstReport = () => {
         const formattedFromDate = moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD');
         const formattedToDate = moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD');
         const data = await getGstReport(clientObject?.value, formattedFromDate, formattedToDate)
-        setTaxableAmt(data?.taxableAmtReport?.basCodeResult)
-        setTaxableAmtTotal(data?.taxableAmtReport?.basCodeGrandTotal)
+        setTaxableAmt(data?.taxableAmtReport?.gstCodeResult)
+        setTaxableAmtTotal(data?.taxableAmtReport?.gstCodeGrandTotal)
         setGstAmt(data?.gstAmtReport?.basLabnResult)
         setGstAmtTotal(data?.gstAmtReport?.basLabnGrandTotal)
         setIsLoading(false)
@@ -332,7 +332,7 @@ const GstReport = () => {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>BAS_Code</th>
+                                        <th>GST_Code</th>
                                         <th>Tax_Category</th>
                                         {
                                             (taxableAmt.length > 0 ?
@@ -351,7 +351,7 @@ const GstReport = () => {
                                                     .map((quarterKey) => {
                                                         const year = quarterKey.split('_')[0];
                                                         const quarter = quarterKey.split('_')[1];
-                                                        const displayKey =`${quarterMapping[quarter] || ''}_${year}`;
+                                                        const displayKey = `${quarterMapping[quarter] || ''}_${year}`;
                                                         return <th key={quarterKey}>{displayKey}</th>;
                                                     }))
                                             )
@@ -360,8 +360,8 @@ const GstReport = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {taxableAmt && taxableAmt.map((bas) => (
-                                        <React.Fragment key={bas.basCode}>
+                                    {taxableAmt && taxableAmt.map((bas, index) => (
+                                        <React.Fragment key={`${bas.basLabn}_${index}`}>
                                             <tr>
                                                 <td>{bas.totalRow.BAS_Name}</td>
                                                 <td></td>
@@ -371,7 +371,7 @@ const GstReport = () => {
                                                 <td>{bas.totalRow.Total_Result}</td>
                                             </tr>
                                             {bas.categoryRows.map((category, index) => (
-                                                <tr key={`${bas.basCode}-${index}`}>
+                                                <tr key={`${bas.basLabn}-${index}`}>
                                                     <td></td>
                                                     <td>{category.Tax_Category}</td>
                                                     {Object.keys(category).filter(key => /^\d{4}_Q\d$/.test(key) || key === 'Total_Result').map((key, idx) => (
@@ -419,7 +419,7 @@ const GstReport = () => {
                                                     .map((quarterKey) => {
                                                         const year = quarterKey.split('_')[0];
                                                         const quarter = quarterKey.split('_')[1];
-                                                        const displayKey = `${quarterMapping[quarter] || ''}_${year}`;      
+                                                        const displayKey = `${quarterMapping[quarter] || ''}_${year}`;
                                                         return <th key={quarterKey}>{displayKey}</th>;
                                                     })
                                             )
@@ -429,22 +429,22 @@ const GstReport = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {gstAmt && gstAmt.map((bas) => (
-                                        <React.Fragment key={bas.basCode}>
-                                            <tr key={`total-${bas.basCode}`}>
+                                    {gstAmt && gstAmt.map((bas, index) => (
+                                        <React.Fragment key={`${bas.basLabn}_${index}`}>
+                                            <tr key={`total-${bas.basLabn}`}>
                                                 <td>{bas.totalRow.BAS_Name}</td>
                                                 <td></td>
                                                 {Object.keys(bas.totalRow).filter(key => /^\d{4}_Q\d$/.test(key)).map((quarterKey) => (
-                                                    <td key={`${bas.basCode}-${quarterKey}`}>{bas.totalRow[quarterKey]}</td>
+                                                    <td key={`${bas.basLabn}-${quarterKey}`}>{bas.totalRow[quarterKey]}</td>
                                                 ))}
                                                 <td>{bas.totalRow.Total_Result}</td>
                                             </tr>
                                             {bas.categoryRows.map((category, index) => (
-                                                <tr key={`${bas.basCode}-category-${index}`}>
+                                                <tr key={`${bas.basLabn}-category-${index}`}>
                                                     <td></td>
                                                     <td>{category.Tax_Category}</td>
                                                     {Object.keys(category).filter(key => /^\d{4}_Q\d$/.test(key)).map((quarterKey) => (
-                                                        <td key={`${bas.basCode}-${category.Tax_Category}-${quarterKey}`}>{category[quarterKey]}</td>
+                                                        <td key={`${bas.basLabn}-${category.Tax_Category}-${quarterKey}`}>{category[quarterKey]}</td>
                                                     ))}
                                                     <td>{category.total}</td>
                                                 </tr>

@@ -128,18 +128,22 @@ const UploadCsv = () => {
     });
 
     const customBodyTemplate = (rowData, columnName, errors) => {
-        const error = rowData?.errors?.find(errorObj => errorObj.field === columnName);
+        const fieldErrors = rowData?.errors?.filter(errorObj => errorObj.field === columnName) || [];
 
-        if (error) {
+        if (fieldErrors.length > 0) {
             setDiasbledUpload(true);
+
             return (
                 <div className='d-flex flex-column'>
                     <span>{rowData[columnName] || "-"}</span>
-                    <span className='text-danger small'>{error.message}</span>
+                    {fieldErrors.map((error, index) => (
+                        <span key={index} className='text-danger small'>{error.message}</span>
+                    ))}
                 </div>
             );
         }
-        return rowData[columnName] ? rowData[columnName] : "-";
+
+        return <span>{rowData[columnName] || "-"}</span>;
     };
 
     return (
