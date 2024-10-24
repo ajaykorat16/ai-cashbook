@@ -71,7 +71,6 @@ const SheetComponent = ({ clientId, sheetLoading, setSheetLoading }) => {
     const fetchCsvLoaded = async () => {
         setIsLoading(true)
         const csvDetail = await getSpreadsheet(clientId, fromDate.format('YYYY-MM-DD'), toDate.format('YYYY-MM-DD'));
-        console.log("csvDetail--", csvDetail)
         const csv = csvDetail || []
         const convertedData = convertToCellFormat(csv);
 
