@@ -26,7 +26,8 @@ const Spreadsheet = () => {
     if (params?.id) {
       fetchSingleClient()
     }
-
+    
+    return setClientObject({})
   }, [])
 
   return (
