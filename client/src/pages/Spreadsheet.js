@@ -29,12 +29,6 @@ const Spreadsheet = () => {
 
   }, [])
 
-  useEffect(() => {
-    if (clientObject?.value) {
-      setIsLoading(false)
-    }
-  }, [clientObject?.value])
-
   return (
     <>
       <Layout showSelection={true}>

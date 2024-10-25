@@ -1515,27 +1515,29 @@ const updateClientSpreadsheet = async (req, res) => {
                     );
                 } else {
                     const id = item.shift();
-                    const existingRecord = await clientSpreadsheet.findOne({ _id: new ObjectId(id) });
+                    if (id) {
+                        const existingRecord = await clientSpreadsheet.findOne({ _id: new ObjectId(id) });
 
-                    if (existingRecord) {
-                        const isItemBlank = Object.values(item).every(value => value === '' || value === null || value === undefined);
+                        if (existingRecord) {
+                            const isItemBlank = Object.values(item).every(value => value === '' || value === null || value === undefined);
 
-                        if (isItemBlank) {
-                            await clientSpreadsheet.deleteOne({ _id: new ObjectId(id) });
-                        } else {
-                            if (item[1]) {
-                                item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
-                            }
-
-                            await clientSpreadsheet.updateOne(
-                                { _id: new ObjectId(id) },
-                                {
-                                    $set: {
-                                        data: item,
-                                        updatedAt: new Date(),
-                                    }
+                            if (isItemBlank) {
+                                await clientSpreadsheet.deleteOne({ _id: new ObjectId(id) });
+                            } else {
+                                if (item[1]) {
+                                    item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
                                 }
-                            );
+
+                                await clientSpreadsheet.updateOne(
+                                    { _id: new ObjectId(id) },
+                                    {
+                                        $set: {
+                                            data: item,
+                                            updatedAt: new Date(),
+                                        }
+                                    }
+                                );
+                            }
                         }
                     } else {
                         if (item[1]) {
