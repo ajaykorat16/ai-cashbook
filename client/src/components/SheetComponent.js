@@ -76,9 +76,12 @@ const SheetComponent = ({ clientId }) => {
             const sheet = spreadsheetRef.current.getActiveSheet();
             sheet.rows = convertedData;
             spreadsheetRef.current.refresh();
+            const rowCount =   sheet.rows.length;
+            const delayDuration = rowCount * 50;
+    
+            await delay(delayDuration);
+            setDataLoaded(true);
         }
-        await delay(15000);
-        setDataLoaded(true);
     }
 
     useEffect(() => {
