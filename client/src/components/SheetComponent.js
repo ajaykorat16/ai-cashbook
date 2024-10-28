@@ -531,6 +531,10 @@ const SheetComponent = ({ clientId }) => {
                             if (headerValue && spreadsheetRef.current) {
                                 try {
                                     spreadsheetRef.current.updateCell({ value: headerValue }, address);
+                                    const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${13}"] select`);
+                                    if (itrDropdownElement && categoryHeaderIndex ===2) {
+                                        itrDropdownElement.value = headerValue 
+                                    }
                                 } catch (error) {
                                     console.error(`Error updating cell ${address}:`, error);
                                 }
