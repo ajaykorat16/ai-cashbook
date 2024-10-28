@@ -557,6 +557,7 @@ const SheetComponent = ({ clientId }) => {
     const itrDropdown = (args, columnLetter, rowNumber) => {
         const selectElement = document.createElement('select');
         selectElement.style.width = '100%';
+        selectElement.style.height = '100%';
 
         itrList.forEach(item => {
             const option = document.createElement('option');
