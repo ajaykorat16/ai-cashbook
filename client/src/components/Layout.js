@@ -89,9 +89,11 @@ const Layout = ({ children, showSelection = false }) => {
                                                 <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>Home</Link></li>
                                                 <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>Category</Link></li>
                                                 <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>Upload CSV</Link></li>
-                                                <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>Chart of accounts</Link></li>
                                                 {clientObject?.value && (
-                                                    <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>Auto categorize</Link></li>
+                                                    <>
+                                                        <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>Chart of accounts</Link></li>
+                                                        <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>Auto categorize</Link></li>
+                                                    </>
                                                 )}
                                                 <li><Link>Check inter-bank transfer</Link></li>
                                             </>

@@ -1118,9 +1118,13 @@ const createClientSpreadsheet = async (req, res) => {
         await mongoClient.connect();
         const database = mongoClient.db(process.env.DATABASE_NAME);
 
-        if (data[0][0] === "Bank Account") {
-            data.shift();
-            data.forEach(row => {
+        const blankFilteredData = data.filter(subArray =>
+            subArray.some(element => element.trim() !== '')
+        );
+
+        if (blankFilteredData[0][0] === "Bank Account") {
+            blankFilteredData.shift();
+            blankFilteredData.forEach(row => {
                 const [bankAccount, date, narrative, debitAmt, creditAmt, otherCat, serial, business] = row;
                 let amount = '';
                 if (creditAmt) {
@@ -1158,8 +1162,8 @@ const createClientSpreadsheet = async (req, res) => {
                 }
             })
         } else {
-            if (data[0].length === 4) {
-                data.forEach(row => {
+            if (blankFilteredData[0].length === 4) {
+                blankFilteredData.forEach(row => {
                     const [date, amount, narrative, business] = row;
                     const businessRate = parseInt(business.replace('%', ''));
                     const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
@@ -1188,12 +1192,12 @@ const createClientSpreadsheet = async (req, res) => {
                         newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                     }
                 });
-            } else if (data[0].length === 5) {
-                if (data[0][0] === "Account History for Account:") {
-                    const accountNumber = data[0][1].split("-")[1].trim();
-                    data.splice(0, 2);
+            } else if (blankFilteredData[0].length === 5) {
+                if (blankFilteredData[0][0] === "Account History for Account:") {
+                    const accountNumber = blankFilteredData[0][1].split("-")[1].trim();
+                    blankFilteredData.splice(0, 2);
 
-                    data.forEach(row => {
+                    blankFilteredData.forEach(row => {
                         const [date, narrative, amount, otherAmt, business] = row;
                         const cleanAmount = parseFloat(amount.replace(/[$,]/g, ''));
                         const businessRate = parseInt(business.replace('%', ''));
@@ -1225,7 +1229,7 @@ const createClientSpreadsheet = async (req, res) => {
                         }
                     });
                 } else {
-                    data.forEach(row => {
+                    blankFilteredData.forEach(row => {
                         const [date, amount, narrative, otherAmt, business] = row;
 
                         const businessRate = parseInt(business.replace('%', ''));
@@ -1257,8 +1261,8 @@ const createClientSpreadsheet = async (req, res) => {
                         }
                     });
                 }
-            } else if (data[0].length === 8) {
-                data.forEach(row => {
+            } else if (blankFilteredData[0].length === 8) {
+                blankFilteredData.forEach(row => {
                     const [date, amount, str1, str2, narrative1, narrative2, otherAmt, business] = row;
                     const businessRate = parseInt(business.replace('%', ''));
                     const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
@@ -1641,7 +1645,7 @@ const getGstReport = async (req, res) => {
             endDate = moment().endOf('year');
         }
 
-        const quarters = [];
+        let quarters = [];
         let current = moment(startDate).startOf('quarter');
         const end = moment(endDate).endOf('quarter');
 
@@ -1650,12 +1654,16 @@ const getGstReport = async (req, res) => {
             current.add(1, 'quarter');
         }
 
+        if (quarters.length < 4) {
+            const year = quarters[0].split('_')[0];
+            quarters = [`${year}_Q1`, `${year}_Q2`, `${year}_Q3`, `${year}_Q4`];
+        }
+
         const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
 
         const filteredData = spreadsheetCursor.filter((record) => {
             const dateInString = record.data[1];
             const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
-
             return (
                 dateInRecord.isValid() &&
                 dateInRecord.isBetween(startDate, endDate, null, '[]')
@@ -1665,9 +1673,7 @@ const getGstReport = async (req, res) => {
         const gstCodeObject = {};
         const basLabNObject = {};
 
-        const getQuarter = (date) => {
-            return `${date.year()}_Q${date.quarter()}`;
-        };
+        const getQuarter = (date) => `${date.year()}_Q${date.quarter()}`;
 
         const initializeQuarterResults = () => {
             return quarters.reduce((acc, quarter) => {
@@ -1676,11 +1682,9 @@ const getGstReport = async (req, res) => {
             }, {});
         };
 
-
         filteredData.forEach(record => {
             const dateInString = record.data[1];
             const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
-
             const taxableAmt = typeof record.data[5] === 'string' ? parseFloat(record.data[5].replace(/,/g, '')) : parseFloat(record.data[5]);
             const gstAmt = typeof record.data[7] === 'string' ? parseFloat(record.data[7].replace(/,/g, '')) : parseFloat(record.data[7]);
             const category = record.data[3];
@@ -1691,15 +1695,12 @@ const getGstReport = async (req, res) => {
             if (!gstCodeObject[gstCode]) {
                 gstCodeObject[gstCode] = { categories: {}, totals: initializeQuarterResults() };
             }
-
             if (!gstCodeObject[gstCode].categories[category]) {
                 gstCodeObject[gstCode].categories[category] = { ...initializeQuarterResults(), total: 0 };
             }
-
             if (!basLabNObject[basLabn]) {
                 basLabNObject[basLabn] = { categories: {}, totals: initializeQuarterResults() };
             }
-
             if (!basLabNObject[basLabn].categories[category]) {
                 basLabNObject[basLabn].categories[category] = { ...initializeQuarterResults(), total: 0 };
             }
@@ -1708,8 +1709,6 @@ const getGstReport = async (req, res) => {
                 gstCodeObject[gstCode].categories[category][quarter] += taxableAmt;
                 gstCodeObject[gstCode].categories[category].total += taxableAmt;
                 gstCodeObject[gstCode].totals[quarter] += taxableAmt;
-
-                // Format totals to 2 decimal places
                 gstCodeObject[gstCode].categories[category][quarter] = parseFloat(gstCodeObject[gstCode].categories[category][quarter].toFixed(2));
                 gstCodeObject[gstCode].categories[category].total = parseFloat(gstCodeObject[gstCode].categories[category].total.toFixed(2));
                 gstCodeObject[gstCode].totals[quarter] = parseFloat(gstCodeObject[gstCode].totals[quarter].toFixed(2));
@@ -1719,8 +1718,6 @@ const getGstReport = async (req, res) => {
                 basLabNObject[basLabn].categories[category][quarter] += gstAmt;
                 basLabNObject[basLabn].categories[category].total += gstAmt;
                 basLabNObject[basLabn].totals[quarter] += gstAmt;
-
-                // Format totals to 2 decimal places
                 basLabNObject[basLabn].categories[category][quarter] = parseFloat(basLabNObject[basLabn].categories[category][quarter].toFixed(2));
                 basLabNObject[basLabn].categories[category].total = parseFloat(basLabNObject[basLabn].categories[category].total.toFixed(2));
                 basLabNObject[basLabn].totals[quarter] = parseFloat(basLabNObject[basLabn].totals[quarter].toFixed(2));
@@ -1729,16 +1726,11 @@ const getGstReport = async (req, res) => {
 
         const formatResult = (resultObject) => {
             return Object.keys(resultObject).map(key => {
-                if (!key) {
-                    return null;
-                }
-
+                if (!key) return null;
                 const categories = resultObject[key].categories;
                 const totals = resultObject[key].totals;
 
-                if (Object.keys(categories).length === 0) {
-                    return null;
-                }
+                if (Object.keys(categories).length === 0) return null;
 
                 const categoryRows = Object.keys(categories).map(category => ({
                     BAS_Name: key,
@@ -1757,12 +1749,11 @@ const getGstReport = async (req, res) => {
                         ...Object.fromEntries(
                             Object.entries(totals).map(([k, v]) => [k, v.toFixed(2)])
                         ),
-                        Total_Result: Object.values(totals).reduce((acc, val) => acc + val, 0).toFixed(2)
+                        Total_Result: Object.values(totals).reduce((acc, val) => acc + val, 0).toFixed(2) || "0.00"
                     }
                 };
-            }).filter(result => result !== null)
+            }).filter(result => result !== null);
         };
-
 
         const gstCodeResult = formatResult(gstCodeObject);
         const basLabnResult = formatResult(basLabNObject);
@@ -1786,8 +1777,12 @@ const getGstReport = async (req, res) => {
             });
         });
 
-        gstCodeGrandTotal.Total_Result = (filteredData.length > 0) ? Object.values(gstCodeGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2) : "";
-        basLabnGrandTotal.Total_Result = (filteredData.length > 0) ? Object.values(basLabnGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2) : "";
+        gstCodeGrandTotal.Total_Result = gstCodeResult.length > 0
+            ? Object.values(gstCodeGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2)
+            : "0.00";
+        basLabnGrandTotal.Total_Result = basLabnResult.length > 0
+            ? Object.values(basLabnGrandTotal).reduce((acc, val) => acc + val, 0).toFixed(2)
+            : "0.00";
 
         const formatGrandTotal = (grandTotal, label) => {
             Object.keys(grandTotal).forEach(key => {

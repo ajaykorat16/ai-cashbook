@@ -346,15 +346,19 @@ const GstReport = () => {
                                                         return <th key={key}>{displayKey}</th>;
                                                     })
                                                 :
-                                                (Object.keys(gstAmt[0]?.totalRow || {})
-                                                    .filter(key => /^\d{4}_Q\d$/.test(key))
-                                                    .map((quarterKey) => {
-                                                        const year = quarterKey.split('_')[0];
-                                                        const quarter = quarterKey.split('_')[1];
-                                                        const displayKey = `${quarterMapping[quarter] || ''}_${year}`;
-                                                        return <th key={quarterKey}>{displayKey}</th>;
-                                                    }))
-                                            )
+                                                (
+                                                    Object.keys(taxableAmtTotal)
+                                                        .filter(key => /^\d{4}_Q\d$/.test(key) || key === 'Total_Result')
+                                                        .map(key => {
+                                                            const year = key.split('_')[0];
+                                                            const quarter = key.split('_')[1];
+
+                                                            const displayKey = `${quarterMapping[quarter] || ''}_${year}`;
+                                                            if (displayKey !== '_Total') {
+                                                                return <th key={key}>{displayKey}</th>;
+                                                            }
+                                                        })
+                                                ))
                                         }
                                         <th>Total Result</th>
                                     </tr>
@@ -414,13 +418,16 @@ const GstReport = () => {
                                                         return <th key={quarterKey}>{displayKey}</th>;
                                                     })
                                                 :
-                                                Object.keys(taxableAmt[0]?.categoryRows[0] || {})
-                                                    .filter(key => /^\d{4}_Q\d$/.test(key))
-                                                    .map((quarterKey) => {
-                                                        const year = quarterKey.split('_')[0];
-                                                        const quarter = quarterKey.split('_')[1];
+                                                Object.keys(gstAmtTotal)
+                                                    .filter(key => /^\d{4}_Q\d$/.test(key) || key === 'Total_Result')
+                                                    .map(key => {
+                                                        const year = key.split('_')[0];
+                                                        const quarter = key.split('_')[1];
+
                                                         const displayKey = `${quarterMapping[quarter] || ''}_${year}`;
-                                                        return <th key={quarterKey}>{displayKey}</th>;
+                                                        if (displayKey !== '_Total') {
+                                                            return <th key={key}>{displayKey}</th>;
+                                                        }
                                                     })
                                             )
                                         }

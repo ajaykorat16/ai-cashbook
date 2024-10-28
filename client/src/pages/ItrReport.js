@@ -314,7 +314,7 @@ const ItrReport = () => {
                     <table>
                         <thead>
                             <tr>
-                                <th>Itr Label</th>
+                                <th>ITR Label</th>
                                 <th>Tax Category</th>
                                 <th>Sum of Excl.GST_Amt</th>
                             </tr>
