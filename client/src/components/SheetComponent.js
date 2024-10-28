@@ -492,6 +492,7 @@ const SheetComponent = ({ clientId }) => {
             if (columnLetter === 'E' && args.rowIndex > 0 && args.rowIndex < rowCount) {
                 const selectElement = document.createElement('select');
                 selectElement.style.width = '100%';
+                selectElement.style.height = '100%';
 
                 categortList.forEach(item => {
                     const option = document.createElement('option');
