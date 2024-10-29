@@ -203,7 +203,6 @@ const ItrReport = () => {
         const data = await getItrReport(clientObject?.value, formattedFromDate, formattedToDate)
         setItrRport(data?.excGstResult)
         setTotaltotalExcGst(data?.grandTotalExcGst)
-        console.log("data--", data)
     }
 
     useEffect(() => {
