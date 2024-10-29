@@ -215,6 +215,18 @@ const SheetComponent = ({ clientId }) => {
         return `${month}/${day}/${year}`;
     };
 
+    const renderDropdownsForColumns = (row, columnLetters, cellValue = '') => {
+        columnLetters.forEach((columnLetter) => {
+            handleCellRender({
+                element: document.querySelector(`td[aria-label='${columnLetter}${row}']`),
+                colIndex: columnLetter.charCodeAt(0) - 65, 
+                rowIndex: row - 1, 
+                cell: { value: cellValue },
+                address: `${columnLetter}${row}` 
+            });
+        });
+    };
+
     const handleActionComplete = async (args) => {
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
             args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert') {
@@ -239,6 +251,7 @@ const SheetComponent = ({ clientId }) => {
                     const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
                     const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
                     editedData.push(editedRow)
+                    renderDropdownsForColumns(rowIndex, ['E', 'H', 'M']);
                 }
             } else if (args?.eventArgs?.modelType === 'Row') {
                 if (args?.action === 'insert') {
@@ -267,10 +280,12 @@ const SheetComponent = ({ clientId }) => {
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
                     editedData.push(currentRowData);
+                    renderDropdownsForColumns(row, ['E', 'H', 'M']);
                 }
             }
             if (editedData?.length > 0) {
                 const data = await updateSpreadsheet(clientId, editedData);
+                applyCalculations()
 
                 if (data?.insertedDataId.length > 0) {
                     if (args?.eventArgs?.address && args.action !== 'cellDelete') {
@@ -290,6 +305,7 @@ const SheetComponent = ({ clientId }) => {
                         for (let rowIndex = firstRowNumber; rowIndex <= secondRowNumber; rowIndex++) {
                             if (dataIndex < data.insertedDataId.length) {
                                 spreadsheetRef.current.updateCell({ value: data.insertedDataId[dataIndex] }, `A${rowIndex}`);
+                                spreadsheetRef.current.updateCell({ value: 100 }, `F${rowIndex}`);
                                 dataIndex++;
                             } else {
                                 break;
@@ -320,12 +336,14 @@ const SheetComponent = ({ clientId }) => {
 
                     const baslabnFormula = `=IF(ISNUMBER(I${row}), IF(I${row} > 0, "1A", "1B"), "")`;
                     spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `N${row}`);
+
                 }
             }
         } catch (error) {
-            console.log("error--", error)
+            console.log("error--", error);
         }
     };
+
 
     const formateSheet = () => {
         try {
@@ -349,8 +367,25 @@ const SheetComponent = ({ clientId }) => {
                     const rangeToProtect = `A1:A${rowCount}`;
                     spreadsheetRef.current.lockCells(rangeToProtect, true);
 
-                    applyGstDropdown()
-                    applyBasLabN()
+                    const columnsToFormat = [
+                        { range: `D2:D${rowCount}` },
+                        { range: `G2:G${rowCount}` },
+                        { range: `I2:I${rowCount}` },
+                        { range: `J2:J${rowCount}` }
+                    ];
+
+                    columnsToFormat.forEach(({ range, color }) => {
+                        spreadsheetRef.current.conditionalFormat({
+                            type: 'LessThan',
+                            value: '0',
+                            format: {
+                                style: {
+                                    color: '#FF0000',
+                                },
+                            },
+                            range: range,
+                        });
+                    })
                     setIsLoading(false);
                 }
             }
@@ -359,58 +394,58 @@ const SheetComponent = ({ clientId }) => {
         }
     };
 
-    const applyFilterOnColumn = (columnLetter) => {
-        if (spreadsheetRef.current) {
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const colCount = sheet.usedRange.colIndex + 1;
-            const rowCount = sheet.usedRange.rowIndex + 1;
-            const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
+    // const applyFilterOnColumn = (columnLetter) => {
+    //     if (spreadsheetRef.current) {
+    //         const sheet = spreadsheetRef.current.getActiveSheet();
+    //         const colCount = sheet.usedRange.colIndex + 1;
+    //         const rowCount = sheet.usedRange.rowIndex + 1;
+    //         const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
 
-            spreadsheetRef.current.applyFilter(
-                [{
-                    field: columnLetter,
-                    operator: 'notEqual',
-                    value: ''
-                }],
-                range
-            );
-        }
-        // spreadsheetRef.current.refresh();
-    };
+    //         spreadsheetRef.current.applyFilter(
+    //             [{
+    //                 field: columnLetter,
+    //                 operator: 'notEqual',
+    //                 value: ''
+    //             }],
+    //             range
+    //         );
+    //     }
+    //     // spreadsheetRef.current.refresh();
+    // };
 
-    const applyGstDropdown = async () => {
-        if (spreadsheetRef.current) {
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const rowCount = sheet.usedRange.rowIndex + 1;
-            const dropdownRange = `H2:H${rowCount}`;
-            const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
-            const data = gstList.join(',')
+    // const applyGstDropdown = async () => {
+    //     if (spreadsheetRef.current) {
+    //         const sheet = spreadsheetRef.current.getActiveSheet();
+    //         const rowCount = sheet.usedRange.rowIndex + 1;
+    //         const dropdownRange = `H2:H${rowCount}`;
+    //         const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
+    //         const data = gstList.join(',')
 
-            await spreadsheetRef.current.addDataValidation({
-                type: 'List',
-                operator: 'InBetween',
-                value1: data,
-                ignoreBlank: false
-            }, dropdownRange);
-        }
-    };
+    //         await spreadsheetRef.current.addDataValidation({
+    //             type: 'List',
+    //             operator: 'InBetween',
+    //             value1: data,
+    //             ignoreBlank: false
+    //         }, dropdownRange);
+    //     }
+    // };
 
-    const applyBasLabN = async () => {
-        if (spreadsheetRef.current) {
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const rowCount = sheet.usedRange.rowIndex + 1;
-            const dropdownRange = `N2:N${rowCount}`;
-            const labN = ['1A', '1B']
-            const data = labN.join(',')
+    // const applyBasLabN = async () => {
+    //     if (spreadsheetRef.current) {
+    //         const sheet = spreadsheetRef.current.getActiveSheet();
+    //         const rowCount = sheet.usedRange.rowIndex + 1;
+    //         const dropdownRange = `N2:N${rowCount}`;
+    //         const labN = ['1A', '1B']
+    //         const data = labN.join(',')
 
-            await spreadsheetRef.current.addDataValidation({
-                type: 'List',
-                operator: 'InBetween',
-                value1: data,
-                ignoreBlank: false
-            }, dropdownRange);
-        }
-    };
+    //         await spreadsheetRef.current.addDataValidation({
+    //             type: 'List',
+    //             operator: 'InBetween',
+    //             value1: data,
+    //             ignoreBlank: false
+    //         }, dropdownRange);
+    //     }
+    // };
 
     const fetchClientCategory = async () => {
         try {
@@ -498,6 +533,16 @@ const SheetComponent = ({ clientId }) => {
                     itrDropdown(args, columnLetter, rowNumber)
                 }
 
+
+                if (columnLetter === 'H' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                    gstDropdown(args, columnLetter, rowNumber)
+                }
+
+
+                // if (columnLetter === 'N' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                //     basLabnDropdown(args, columnLetter, rowNumber)
+                // }
+
                 if (columnLetter === 'E' && args.rowIndex > 0 && args.rowIndex < rowCount) {
                     const selectElement = document.createElement('select');
                     selectElement.style.width = '100%';
@@ -542,9 +587,13 @@ const SheetComponent = ({ clientId }) => {
                                     try {
                                         spreadsheetRef.current.updateCell({ value: headerValue }, address);
                                         const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${13}"] select`);
+                                        const gstDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${8}"] select`);
                                         if (itrDropdownElement && categoryHeaderIndex === 2) {
                                             itrDropdownElement.value = headerValue
+                                        } else if (gstDropdownElement && categoryHeaderIndex === 1) {
+                                            gstDropdownElement.value = headerValue
                                         }
+                                        applyCalculations()
                                     } catch (error) {
                                         console.error(`Error updating cell ${address}:`, error);
                                     }
@@ -590,6 +639,63 @@ const SheetComponent = ({ clientId }) => {
         args.element.innerHTML = '';
         args.element.appendChild(selectElement);
     }
+
+    const gstDropdown = (args, columnLetter, rowNumber) => {
+        const selectElement = document.createElement('select');
+        selectElement.style.width = '100%';
+        selectElement.style.height = '100%';
+
+        const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
+
+        gstList.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            selectElement.appendChild(option);
+        });
+
+        selectElement.value = args.cell?.value || '';
+
+        selectElement.onchange = async (event) => {
+            const selectedValue = event.target.value;
+            const cellAddress = `${columnLetter}${rowNumber}`;
+
+            spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+            handleDropdown(cellAddress, selectedValue);
+        };
+
+        args.element.innerHTML = '';
+        args.element.appendChild(selectElement);
+    }
+
+    // const basLabnDropdown = (args, columnLetter, rowNumber) => {
+    //     const selectElement = document.createElement('select');
+    //     selectElement.style.width = '100%';
+    //     selectElement.style.height = '100%';
+
+    //     const labN = ['1A', '1B']
+
+    //     labN.forEach(item => {
+    //         const option = document.createElement('option');
+    //         option.value = item;
+    //         option.textContent = item;
+    //         selectElement.appendChild(option);
+    //     });
+
+    //     selectElement.value = args.cell?.value || '';
+
+    //     selectElement.onchange = async (event) => {
+    //         const selectedValue = event.target.value;
+    //         const cellAddress = `${columnLetter}${rowNumber}`;
+
+    //         spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+    //         handleDropdown(cellAddress, selectedValue);
+    //     };
+
+    //     args.element.innerHTML = '';
+    //     args.element.appendChild(selectElement);
+    // }
+
 
     return (
         <div>

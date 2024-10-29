@@ -140,13 +140,50 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             formateSheet()
             getSheetData();
             applyFilterOnColumn('A')
-            applyGstDropdown()
         }
     }, [dataLoaded]);
+
+    const renderDropdownsForColumns = (row, columnLetters, cellValue = '') => {
+        columnLetters.forEach((columnLetter) => {
+            handleCellRender({
+                element: document.querySelector(`td[aria-label='${columnLetter}${row}']`),
+                colIndex: columnLetter.charCodeAt(0) - 65,
+                rowIndex: row - 1,
+                cell: { value: cellValue },
+                address: `${columnLetter}${row}`
+            });
+        });
+    };
 
     const handleActionComplete = async (args) => {
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
             args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert') {
+
+            if (args?.eventArgs?.address) {
+                const cellAddress = args.eventArgs.address
+
+                if (args.action !== 'cellDelete') {
+                    const cellAddressWithoutSheet = cellAddress.split('!')[1];
+                    const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
+                    const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+                    renderDropdownsForColumns(rowIndex, ['C', 'D']);
+                }
+            } else {
+                let cellAddress
+                if (args?.eventArgs?.pastedRange) {
+                    cellAddress = args.eventArgs.pastedRange
+                } else {
+                    cellAddress = args.eventArgs.range
+                }
+                const [firtstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
+                const firstRowNumber = parseInt(firtstAddress.match(/\d+/)[0], 10);
+                const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
+
+                for (let row = firstRowNumber; row <= secondRowNumber; row++) {
+                    renderDropdownsForColumns(row, ['C', 'D']);
+                }
+            }
+
             const formattedData = await getSheetData();
             await updateCsvData(clientId, formattedData);
             formateSheet()
@@ -174,7 +211,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
             setIsLoading(false);
             setDataLoaded(false)
-            applyGstDropdown()
         }
     };
 
@@ -196,22 +232,22 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
     };
 
-    const applyGstDropdown = async () => {
-        if (spreadsheetRef.current) {
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const rowCount = sheet.usedRange.rowIndex + 1;
-            const dropdownRange = `C2:C${rowCount}`;
-            const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
-            const data = await gstList.join(',')
+    // const applyGstDropdown = async () => {
+    //     if (spreadsheetRef.current) {
+    //         const sheet = spreadsheetRef.current.getActiveSheet();
+    //         const rowCount = sheet.usedRange.rowIndex + 1;
+    //         const dropdownRange = `C2:C${rowCount}`;
+    //         const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
+    //         const data = await gstList.join(',')
 
-            await spreadsheetRef.current.addDataValidation({
-                type: 'List',
-                operator: 'InBetween',
-                value1: data,
-                ignoreBlank: false
-            }, dropdownRange);
-        }
-    };
+    //         await spreadsheetRef.current.addDataValidation({
+    //             type: 'List',
+    //             operator: 'InBetween',
+    //             value1: data,
+    //             ignoreBlank: false
+    //         }, dropdownRange);
+    //     }
+    // };
 
     const numberToAlphabet = (num) => {
         let temp;
@@ -235,6 +271,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         if (columnLetter === 'D' && args.rowIndex > 0 && args.rowIndex < rowCount) {
             const selectElement = document.createElement('select');
             selectElement.style.width = '100%';
+            selectElement.style.height = '100%';
 
             itrList.forEach(item => {
                 const option = document.createElement('option');
@@ -257,11 +294,41 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
             args.element.innerHTML = '';
             args.element.appendChild(selectElement);
+        } else if (columnLetter === 'C' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+            gstDropdown(args, columnLetter, rowNumber)
         }
-
-
     };
 
+
+    const gstDropdown = (args, columnLetter, rowNumber) => {
+        const selectElement = document.createElement('select');
+        selectElement.style.width = '100%';
+        selectElement.style.height = '100%';
+
+        const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
+
+        gstList.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            selectElement.appendChild(option);
+        });
+
+        selectElement.value = args.cell?.value || '';
+
+        selectElement.onchange = async (event) => {
+            const selectedValue = event.target.value;
+            const cellAddress = `${columnLetter}${rowNumber}`;
+
+            spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+            const formattedData = await getSheetData();
+            await updateCsvData(clientId, formattedData);
+            formateSheet()
+        };
+
+        args.element.innerHTML = '';
+        args.element.appendChild(selectElement);
+    }
     return (
         <div>
             <Layout showSelection={showSelection}>
