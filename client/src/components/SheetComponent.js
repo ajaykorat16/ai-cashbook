@@ -312,10 +312,10 @@ const SheetComponent = ({ clientId }) => {
                     const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(F${row})), ROUND((D${row}*F${row})/100, 2), "")`;
                     spreadsheetRef.current.updateCell({ formula }, `G${row}`);
 
-                    const gstFormula = `=IF(AND(ISNUMBER(G${row}), H${row}<>""), ROUND(G${row}/11, 2), 0)`;
+                    const gstFormula = `=IF(AND(ISNUMBER(G${row}), H${row}<>""), ROUND(G${row}/11, 2), "")`;
                     spreadsheetRef.current.updateCell({ formula: gstFormula }, `I${row}`);
 
-                    const excGstFormula = `=IF(AND(ISNUMBER(G${row}), ISNUMBER(I${row})), ROUND(G${row}-I${row}, 2), 0)`;
+                    const excGstFormula = `=IF(AND(ISNUMBER(G${row}), ISNUMBER(I${row})), ROUND(G${row}-I${row}, 2), "")`;
                     spreadsheetRef.current.updateCell({ formula: excGstFormula }, `J${row}`);
 
                     const baslabnFormula = `=IF(ISNUMBER(I${row}), IF(I${row} > 0, "1A", "1B"), "")`;
@@ -413,40 +413,48 @@ const SheetComponent = ({ clientId }) => {
     };
 
     const fetchClientCategory = async () => {
-        const { data } = await getClientCategory(clientId);
-        const headers = data.shift();
-        headers.splice(0, 1)
-        const removeHtmlTags = (text) => {
-            return text.replace(/<[^>]*>/g, '');
-        };
+        try {
+            const { data } = await getClientCategory(clientId);
+            const headers = data.shift();
+            headers.splice(0, 1)
+            const removeHtmlTags = (text) => {
+                return text.replace(/<[^>]*>/g, '');
+            };
 
-        const cleanedHeaders = headers.map(removeHtmlTags);
-        setCategoryHeaders(cleanedHeaders);
+            const cleanedHeaders = headers.map(removeHtmlTags);
+            setCategoryHeaders(cleanedHeaders);
 
-        const newArray = data.map(subArray => {
-            if (!subArray[0] || !subArray[2] || !subArray[3]) {
-                return null;
-            }
+            const newArray = data.map(subArray => {
+                if (!subArray[0] || !subArray[2] || !subArray[3]) {
+                    return null;
+                }
 
-            const cleanedFirstElement = subArray[0]
-                .replace(/<\/?b>/g, '')
-                .replace(/<\/?i>/g, '')
-                .replace(/<\/?u>/g, '');
+                const cleanedFirstElement = subArray[0]
+                    .replace(/<\/?b>/g, '')
+                    .replace(/<\/?i>/g, '')
+                    .replace(/<\/?u>/g, '');
 
-            return cleanedFirstElement;
-        }).filter(Boolean);
-        setCategoryList(newArray)
+                return cleanedFirstElement;
+            }).filter(Boolean);
+            setCategoryList(newArray)
 
-        const categoryMap = data.reduce((acc, subArray) => {
-            const cleanedCategory = subArray[0].replace(/<\/?b>/g, '').replace(/<\/?i>/g, '').replace(/<\/?u>/g, '');
-            if (subArray[2] && subArray[3]) {
-                acc[cleanedCategory] = subArray.slice(1);
-                return acc;
-            }
-        }, {});
+            const categoryMap = Object.fromEntries(
+                data.map(subArray => {
+                    const cleanedCategory = subArray[0].replace(/<\/?b>/g, '').replace(/<\/?i>/g, '').replace(/<\/?u>/g, '');
+                    if (subArray[2] && subArray[3]) {
+                        return [cleanedCategory, subArray.slice(1)];
+                    }
+                    return null;
+                })
+                    .filter(Boolean)
+            );
 
-        setCategoryList(Object.keys(categoryMap));
-        setCategoryData(categoryMap);
+            setCategoryList(Object.keys(categoryMap));
+            setCategoryData(categoryMap);
+        } catch (error) {
+            console.log("error", error)
+        }
+
     };
 
 
@@ -480,75 +488,78 @@ const SheetComponent = ({ clientId }) => {
 
     const handleCellRender = (args) => {
         try {
-            const columnLetter = numberToAlphabet(args.colIndex + 1);
-            const rowNumber = args.rowIndex + 1;
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const rowCount = sheet.usedRange.rowIndex + 1;
+            if (sheetData.length > 0 && sheetData[0].Id !== '') {
+                const columnLetter = numberToAlphabet(args.colIndex + 1);
+                const rowNumber = args.rowIndex + 1;
+                const sheet = spreadsheetRef.current.getActiveSheet();
+                const rowCount = sheet.usedRange.rowIndex + 1;
 
-            if (columnLetter === 'M' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-                itrDropdown(args, columnLetter, rowNumber)
-            }
+                if (columnLetter === 'M' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                    itrDropdown(args, columnLetter, rowNumber)
+                }
 
-            if (columnLetter === 'E' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-                const selectElement = document.createElement('select');
-                selectElement.style.width = '100%';
-                selectElement.style.height = '100%';
+                if (columnLetter === 'E' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                    const selectElement = document.createElement('select');
+                    selectElement.style.width = '100%';
+                    selectElement.style.height = '100%';
 
-                categortList.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item;
-                    option.textContent = item;
-                    selectElement.appendChild(option);
-                });
+                    categortList.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item;
+                        option.textContent = item;
+                        selectElement.appendChild(option);
+                    });
 
-                selectElement.value = args.cell?.value || '';
+                    selectElement.value = args.cell?.value || '';
 
-                selectElement.onchange = async (event) => {
-                    const selectedValue = event.target.value;
-                    const cellAddress = `${columnLetter}${rowNumber}`;
+                    selectElement.onchange = async (event) => {
+                        const selectedValue = event.target.value;
+                        const cellAddress = `${columnLetter}${rowNumber}`;
 
-                    spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+                        spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
 
-                    const headings = convertCellsToValues(sheet.rows[0]);
-                    const removeHtmlTags = (text) => text.replace(/<[^>]*>/g, '');
-                    const headers = headings.map(removeHtmlTags);
+                        const headings = convertCellsToValues(sheet.rows[0]);
+                        const removeHtmlTags = (text) => text.replace(/<[^>]*>/g, '');
+                        const headers = headings.map(removeHtmlTags);
 
-                    const matchingValues = headers.filter(header =>
-                        categoryHeaders.includes(header)
-                    );
-                    const correspondingData = categoryData[selectedValue];
+                        const matchingValues = headers.filter(header =>
+                            categoryHeaders.includes(header)
+                        );
+                        const correspondingData = categoryData[selectedValue];
 
-                    if (matchingValues.length > 0 && correspondingData) {
-                        const rowIndexMatch = cellAddress.match(/\d+/);
-                        const rowIndex = rowIndexMatch ? parseInt(rowIndexMatch[0], 10) : null;
+                        if (matchingValues.length > 0 && correspondingData) {
+                            const rowIndexMatch = cellAddress.match(/\d+/);
+                            const rowIndex = rowIndexMatch ? parseInt(rowIndexMatch[0], 10) : null;
 
-                        matchingValues.forEach(value => {
-                            const index = headers.indexOf(value);
-                            const address = `${numberToAlphabet(index + 1)}${rowIndex}`;
+                            matchingValues.forEach(value => {
+                                const index = headers.indexOf(value);
+                                const address = `${numberToAlphabet(index + 1)}${rowIndex}`;
 
-                            const categoryHeaderIndex = categoryHeaders.indexOf(value);
-                            const headerValue = correspondingData[categoryHeaderIndex];
+                                const categoryHeaderIndex = categoryHeaders.indexOf(value);
+                                const headerValue = correspondingData[categoryHeaderIndex];
 
-                            if (headerValue && spreadsheetRef.current) {
-                                try {
-                                    spreadsheetRef.current.updateCell({ value: headerValue }, address);
-                                    const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${13}"] select`);
-                                    if (itrDropdownElement && categoryHeaderIndex ===2) {
-                                        itrDropdownElement.value = headerValue 
+                                if (headerValue && spreadsheetRef.current) {
+                                    try {
+                                        spreadsheetRef.current.updateCell({ value: headerValue }, address);
+                                        const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${13}"] select`);
+                                        if (itrDropdownElement && categoryHeaderIndex === 2) {
+                                            itrDropdownElement.value = headerValue
+                                        }
+                                    } catch (error) {
+                                        console.error(`Error updating cell ${address}:`, error);
                                     }
-                                } catch (error) {
-                                    console.error(`Error updating cell ${address}:`, error);
                                 }
-                            }
-                        });
-                    }
-                    handleDropdown(cellAddress, selectedValue);
-                    formateSheet()
-                };
+                            });
+                        }
+                        handleDropdown(cellAddress, selectedValue);
+                        formateSheet()
+                    };
 
-                args.element.innerHTML = '';
-                args.element.appendChild(selectElement);
+                    args.element.innerHTML = '';
+                    args.element.appendChild(selectElement);
+                }
             }
+
         } catch (error) {
             console.log("error--", error)
         }
