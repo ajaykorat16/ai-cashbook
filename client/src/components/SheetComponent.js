@@ -219,10 +219,10 @@ const SheetComponent = ({ clientId }) => {
         columnLetters.forEach((columnLetter) => {
             handleCellRender({
                 element: document.querySelector(`td[aria-label='${columnLetter}${row}']`),
-                colIndex: columnLetter.charCodeAt(0) - 65, 
-                rowIndex: row - 1, 
+                colIndex: columnLetter.charCodeAt(0) - 65,
+                rowIndex: row - 1,
                 cell: { value: cellValue },
-                address: `${columnLetter}${row}` 
+                address: `${columnLetter}${row}`
             });
         });
     };
@@ -538,11 +538,6 @@ const SheetComponent = ({ clientId }) => {
                     gstDropdown(args, columnLetter, rowNumber)
                 }
 
-
-                // if (columnLetter === 'N' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-                //     basLabnDropdown(args, columnLetter, rowNumber)
-                // }
-
                 if (columnLetter === 'E' && args.rowIndex > 0 && args.rowIndex < rowCount) {
                     const selectElement = document.createElement('select');
                     selectElement.style.width = '100%';
@@ -668,35 +663,6 @@ const SheetComponent = ({ clientId }) => {
         args.element.appendChild(selectElement);
     }
 
-    // const basLabnDropdown = (args, columnLetter, rowNumber) => {
-    //     const selectElement = document.createElement('select');
-    //     selectElement.style.width = '100%';
-    //     selectElement.style.height = '100%';
-
-    //     const labN = ['1A', '1B']
-
-    //     labN.forEach(item => {
-    //         const option = document.createElement('option');
-    //         option.value = item;
-    //         option.textContent = item;
-    //         selectElement.appendChild(option);
-    //     });
-
-    //     selectElement.value = args.cell?.value || '';
-
-    //     selectElement.onchange = async (event) => {
-    //         const selectedValue = event.target.value;
-    //         const cellAddress = `${columnLetter}${rowNumber}`;
-
-    //         spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
-    //         handleDropdown(cellAddress, selectedValue);
-    //     };
-
-    //     args.element.innerHTML = '';
-    //     args.element.appendChild(selectElement);
-    // }
-
-
     return (
         <div>
             <div className="special_flex mb-25">
@@ -729,9 +695,8 @@ const SheetComponent = ({ clientId }) => {
                                 }}
                                 created={() => {
                                     spreadsheetRef.current.selectRange('B1');
-                                    // applyFilterOnColumn('B');
-                                    formateSheet();
                                     applyCalculations();
+                                    formateSheet();
                                     setDataLoaded(false)
                                 }}
                             >
