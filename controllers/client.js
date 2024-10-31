@@ -1311,7 +1311,7 @@ const createClientSpreadsheet = async (req, res) => {
         const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
 
         const filteredData = spreadsheetCursor.filter((record) => {
-            if (record.data[3]) {
+            if (record.data[4]) {
                 const dateInString = record.data[1];
                 const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
