@@ -67,16 +67,13 @@ const SheetComponent = ({ clientId }) => {
         return new Promise(resolve => setTimeout(resolve, ms));
     };
 
-    const headers = [
-        "Id", "Bank_Account", "Date", "Amt", "Narrative", "Categories", "Business_Percent",
-        "TaxableAmt", "GST_Code", "GST_Amt", "Excl_GST_Amt", "FY", "QTR", "ITR_Label", "BAS_LabN"
-    ];
-
     const fetchCsvLoaded = async () => {
         setIsLoading(true);
         try {
             const csvDetail = await getSpreadsheet(clientId, fromDate.format('YYYY-MM-DD'), toDate.format('YYYY-MM-DD'));
             const csv = csvDetail || [];
+            const firstRow = csv[0]
+            const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
             const convertedData = convertToCellFormat(csv);
             convertedData.shift();
             let backendData = []
@@ -152,9 +149,13 @@ const SheetComponent = ({ clientId }) => {
 
             const formattedData = backendData.map((c) => {
                 const data = {};
-                for (let i = 0; i < c.cells.length; i++) {
+                for (let i = 0; i < headers.length; i++) {
                     if (headers[i]) {
-                        data[headers[i]] = c.cells[i].value;
+                        if (c.cells[i]?.value) {
+                            data[headers[i]] = c.cells[i].value;
+                        } else {
+                            data[headers[i]] = ""
+                        }
                     }
                 }
                 return data;

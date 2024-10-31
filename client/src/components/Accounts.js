@@ -25,7 +25,8 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true );
+    const [sheetData, setSheetData] = useState([])
 
     const getSheetData = async () => {
         if (spreadsheetRef.current) {
@@ -116,17 +117,62 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
     const fetchCsvLoaded = async () => {
         setIsLoading(true);
-        const csvDetail = await getCsvData(clientId);
-        const csv = csvDetail?.data || [];
-        const convertedData = convertToCellFormat(csv);
+        try {
+            const csvDetail = await getCsvData(clientId);
+            const csv = csvDetail?.data || [];
+            const firstRow = csv[0]
+            const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
+            const convertedData = convertToCellFormat(csv);
 
-        if (spreadsheetRef?.current) {
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            sheet.rows = convertedData;
+            convertedData.shift();
+            let backendData = []
+
+            if (convertedData.length === 0) {
+                backendData = [{
+                    "cells": [
+                        {
+                            "value": "",
+                            "style": {}
+                        },
+                        {
+                            "value": "",
+                            "style": {}
+                        },
+                        {
+                            "value": "",
+                            "style": {}
+                        },
+                        {
+                            "value": "",
+                            "style": {}
+                        },
+                        {
+                            "value": "",
+                            "style": {}
+                        }
+                    ]
+                }]
+            } else {
+                backendData = convertedData
+            }
+
+            const formattedData = backendData.map((c) => {
+                const data = {};
+                for (let i = 0; i < c.cells.length; i++) {
+                    if (headers[i]) {
+                        data[headers[i]] = c.cells[i].value;
+                    }
+                }
+                return data;
+            });
+
+            setSheetData(formattedData);
+            setDataLoaded(true)
+        } catch (error) {
+            console.error("Failed to load CSV data", error);
+        } finally {
+            setIsLoading(false);
         }
-        setTimeout(() => {
-            setDataLoaded(true);
-        }, 3500);
     };
 
     useEffect(() => {
@@ -135,13 +181,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
     }, [clientId]);
 
-    useEffect(() => {
-        if (dataLoaded) {
-            formateSheet()
-            getSheetData();
-            applyFilterOnColumn('A')
-        }
-    }, [dataLoaded]);
 
     const renderDropdownsForColumns = (row, columnLetters, cellValue = '') => {
         columnLetters.forEach((columnLetter) => {
@@ -191,26 +230,29 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     };
 
     const formateSheet = () => {
-        if (spreadsheetRef.current) {
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const colCount = sheet.usedRange.colIndex + 1;
-            const rowCount = sheet.usedRange.rowIndex + 1;
-
-            const firstRowRange = `A1:${String.fromCharCode(64 + colCount)}1`;
-            spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
-
-            spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
-
-            const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
-            spreadsheetRef.current.cellFormat({ border: 'none', borderBottom: '1px solid #FFFFFF' }, range);
-
-            const outerBorderRange = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
-            spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, outerBorderRange, 'Outer');
-
-            const horizontalBorderRange = `A2:${String.fromCharCode(64 + colCount)}${rowCount}`;
-            spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
-            setIsLoading(false);
-            setDataLoaded(false)
+        try {
+            if (spreadsheetRef.current) {
+                const sheet = spreadsheetRef.current.getActiveSheet();
+                const colCount = sheet.usedRange.colIndex + 1;
+                const rowCount = sheet.usedRange.rowIndex + 1;
+    
+                const firstRowRange = `A1:${String.fromCharCode(64 + colCount)}1`;
+                spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
+    
+                spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
+    
+                const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
+                spreadsheetRef.current.cellFormat({ border: 'none', borderBottom: '1px solid #FFFFFF' }, range);
+    
+                const outerBorderRange = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
+                spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, outerBorderRange, 'Outer');
+    
+                const horizontalBorderRange = `A2:${String.fromCharCode(64 + colCount)}${rowCount}`;
+                spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
+                setIsLoading(false);
+            }
+        } catch (error) {
+            console.log("error",error)
         }
     };
 
@@ -263,7 +305,8 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     };
 
     const handleCellRender = (args) => {
-        const columnLetter = numberToAlphabet(args.colIndex + 1);
+        try {
+            const columnLetter = numberToAlphabet(args.colIndex + 1);
         const rowNumber = args.rowIndex + 1;
         const sheet = spreadsheetRef.current.getActiveSheet();
         const rowCount = sheet.usedRange.rowIndex + 1;
@@ -296,6 +339,9 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             args.element.appendChild(selectElement);
         } else if (columnLetter === 'C' && args.rowIndex > 0 && args.rowIndex < rowCount) {
             gstDropdown(args, columnLetter, rowNumber)
+        }
+        } catch (error) {
+            console.log("error",error)
         }
     };
 
@@ -338,24 +384,29 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                         <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>Back to list</button>
                     </div>
                 </div>
-                {clientId && (
+                {isLoading ? (
+                    <Loader />) : (
                     <>
-                        {isLoading && (
-                            <Loader />
-                        )}
-                        <div className={`account_sheet ${isLoading ? "invisible" : ""}`}>
+                        {dataLoaded && (<Loader />)}
+                        <div className={`account_sheet spreadsheet ${dataLoaded && 'invisible'}`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 actionComplete={handleActionComplete}
+                                beforeCellRender={handleCellRender}
                                 showSheetTabs={false}
                                 allowSorting={true}
                                 allowFiltering={true}
-                                beforeCellRender={handleCellRender}
+                                created={() => {
+                                    formateSheet();
+                                    // applyFilterOnColumn('A')
+                                    getSheetData();
+                                    setDataLoaded(false)
+                                }}
                             >
                                 <SheetsDirective>
                                     <SheetDirective frozenRows={1}>
                                         <RangesDirective>
-                                            <RangeDirective></RangeDirective>
+                                            <RangeDirective dataSource={sheetData}></RangeDirective>
                                         </RangesDirective>
                                     </SheetDirective>
                                 </SheetsDirective>
