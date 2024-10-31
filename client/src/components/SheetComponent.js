@@ -238,12 +238,19 @@ const SheetComponent = ({ clientId }) => {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const editedData = []
 
-            if(args.action === 'autofill') {
+            if (args.action === 'autofill') {
                 const cellAddress = args.eventArgs.fillRange
                 const cellAddressWithoutSheet = cellAddress.split('!')[1];
                 const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                 const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
                 const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
+                while (editedRow.length <= 6) {
+                    editedRow.push("");
+                }
+
+                if (!editedRow[6]) {
+                    editedRow[6] = 100;
+                }
                 editedData.push(editedRow)
                 renderDropdownsForColumns(rowIndex, ['F', 'I', 'N']);
 
@@ -264,6 +271,14 @@ const SheetComponent = ({ clientId }) => {
                     const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                     const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
                     const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
+                    while (editedRow.length <= 6) {
+                        editedRow.push("");
+                    }
+
+                    if (!editedRow[6]) {
+                        editedRow[6] = 100;
+                    }
+                    editedData.push(editedRow)
                     editedData.push(editedRow)
                     renderDropdownsForColumns(rowIndex, ['F', 'I', 'N']);
                 }
@@ -293,6 +308,13 @@ const SheetComponent = ({ clientId }) => {
 
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
+                    while (currentRowData.length <= 6) {
+                        currentRowData.push("");
+                    }
+
+                    if (!currentRowData[6]) {
+                        currentRowData[6] = 100;
+                    }
                     editedData.push(currentRowData);
                     renderDropdownsForColumns(row, ['F', 'I', 'N']);
                 }
@@ -302,7 +324,15 @@ const SheetComponent = ({ clientId }) => {
                 applyCalculations()
 
                 if (data?.insertedDataId.length > 0) {
-                    if (args?.eventArgs?.address && args.action !== 'cellDelete') {
+                    if (args.action === 'autofill') {
+                        const cellAddress = args.eventArgs.fillRange
+                        const cellAddressWithoutSheet = cellAddress.split('!')[1];
+                        const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
+                        const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+
+                        spreadsheetRef.current.updateCell({ value: 100 }, `G${rowIndex}`);
+                        spreadsheetRef.current.updateCell({ value: data.insertedDataId[0] }, `A${rowIndex}`);
+                    } else if (args?.eventArgs?.address && args.action !== 'cellDelete') {
                         const cellAddress = args.eventArgs.address
                         const cellAddressWithoutSheet = cellAddress.split('!')[1];
 
