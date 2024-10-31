@@ -43,38 +43,22 @@ class Model:
             logger.error(f"Training file not found: {training_file_path}")
             return None, None
 
-        df["Day"] = df["date"].apply(extract_day_from_date)
-        df["account"] = df["account"].fillna("NOACCOUNT")
+        encoder = LabelEncoder()
+        df["amount"] = df["amount"].apply(clean_amount)
+        df["narrative_encoded"] = encoder.fit_transform(df["narrative"])
 
-        models = {}
-        encoders = {}
-        print(df)
-        for account in df["account"].unique():
-            account_data = df[df["account"] == account].copy()
+        # Prepare features and target
+        X = df[["narrative_encoded", "amount"]]
+        y = df["category"]
 
-            # Encode day
-            le_day = LabelEncoder()
-            account_data["day_encoded"] = le_day.fit_transform(account_data["Day"])
+        # Train model
+        model = RandomForestClassifier(random_state=42)
+        model.fit(X, y)
 
-            # Clean amount column
-            account_data["amount"] = account_data["amount"].apply(clean_amount)
-
-            # Prepare features and target
-            X = account_data[["day_encoded", "amount"]]
-            y = account_data["category"]
-
-            # Train model
-            model = RandomForestClassifier(random_state=42)
-            model.fit(X, y)
-
-            # Store models and encoders
-            models[account] = model
-            encoders[account] = le_day
-
-        return models, encoders
+        return model, encoder
 
     @staticmethod
-    def classify(models, encoders, input_file_path, output_file_path=None):
+    def classify(model, encoder, input_file_path, output_file_path=None):
         try:
             # Load the input data
             df = pd.read_csv(input_file_path)
@@ -82,73 +66,64 @@ class Model:
             logger.error(f"Input file not found: {input_file_path}")
             return
 
-        df["Day"] = df["date"].apply(extract_day_from_date)
-        df["account"] = df["account"].fillna("NOACCOUNT")
         predictions = []
 
         for _, row in df.iterrows():
-            account = row["account"]
-            day_input = row["Day"]
+            narrative_input = row["narrative"]
             amount_input = clean_amount(row["amount"])
 
-            # Get model and encoder for the account
-            model = models.get(account)
-            encoder = encoders.get(account)
-
             if model and encoder:
-                # Handle unseen day input
-                if day_input not in encoder.classes_:
-                    logger.warning(
-                        f"Unseen day value for account {account}: {day_input}"
-                    )
-                    encoder.classes_ = np.append(encoder.classes_, day_input)
+                # Handle unseen narrative input
+                if narrative_input not in encoder.classes_:
+                    logger.warning(f"Unseen narrative value: {narrative_input}")
+                    encoder.classes_ = np.append(encoder.classes_, narrative_input)
 
-                day_encoded = encoder.transform([day_input])
+                narrative_encoded = encoder.transform([narrative_input])
                 input_data = pd.DataFrame(
-                    {"day_encoded": [day_encoded[0]], "amount": [amount_input]}
+                    {
+                        "narrative_encoded": [narrative_encoded[0]],
+                        "amount": [amount_input],
+                    }
                 )
                 prediction = model.predict(input_data)
                 predictions.append(prediction[0])
             else:
-                logger.warning(f"No model/encoder found for account: {account}")
+                logger.warning(f"No model/encoder found for user.")
                 predictions.append(None)
 
         # Save predictions
-        df["account"] = df["account"].replace("NOACCOUNT")
         df["category"] = predictions
         save_path = output_file_path if output_file_path else input_file_path
         df.to_csv(save_path, index=False)
         logger.info(f"Predictions saved to {save_path}")
 
     @staticmethod
-    def test(models, encoders, test_file_path):
+    def test(model, encoder, test_file_path):
         # Load the test data
         df = pd.read_csv(test_file_path)
-        df["Day"] = df["date"].apply(extract_day_from_date)
-        df["account"] = df["account"].fillna("NOACCOUNT")
+
         predictions = []
         true_values = []
         failed_rows = []
 
         for index, row in df.iterrows():
-            account = row["account"]
-            day_input = row["Day"]
+            narrative_input = row["narrative"]
             amount_input = clean_amount(row["amount"])
             true_category = row["category"]
 
-            # Get the model and encoder for the account
-            model = models.get(account)
-            encoder = encoders.get(account)
-
             if model and encoder:
-                # Handle unseen day input
-                if day_input not in encoder.classes_:
-                    encoder.classes_ = np.append(encoder.classes_, day_input)
+                # Handle unseen narrative input
+                if narrative_input not in encoder.classes_:
+                    encoder.classes_ = np.append(encoder.classes_, narrative_input)
 
-                day_encoded = encoder.transform([day_input])
+                narrative_encoded = encoder.transform([narrative_input])
                 input_data = pd.DataFrame(
-                    {"day_encoded": [day_encoded[0]], "amount": [amount_input]}
+                    {
+                        "narrative_encoded": [narrative_encoded[0]],
+                        "amount": [amount_input],
+                    }
                 )
+
                 prediction = model.predict(input_data)[0]
 
                 predictions.append(prediction)
@@ -158,8 +133,7 @@ class Model:
                 if prediction != true_category:
                     failed_rows.append(
                         [
-                            row["account"],
-                            row["date"],
+                            row["narrative"],
                             row["amount"],
                             true_category,
                             prediction,
@@ -174,5 +148,5 @@ class Model:
         # Calculate accuracy
         accuracy = accuracy_score(true_values, predictions)
         print(f"Model accuracy: {accuracy * 100:.2f}%")
-
-        return pd.DataFrame(failed_rows)
+        failed_df = pd.DataFrame(failed_rows)
+        return failed_df

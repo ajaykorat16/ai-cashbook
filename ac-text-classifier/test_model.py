@@ -6,8 +6,8 @@ import random
 
 
 def test_model(input_file):
-    models, encoders = Model.train(input_file)
-    failed_rows = Model.test(models, encoders, input_file)
+    model, encoder = Model.train(input_file)
+    failed_rows = Model.test(model, encoder, input_file)
 
     if not failed_rows.empty:
         print("Rows where prediction failed:")
@@ -29,16 +29,15 @@ def assign_random_category(input_file):
     df = pd.read_csv(input_file)
     dfc = pd.read_csv("./data/categories.csv")
     categories = dfc["Tax_Category"].tolist()
-    new_df = pd.DataFrame([], columns=["account", "date", "amount", "category"])
-    new_df["account"] = df["Account"]
+    new_df = pd.DataFrame([], columns=["narrative", "amount", "category"])
+    new_df["narrative"] = df["Narrative"]
     new_df["amount"] = df["Amt"].apply(
         lambda x: float(x.replace("$", "").replace(",", ""))
     )
     # new_df["date"] = df["Date"].apply(
     #     lambda x: excel_date_to_datetime(x).strftime("%Y-%m-%d")
     # )
-    new_df["date"] = df["Date"]
-    new_df["category"] = df["Account"].apply(lambda x: random.choice(categories))
+    new_df["category"] = new_df["narrative"].apply(lambda x: random.choice(categories))
     new_df.to_csv("./data/test.csv", index=False)
 
 

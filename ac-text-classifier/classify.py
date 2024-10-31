@@ -16,15 +16,15 @@ class Classify:
         # Create user directory if it doesn't exist
         os.makedirs(self.user_dir, exist_ok=True)
 
-        self.model_file = os.path.join(self.user_dir, "account_models.pkl")
-        self.encoder_file = os.path.join(self.user_dir, "account_encoders.pkl")
+        self.model_file = os.path.join(self.user_dir, "account_model.pkl")
+        self.encoder_file = os.path.join(self.user_dir, "account_encoder.pkl")
 
     def train(self, training_file_path):
-        models, encoders = Model.train(training_file_path)
-        if models and encoders:
+        model, encoder = Model.train(training_file_path)
+        if model and encoder:
             # Save trained models and encoders
-            joblib.dump(models, self.model_file)
-            joblib.dump(encoders, self.encoder_file)
+            joblib.dump(model, self.model_file)
+            joblib.dump(encoder, self.encoder_file)
             logger.info(
                 f"Models and encoders saved for user {self.user_id} in {self.user_dir}"
             )
@@ -34,8 +34,8 @@ class Classify:
     def classify(self, input_file_path, output_file_path=None):
         try:
             # Load trained models and encoders
-            models = joblib.load(self.model_file)
-            encoders = joblib.load(self.encoder_file)
+            model = joblib.load(self.model_file)
+            encoder = joblib.load(self.encoder_file)
         except FileNotFoundError:
             logger.error(
                 f"Model files not found for user {self.user_id}. Train the model first."
@@ -43,4 +43,4 @@ class Classify:
             return
 
         # Classify input data
-        Model.classify(models, encoders, input_file_path, output_file_path)
+        Model.classify(model, encoder, input_file_path, output_file_path)
