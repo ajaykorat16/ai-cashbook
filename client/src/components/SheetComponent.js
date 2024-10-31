@@ -234,11 +234,20 @@ const SheetComponent = ({ clientId }) => {
 
     const handleActionComplete = async (args) => {
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
-            args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert') {
+            args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert' || args.action === 'autofill') {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const editedData = []
 
-            if (args?.eventArgs?.address) {
+            if(args.action === 'autofill') {
+                const cellAddress = args.eventArgs.fillRange
+                const cellAddressWithoutSheet = cellAddress.split('!')[1];
+                const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
+                const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+                const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
+                editedData.push(editedRow)
+                renderDropdownsForColumns(rowIndex, ['F', 'I', 'N']);
+
+            } else if (args?.eventArgs?.address) {
                 const cellAddress = args.eventArgs.address
                 if (args.action === 'cellDelete') {
                     const [firstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
