@@ -68,7 +68,7 @@ const SheetComponent = ({ clientId }) => {
     };
 
     const headers = [
-        "Id", "Bank_Account", "Date", "Amt", "Categories", "Business_Percent",
+        "Id", "Bank_Account", "Date", "Amt", "Narrative", "Categories", "Business_Percent",
         "TaxableAmt", "GST_Code", "GST_Amt", "Excl_GST_Amt", "FY", "QTR", "ITR_Label", "BAS_LabN"
     ];
 
@@ -84,6 +84,10 @@ const SheetComponent = ({ clientId }) => {
             if (convertedData.length === 0) {
                 backendData = [{
                     "cells": [
+                        {
+                            "value": "",
+                            "style": {}
+                        },
                         {
                             "value": "",
                             "style": {}
@@ -251,7 +255,7 @@ const SheetComponent = ({ clientId }) => {
                     const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
                     const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
                     editedData.push(editedRow)
-                    renderDropdownsForColumns(rowIndex, ['E', 'H', 'M']);
+                    renderDropdownsForColumns(rowIndex, ['F', 'I', 'N']);
                 }
             } else if (args?.eventArgs?.modelType === 'Row') {
                 if (args?.action === 'insert') {
@@ -280,7 +284,7 @@ const SheetComponent = ({ clientId }) => {
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
                     editedData.push(currentRowData);
-                    renderDropdownsForColumns(row, ['E', 'H', 'M']);
+                    renderDropdownsForColumns(row, ['F', 'I', 'N']);
                 }
             }
             if (editedData?.length > 0) {
@@ -305,7 +309,7 @@ const SheetComponent = ({ clientId }) => {
                         for (let rowIndex = firstRowNumber; rowIndex <= secondRowNumber; rowIndex++) {
                             if (dataIndex < data.insertedDataId.length) {
                                 spreadsheetRef.current.updateCell({ value: data.insertedDataId[dataIndex] }, `A${rowIndex}`);
-                                spreadsheetRef.current.updateCell({ value: 100 }, `F${rowIndex}`);
+                                spreadsheetRef.current.updateCell({ value: 100 }, `G${rowIndex}`);
                                 dataIndex++;
                             } else {
                                 break;
@@ -325,17 +329,17 @@ const SheetComponent = ({ clientId }) => {
                 const rowCount = sheet.usedRange.rowIndex + 1;
 
                 for (let row = 2; row <= rowCount; row++) {
-                    const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(F${row})), ROUND((D${row}*F${row})/100, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula }, `G${row}`);
+                    const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`;
+                    spreadsheetRef.current.updateCell({ formula }, `H${row}`);
 
-                    const gstFormula = `=IF(AND(ISNUMBER(G${row}), H${row}<>""), ROUND(G${row}/11, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula: gstFormula }, `I${row}`);
+                    const gstFormula = `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`;
+                    spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
 
-                    const excGstFormula = `=IF(AND(ISNUMBER(G${row}), ISNUMBER(I${row})), ROUND(G${row}-I${row}, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula: excGstFormula }, `J${row}`);
+                    const excGstFormula = `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`;
+                    spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
 
-                    const baslabnFormula = `=IF(ISNUMBER(I${row}), IF(I${row} > 0, "1A", "1B"), "")`;
-                    spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `N${row}`);
+                    const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
+                    spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
 
                 }
             }
@@ -369,9 +373,9 @@ const SheetComponent = ({ clientId }) => {
 
                     const columnsToFormat = [
                         { range: `D2:D${rowCount}` },
-                        { range: `G2:G${rowCount}` },
-                        { range: `I2:I${rowCount}` },
-                        { range: `J2:J${rowCount}` }
+                        { range: `H2:G${rowCount}` },
+                        { range: `J2:I${rowCount}` },
+                        { range: `K2:J${rowCount}` }
                     ];
 
                     columnsToFormat.forEach(({ range, color }) => {
@@ -512,8 +516,8 @@ const SheetComponent = ({ clientId }) => {
             const rowNumberMatch = cellAddress.match(/\d+/);
             const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
             const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
-            if (editedRow && editedRow.length >= 4) {
-                editedRow[4] = value;
+            if (editedRow && editedRow.length >= 5) {
+                editedRow[5] = value;
             }
             await updateSpreadsheet(clientId, [editedRow]);
         } catch (error) {
@@ -529,16 +533,16 @@ const SheetComponent = ({ clientId }) => {
                 const sheet = spreadsheetRef.current.getActiveSheet();
                 const rowCount = sheet.usedRange.rowIndex + 1;
 
-                if (columnLetter === 'M' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                if (columnLetter === 'N' && args.rowIndex > 0 && args.rowIndex < rowCount) {
                     itrDropdown(args, columnLetter, rowNumber)
                 }
 
 
-                if (columnLetter === 'H' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                if (columnLetter === 'I' && args.rowIndex > 0 && args.rowIndex < rowCount) {
                     gstDropdown(args, columnLetter, rowNumber)
                 }
 
-                if (columnLetter === 'E' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                if (columnLetter === 'F' && args.rowIndex > 0 && args.rowIndex < rowCount) {
                     const selectElement = document.createElement('select');
                     selectElement.style.width = '100%';
                     selectElement.style.height = '100%';
@@ -581,8 +585,8 @@ const SheetComponent = ({ clientId }) => {
                                 if (headerValue && spreadsheetRef.current) {
                                     try {
                                         spreadsheetRef.current.updateCell({ value: headerValue }, address);
-                                        const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${13}"] select`);
-                                        const gstDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${8}"] select`);
+                                        const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${14}"] select`);
+                                        const gstDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${9}"] select`);
                                         if (itrDropdownElement && categoryHeaderIndex === 2) {
                                             itrDropdownElement.value = headerValue
                                         } else if (gstDropdownElement && categoryHeaderIndex === 1) {

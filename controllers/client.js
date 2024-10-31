@@ -1040,7 +1040,6 @@ const classify = async (newData, id, database, email) => {
 
     const fromattedData = data.map(row => {
         let gst_code = ''
-        let bas_code = ''
         let itr_label = ''
         let gst_amt = 0;
         let exc_gst = 0;
@@ -1061,6 +1060,7 @@ const classify = async (newData, id, database, email) => {
             row.account,
             row.date,
             row.amount,
+            row.narrative,
             row.category,
             row.business,
             row.taxableAmt,
@@ -1112,7 +1112,7 @@ const createClientSpreadsheet = async (req, res) => {
             });
         }
 
-        const newCsv = [["Bank Account", "Date", "Amt", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']]
+        const newCsv = [["Bank Account", "Date", "Amt", "Narrative", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']]
 
         const user = await Users.findById(client?.user_id);
         await mongoClient.connect();
@@ -1158,7 +1158,7 @@ const createClientSpreadsheet = async (req, res) => {
                         quarterRange = 'Oct-Dec';
                     }
 
-                    newCsv.push([bankAccount, formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
+                    newCsv.push([bankAccount, formattedDate, amount, narrative, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                 }
             })
         } else {
@@ -1189,7 +1189,7 @@ const createClientSpreadsheet = async (req, res) => {
                             quarter = 4;
                             quarterRange = 'Oct-Dec';
                         }
-                        newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
+                        newCsv.push(["", formattedDate, amount, narrative, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                     }
                 });
             } else if (blankFilteredData[0].length === 5) {
@@ -1225,7 +1225,7 @@ const createClientSpreadsheet = async (req, res) => {
                                 quarterRange = 'Oct-Dec';
                             }
 
-                            newCsv.push([accountNumber, formattedDate, cleanAmount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
+                            newCsv.push([accountNumber, formattedDate, cleanAmount, narrative, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                         }
                     });
                 } else {
@@ -1257,7 +1257,7 @@ const createClientSpreadsheet = async (req, res) => {
                                 quarterRange = 'Oct-Dec';
                             }
 
-                            newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
+                            newCsv.push(["", formattedDate, amount, narrative, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                         }
                     });
                 }
@@ -1289,7 +1289,9 @@ const createClientSpreadsheet = async (req, res) => {
                             quarterRange = 'Oct-Dec';
                         }
 
-                        newCsv.push(["", formattedDate, amount, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
+                        const narrative = `${narrative1} ${narrative2}`
+
+                        newCsv.push(["", formattedDate, amount, narrative, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                     }
                 });
             }
@@ -1324,7 +1326,7 @@ const createClientSpreadsheet = async (req, res) => {
             return [row.data[0], formattedDate, ...row.data.slice(2)];
         });
 
-        const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn'], ...formattedData]
+        const oldData = [["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn'], ...formattedData]
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
         if (oldData.length > 1) {
             await train(oldData, id)
@@ -1395,7 +1397,7 @@ const autoCategorize = async (req, res) => {
         const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
 
         const filteredData = spreadsheetCursor.filter((record) => {
-            if (record.data[3]) {
+            if (record.data[4]) {
                 const dateInString = record.data[1];
                 const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
@@ -1411,10 +1413,10 @@ const autoCategorize = async (req, res) => {
         });
 
         const newData = spreadsheetCursor.filter((record) => {
-            if (!record.data[3]) {
+            if (!record.data[4]) {
                 const dateInString = record.data[1];
                 const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
-
+                
                 if (dateInRecord.isValid()) {
                     return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
                 }
@@ -1425,7 +1427,7 @@ const autoCategorize = async (req, res) => {
             const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
             const newRow = [row.data[0], formattedDate];
             if (row.data.length >= 2) {
-                for (let i = 2; i < 13; i++) {
+                for (let i = 2; i < 14; i++) {
                     if (row.data[i]) {
                         newRow.push(row.data[i])
                     } else {
@@ -1437,7 +1439,8 @@ const autoCategorize = async (req, res) => {
             return newRow;
         });
 
-        const oldData = [["account", "date", "amount", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn', 'id'], ...formattedData]
+
+        const oldData = [["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn', 'id'], ...formattedData]
 
         if (oldData.length > 0 && newCsv.length > 0) {
             await train(oldData, id)
@@ -1685,11 +1688,11 @@ const getGstReport = async (req, res) => {
         filteredData.forEach(record => {
             const dateInString = record.data[1];
             const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
-            const taxableAmt = typeof record.data[5] === 'string' ? parseFloat(record.data[5].replace(/,/g, '')) : parseFloat(record.data[5]);
-            const gstAmt = typeof record.data[7] === 'string' ? parseFloat(record.data[7].replace(/,/g, '')) : parseFloat(record.data[7]);
-            const category = record.data[3];
-            const gstCode = record.data[6];
-            const basLabn = record.data[12];
+            const taxableAmt = typeof record.data[6] === 'string' ? parseFloat(record.data[6].replace(/,/g, '')) : parseFloat(record.data[6]);
+            const gstAmt = typeof record.data[8] === 'string' ? parseFloat(record.data[8].replace(/,/g, '')) : parseFloat(record.data[8]);
+            const category = record.data[4];
+            const gstCode = record.data[7];
+            const basLabn = record.data[13];
             const quarter = getQuarter(dateInRecord);
 
             if (!gstCodeObject[gstCode]) {
@@ -1864,9 +1867,9 @@ const getItrReport = async (req, res) => {
         let grandTotalExcGst = 0;
 
         filteredData.forEach(record => {
-            const excGstAmt = record.data[5] ? parseFloat(record.data[5].replace(/,/g, '')) : 0;
-            const category = record.data[3]
-            const itrLabel = record.data[11]
+            const excGstAmt = record.data[6] ? parseFloat(record.data[6].replace(/,/g, '')) : 0;
+            const category = record.data[4]
+            const itrLabel = record.data[12]
 
             if (itrLabel && excGstAmt && category) {
 
