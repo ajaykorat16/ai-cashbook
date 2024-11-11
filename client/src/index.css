@@ -227,12 +227,12 @@ div.brd_green_box span {
 }
 
 .check_box .styled-checkbox:hover+label:before {
-  background: var(--green-color);
+  background: #00AB66;
   ;
 }
 
 .check_box .styled-checkbox:checked+label:before {
-  background: var(--green-color);
+  background:#00AB66;
 }
 
 .check_box .styled-checkbox:disabled+label {
@@ -392,7 +392,7 @@ h1.main_title {
   min-width: 120px;
   background: white;
   font-family: "Roboto Slab", serif;
-  background-color: #F0F0F0;
+  background-color: #F9F8F3 ;
 }
 
 .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
@@ -411,15 +411,15 @@ h1.main_title {
 }
 
 .p-datatable tr {
-  background-color: #F0F0F0;
+  background-color: #F9F8F3 ;
 }
 
 .p-datatable tr:hover {
-  background-color: #EEF2FF; 
+  background-color: #EEF2FF;
 }
 
 .p-datatable .p-highlight {
-  background-color: #EEF2FF !important; 
+  background-color: #EEF2FF !important;
 }
 
 
@@ -479,7 +479,7 @@ tbody tr[role="row"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color:#00AB66;
+  background-color: #00AB66;
   border-radius: 100%;
   width: 40px;
   height: 40px;
@@ -551,7 +551,7 @@ tbody tr[role="row"] {
   position: absolute;
   top: 40px;
   right: 0;
-  padding: 10px;
+  /* padding: 10px; */
   width: 100%;
   display: none;
   z-index: 50;
@@ -562,8 +562,8 @@ tbody tr[role="row"] {
   color: var(--black-color);
   border-bottom: 1px solid var(--green-color);
   display: block;
-  padding: 0 0 10px 0;
-  margin-bottom: 10px;
+  padding: 10 0 10px 0;
+  /* margin-bottom: 10px; */
   background: none;
   border-radius: 0;
   text-align: center;
@@ -571,17 +571,19 @@ tbody tr[role="row"] {
 }
 
 .login_open button:hover {
-  color: #1F305E;
+  color: white;
+  background:#1F305E;
+
 }
 
 .login_open button:last-child {
   border: none;
-  padding: 0;
   margin: 0;
+  padding: 10 0 10px 0;
 }
 
 .custom_modal .modal-header {
-  background: var(--green-color);
+  background: #00AB66;
   padding: 20px 25px;
 }
 
@@ -831,6 +833,8 @@ tbody tr[role="row"] {
   background: #00AB66;
   color: #fff;
   transition: all 0.3s;
+  border-radius: 8px 0px 0px 8px;
+  overflow: hidden;
 }
 
 #content {
@@ -875,7 +879,6 @@ tbody tr[role="row"] {
 
 .side_data ul li {
   list-style: none;
-    /* margin: 0px 0 20px 0; */
 }
 
 .side_data ul li a {
@@ -974,7 +977,6 @@ div[style*="z-index: 99999"] {
   position: absolute;
   top: 40px;
   left: 0;
-  padding: 10px;
   width: 100%;
   display: none;
   z-index: 1;
@@ -989,8 +991,7 @@ div[style*="z-index: 99999"] {
   color: var(--black-color);
   border: none;
   display: block;
-  padding: 0 0 10px 0;
-  margin-bottom: 10px;
+  padding: 10 0 20px 0;
   background: none;
   border-radius: 0;
   text-align: center;
@@ -998,12 +999,13 @@ div[style*="z-index: 99999"] {
 }
 
 .custom-select .select-menu button:hover {
-  color: #1F305E;
+  color: white;
+  background: #1F305E;
 }
 
 .custom-select .select-menu button:last-child {
   border: none;
-  padding: 0;
+  padding: 10 0 10px 0;
   margin: 0;
 }
 
