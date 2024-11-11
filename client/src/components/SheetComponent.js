@@ -20,7 +20,7 @@ const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '
     '5.3-Repair and Maintenance', '9.1-All Other Expenses', '9.3-Director Fees', '9.2-Non Deductible Expenses']
 
 const SheetComponent = ({ clientId }) => {
-    const { getSpreadsheet, updateSpreadsheet, getClientCategory } = useClient();
+    const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject } = useClient();
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
@@ -220,17 +220,18 @@ const SheetComponent = ({ clientId }) => {
         return `${month}/${day}/${year}`;
     };
 
-    const renderDropdownsForColumns = (row, columnLetters, cellValue = '') => {
-        columnLetters.forEach((columnLetter) => {
+    const renderDropdownsForColumns = (row, columnLetters, values) => {
+        columnLetters.forEach((columnLetter, index) => {
+            const value = values[index] || "";
             handleCellRender({
-                element: document.querySelector(`td[aria-label='${columnLetter}${row}']`),
+                element: document.querySelector(`td[aria-label='${value}${columnLetter}${row}']`),
                 colIndex: columnLetter.charCodeAt(0) - 65,
                 rowIndex: row - 1,
-                cell: { value: cellValue },
+                cell: { value },
                 address: `${columnLetter}${row}`
             });
         });
-    };
+    }
 
     const handleActionComplete = async (args) => {
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
@@ -244,7 +245,7 @@ const SheetComponent = ({ clientId }) => {
                 const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                 const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
                 const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
-                while (editedRow.length <= 6) {
+                while (editedRow.length <= 13) {
                     editedRow.push("");
                 }
 
@@ -252,7 +253,11 @@ const SheetComponent = ({ clientId }) => {
                     editedRow[6] = 100;
                 }
                 editedData.push(editedRow)
-                renderDropdownsForColumns(rowIndex, ['F', 'I', 'N']);
+                const fValue = editedRow[5] ? `${editedRow[5]} ` : "";
+                const iValue = editedRow[8] ? `${editedRow[8]} ` : "";
+                const nValue = editedRow[13] ? `${editedRow[13]} ` : "";
+
+                renderDropdownsForColumns(rowIndex, ['F', 'I', 'N'], [fValue, iValue, nValue]);
 
             } else if (args?.eventArgs?.address) {
                 const cellAddress = args.eventArgs.address
@@ -271,7 +276,7 @@ const SheetComponent = ({ clientId }) => {
                     const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                     const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
                     const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
-                    while (editedRow.length <= 6) {
+                    while (editedRow.length <= 13) {
                         editedRow.push("");
                     }
 
@@ -279,8 +284,11 @@ const SheetComponent = ({ clientId }) => {
                         editedRow[6] = 100;
                     }
                     editedData.push(editedRow)
-                    editedData.push(editedRow)
-                    renderDropdownsForColumns(rowIndex, ['F', 'I', 'N']);
+                    const fValue = editedRow[5] ? `${editedRow[5]} ` : "";
+                    const iValue = editedRow[8] ? `${editedRow[8]} ` : "";
+                    const nValue = editedRow[13] ? `${editedRow[13]} ` : "";
+
+                    renderDropdownsForColumns(rowIndex, ['F', 'I', 'N'], [fValue, iValue, nValue]);
                 }
             } else if (args?.eventArgs?.modelType === 'Row') {
                 if (args?.action === 'insert') {
@@ -308,15 +316,19 @@ const SheetComponent = ({ clientId }) => {
 
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
-                    while (currentRowData.length <= 6) {
+                    while (currentRowData.length <= 13) {
                         currentRowData.push("");
                     }
 
                     if (!currentRowData[6]) {
                         currentRowData[6] = 100;
                     }
+                    const fValue = currentRowData[5] ? `${currentRowData[5]} ` : "";
+                    const iValue = currentRowData[8] ? `${currentRowData[8]} ` : "";
+                    const nValue = currentRowData[13] ? `${currentRowData[13]} ` : "";
+
                     editedData.push(currentRowData);
-                    renderDropdownsForColumns(row, ['F', 'I', 'N']);
+                    renderDropdownsForColumns(row, ['F', 'I', 'N'], [fValue, iValue, nValue]);
                 }
             }
             if (editedData?.length > 0) {
@@ -594,7 +606,7 @@ const SheetComponent = ({ clientId }) => {
                         selectElement.appendChild(option);
                     });
 
-                    selectElement.value = args.cell?.value || '';
+                    selectElement.value = (args.cell?.value || '').trim();
 
                     selectElement.onchange = async (event) => {
                         const selectedValue = event.target.value;
@@ -665,7 +677,7 @@ const SheetComponent = ({ clientId }) => {
             selectElement.appendChild(option);
         });
 
-        selectElement.value = args.cell?.value || '';
+        selectElement.value = (args.cell?.value || '').trim();
 
         selectElement.onchange = async (event) => {
             const selectedValue = event.target.value;
@@ -693,7 +705,7 @@ const SheetComponent = ({ clientId }) => {
             selectElement.appendChild(option);
         });
 
-        selectElement.value = args.cell?.value || '';
+        selectElement.value = (args.cell?.value || '').trim();
 
         selectElement.onchange = async (event) => {
             const selectedValue = event.target.value;
@@ -710,6 +722,7 @@ const SheetComponent = ({ clientId }) => {
     return (
         <div>
             <div className="special_flex mb-25">
+                <div className='client_name'>{clientObject?.label}</div>
                 <div className='title_part'>
                     <div className='date_title'>
                         <span className="date_label">From:</span>

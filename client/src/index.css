@@ -1229,6 +1229,10 @@ div[style*="z-index: 99999"] {
   margin-top: 50px;
 }
 
+.client_name {
+  font-weight: bold;
+}
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;

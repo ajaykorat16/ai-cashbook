@@ -364,7 +364,7 @@ const getClientCategory = async (req, res) => {
 const updateClientCategory = async (req, res) => {
     try {
         const { id } = req.params
-        const { data } = req.body
+        let { data } = req.body
 
         const client = await getClient(id)
         if (!client) {
@@ -380,6 +380,10 @@ const updateClientCategory = async (req, res) => {
                 message: "Data must be array and not empty.",
             })
         }
+
+        data = data.filter(
+            subArray => subArray.some(item => item.trim() !== "")
+        );
 
         const user = await Users.findById(client?.user_id);
         await mongoClient.connect();
@@ -1416,7 +1420,7 @@ const autoCategorize = async (req, res) => {
             if (!record.data[4]) {
                 const dateInString = record.data[1];
                 const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
-                
+
                 if (dateInRecord.isValid()) {
                     return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
                 }

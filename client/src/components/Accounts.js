@@ -182,28 +182,58 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     }, [clientId]);
 
 
-    const renderDropdownsForColumns = (row, columnLetters, cellValue = '') => {
+    const renderDropdownsForColumns = (row, columnLetters, cValue, dValue) => {
         columnLetters.forEach((columnLetter) => {
             handleCellRender({
-                element: document.querySelector(`td[aria-label='${columnLetter}${row}']`),
+                element: document.querySelector(`td[aria-label='${columnLetter === 'C' ? cValue : dValue}${columnLetter}${row}']`),
                 colIndex: columnLetter.charCodeAt(0) - 65,
                 rowIndex: row - 1,
-                cell: { value: cellValue },
+                cell: { value: columnLetter === 'C' ? cValue : dValue },
                 address: `${columnLetter}${row}`
             });
         });
     };
 
+    const convertCellsToValues = (data) => {
+        if (!data || !Array.isArray(data.cells)) {
+            return [];
+        }
+
+        return data.cells.map((cell, index) => {
+            let cellValue = cell?.value;
+            const style = cell?.style || {};
+
+            if (Object.keys(style).length > 0 && cellValue) {
+                if (style.fontWeight === 'bold') {
+                    cellValue = `<b>${cellValue}</b>`;
+                }
+                if (style.fontStyle === 'italic') {
+                    cellValue = `<i>${cellValue}</i>`;
+                }
+                if (style.textDecoration === 'underline') {
+                    cellValue = `<u>${cellValue}</u>`;
+                }
+            }
+            return cellValue ? cellValue : '';
+        });
+    };
+
+
     const handleActionComplete = async (args) => {
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
             args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert' || args.action === 'autofill') {
+
+            const sheet = spreadsheetRef.current.getActiveSheet();
 
             if (args.action === 'autofill') {
                 const cellAddress = args.eventArgs.fillRange
                 const cellAddressWithoutSheet = cellAddress.split('!')[1];
                 const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                 const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-                renderDropdownsForColumns(rowIndex, ['C', 'D']);
+                const currentRowData = convertCellsToValues(sheet.rows[rowIndex - 1]);
+                const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
+                const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
+                renderDropdownsForColumns(rowIndex, ['C', 'D'], param1, param2);
             } else if (args?.eventArgs?.address) {
                 const cellAddress = args.eventArgs.address
 
@@ -211,7 +241,10 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     const cellAddressWithoutSheet = cellAddress.split('!')[1];
                     const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                     const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-                    renderDropdownsForColumns(rowIndex, ['C', 'D']);
+                    const currentRowData = convertCellsToValues(sheet.rows[rowIndex - 1]);
+                    const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
+                    const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
+                    renderDropdownsForColumns(rowIndex, ['C', 'D'], param1, param2);
                 }
             } else {
                 let cellAddress
@@ -225,7 +258,11 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
 
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
-                    renderDropdownsForColumns(row, ['C', 'D']);
+                    const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
+                    const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
+                    const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
+
+                    renderDropdownsForColumns(row, ['C', 'D'], param1, param2);
                 }
             }
 
@@ -258,7 +295,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 setIsLoading(false);
             }
         } catch (error) {
-            console.log("error", error)
+            // console.log("error", error)
         }
     };
 
@@ -329,7 +366,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     selectElement.appendChild(option);
                 });
 
-                selectElement.value = args.cell?.value || '';
+                selectElement.value = (args.cell?.value || '').trim();
 
                 selectElement.onchange = async (event) => {
                     const selectedValue = event.target.value;
@@ -365,8 +402,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             option.textContent = item;
             selectElement.appendChild(option);
         });
-
-        selectElement.value = args.cell?.value || '';
+        selectElement.value = (args.cell?.value || '').trim();
 
         selectElement.onchange = async (event) => {
             const selectedValue = event.target.value;

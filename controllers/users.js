@@ -367,13 +367,17 @@ const updateUserCategory = async (req, res) => {
             })
         }
 
+        const sheetData = data.filter(
+            subArray => subArray.some(item => item.trim() !== "")
+        );
+
         await mongoClient.connect();
         const database = mongoClient.db(process.env.DATABASE_NAME);
         const userCategoryCollection = database.collection(`${req.user?.email.split("@")[0]}_master_category`);
 
         const userCatgory = await userCategoryCollection.findOneAndUpdate(
             { user_id: new ObjectId(req.user?._id) },
-            { $set: { data } },
+            { $set: { data: sheetData } },
             { returnOriginal: false }
         );
 
