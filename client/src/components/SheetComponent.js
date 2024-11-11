@@ -722,7 +722,7 @@ const SheetComponent = ({ clientId }) => {
     return (
         <div>
             <div className="special_flex mb-25">
-                <div className='client_name'>{clientObject?.label}</div>
+                <div className='client_name position-absolute'>{clientObject?.label}</div>
                 <div className='title_part'>
                     <div className='date_title'>
                         <span className="date_label">From:</span>

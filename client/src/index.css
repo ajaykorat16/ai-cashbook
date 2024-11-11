@@ -1212,16 +1212,17 @@ div[style*="z-index: 99999"] {
   color: black;
 }
 
-.e-input-group.e-ddl{
+.e-input-group.e-ddl {
   height: inherit !important;
   padding: 0;
-  margin-bottom: 0 !important;    
+  margin-bottom: 0 !important;
   border-color: #e0e0e0 !important;
   border-right: solid 1px #e0e0e0 !important;
 }
 
-.e-ddl.e-input-group input[readonly].e-input, .e-ddl.e-input-group input[readonly] {
-  padding: 1px 0px 0px 2px; 
+.e-ddl.e-input-group input[readonly].e-input,
+.e-ddl.e-input-group input[readonly] {
+  padding: 1px 0px 0px 2px;
   font-family: "Calibri";
 }
 
@@ -1491,6 +1492,7 @@ div[style*="z-index: 99999"] {
     gap: 10px;
     justify-content: center;
     width: 100%;
+    padding-top: 30px;
   }
 
   .date_title .date_label {
