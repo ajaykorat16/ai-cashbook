@@ -10,6 +10,7 @@ import AddClient from '../components/AddClient';
 import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
 import CustomSelect from '../components/CustomSelect';
 import ConfirmMultiDelete from '../components/ConfirmMultiDelete';
+import { Icon } from '@iconify/react';
 
 const ClientList = () => {
     const options = [10, 20, 50, 100];
@@ -178,10 +179,14 @@ const ClientList = () => {
                             />
                         </div>
                         <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => setVisible(true)}>
-                            <img src="/images/plus_white.svg" alt="" /> Add client
+                        <i className="pi pi-plus btn_icon" style={{ color: 'white' }}></i> Add client
                         </button>
-                        <button className="common_btn ms-4" onClick={() => navigate('/user/upload-clients')}>Import</button>
-                        <button className="common_btn ms-4" onClick={() => handleExports()}>Export</button>
+                        <button className="common_btn ms-4" onClick={() => navigate('/user/upload-clients')}>
+                        <i className="pi pi-upload btn_icon" style={{ color: 'white' }}></i>Import
+                            </button>
+                        <button className="common_btn ms-4" onClick={() => handleExports()}>
+                        <i className="pi pi-download btn_icon" style={{ color: 'white' }}></i>Export
+                        </button>
                     </div>
                 </div>
                 <div className="main_table">

@@ -152,7 +152,7 @@ div.brd_green_box span {
 }
 
 .common_btn {
-  background: var(--green-color);
+  background: #00AB66;
   color: var(--white-color);
   font-size: 16px;
   font-weight: 500;
@@ -165,7 +165,7 @@ div.brd_green_box span {
 }
 
 .common_btn:hover {
-  background: var(--black-color);
+  background: #1F305E;
   color: var(--white-color) !important;
 }
 
@@ -392,6 +392,7 @@ h1.main_title {
   min-width: 120px;
   background: white;
   font-family: "Roboto Slab", serif;
+  background-color: #F0F0F0;
 }
 
 .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
@@ -408,6 +409,19 @@ h1.main_title {
   word-wrap: break-word;
   font-family: "Roboto Slab", serif;
 }
+
+.p-datatable tr {
+  background-color: #F0F0F0;
+}
+
+.p-datatable tr:hover {
+  background-color: #EEF2FF; 
+}
+
+.p-datatable .p-highlight {
+  background-color: #EEF2FF !important; 
+}
+
 
 .p-datatable>.p-datatable-wrapper {
   border-radius: 8px;
@@ -446,7 +460,7 @@ tbody tr[role="row"] {
 }
 
 .main_table table.dataTable tbody td a.green_btn {
-  background-color: var(--green-color);
+  background-color: #00AB66;
   border-radius: 100%;
   width: 40px;
   height: 40px;
@@ -457,7 +471,7 @@ tbody tr[role="row"] {
 }
 
 .main_table table.dataTable tbody td a.green_btn:hover {
-  background-color: var(--black-color);
+  background-color: #1F305E;
 }
 
 
@@ -465,7 +479,7 @@ tbody tr[role="row"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--green-color);
+  background-color:#00AB66;
   border-radius: 100%;
   width: 40px;
   height: 40px;
@@ -475,7 +489,7 @@ tbody tr[role="row"] {
 }
 
 .p-datatable .p-datatable-tbody>tr>td .green_btn:hover {
-  background-color: var(--black-color);
+  background-color: #1F305E;
 }
 
 .main_table table.dataTable thead th.w231 {
@@ -508,7 +522,7 @@ tbody tr[role="row"] {
 }
 
 .login_box_top button {
-  background: var(--green-color);
+  background: #00AB66;
   padding: 12px;
   border-radius: 5px;
   color: var(--white-color);
@@ -557,7 +571,7 @@ tbody tr[role="row"] {
 }
 
 .login_open button:hover {
-  color: var(--green-color);
+  color: #1F305E;
 }
 
 .login_open button:last-child {
@@ -814,10 +828,9 @@ tbody tr[role="row"] {
 #sidebar {
   min-width: 250px;
   max-width: 250px;
-  background: var(--green-color);
+  background: #00AB66;
   color: #fff;
   transition: all 0.3s;
-  padding: 25px 16px;
 }
 
 #content {
@@ -862,7 +875,7 @@ tbody tr[role="row"] {
 
 .side_data ul li {
   list-style: none;
-  margin: 0px 0 20px 0;
+    /* margin: 0px 0 20px 0; */
 }
 
 .side_data ul li a {
@@ -871,6 +884,7 @@ tbody tr[role="row"] {
   display: block;
   padding: 0px 0 20px;
   border-bottom: 1px solid #fff;
+  padding: 20px 16px;
 }
 
 .side_data ul li:last-child {
@@ -879,12 +893,13 @@ tbody tr[role="row"] {
 
 .side_data ul li:last-child a {
   border: none;
-  padding: 0;
+  padding: 20px 16px;
 }
 
 .side_data ul li a:hover,
 .side_data ul li a.selected {
-  color: #000;
+  color: white;
+  background-color: #1F305E;
 }
 
 .right_head {
@@ -942,7 +957,7 @@ div[style*="z-index: 99999"] {
   line-height: 21px;
   padding: 12px;
   color: var(--white-color);
-  background: var(--green-color);
+  background: #00AB66;
   border: none;
   border-radius: 5px;
 }
@@ -983,7 +998,7 @@ div[style*="z-index: 99999"] {
 }
 
 .custom-select .select-menu button:hover {
-  color: var(--green-color);
+  color: #1F305E;
 }
 
 .custom-select .select-menu button:last-child {
@@ -1232,6 +1247,17 @@ div[style*="z-index: 99999"] {
 
 .client_name {
   font-weight: bold;
+}
+
+.link_icon {
+  color: black;
+  height: inherit;
+  width: inherit;
+  padding-right: 15px;
+}
+
+.btn_icon {
+  margin-right: 8px;
 }
 
 @media screen and (max-width: 1550px) {

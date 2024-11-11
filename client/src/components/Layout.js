@@ -4,6 +4,7 @@ import { Toast } from 'primereact/toast'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
 import { useClient } from '../contexts/ClientContexts';
+import { Icon } from '@iconify/react';
 
 const Layout = ({ children, showSelection = false }) => {
     const { toast, logout, auth } = useAuth()
@@ -90,16 +91,28 @@ const Layout = ({ children, showSelection = false }) => {
                                     <ul>
                                         {auth.user.role === 'user' ? (
                                             <>
-                                                <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>Home</Link></li>
-                                                <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>Category</Link></li>
-                                                <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>Upload CSV</Link></li>
+                                                <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>
+                                                    <i className="pi pi-home btn_icon" style={{ color: 'white' }}></i>Home
+                                                </Link></li>
+                                                <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>
+                                                    <i className="pi pi-bars btn_icon" style={{ color: 'white' }}></i>Category
+                                                </Link></li>
+                                                <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>
+                                                    <i className="pi pi-upload btn_icon" style={{ color: 'white' }}></i>Upload CSV
+                                                </Link></li>
                                                 {clientObject?.value && (
                                                     <>
-                                                        <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>Chart of accounts</Link></li>
-                                                        <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>Auto categorize</Link></li>
+                                                        <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>
+                                                            <i className="pi pi-address-book btn_icon" style={{ color: 'white' }}></i>Chart of accounts
+                                                        </Link></li>
+                                                        <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>
+                                                            <i className="pi pi-chart-bar btn_icon" style={{ color: 'white' }}></i>Auto categorize
+                                                        </Link></li>
                                                     </>
                                                 )}
-                                                <li><Link>Check inter-bank transfer</Link></li>
+                                                <li><Link>
+                                                <i className="pi pi-credit-card btn_icon" style={{ color: 'white' }}></i>Inter Bank Transfer
+                                                </Link></li>
                                             </>
                                         ) : (
                                             <li><Link to={'/admin/users'} className={location.pathname.match("/admin/users") && `selected`}>Home</Link></li>
