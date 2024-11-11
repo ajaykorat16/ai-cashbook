@@ -25,7 +25,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
-    const [isLoading, setIsLoading] = useState(true );
+    const [isLoading, setIsLoading] = useState(true);
     const [sheetData, setSheetData] = useState([])
 
     const getSheetData = async () => {
@@ -196,9 +196,15 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
     const handleActionComplete = async (args) => {
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
-            args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert') {
+            args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert' || args.action === 'autofill') {
 
-            if (args?.eventArgs?.address) {
+            if (args.action === 'autofill') {
+                const cellAddress = args.eventArgs.fillRange
+                const cellAddressWithoutSheet = cellAddress.split('!')[1];
+                const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
+                const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+                renderDropdownsForColumns(rowIndex, ['C', 'D']);
+            } else if (args?.eventArgs?.address) {
                 const cellAddress = args.eventArgs.address
 
                 if (args.action !== 'cellDelete') {
@@ -235,24 +241,24 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 const sheet = spreadsheetRef.current.getActiveSheet();
                 const colCount = sheet.usedRange.colIndex + 1;
                 const rowCount = sheet.usedRange.rowIndex + 1;
-    
+
                 const firstRowRange = `A1:${String.fromCharCode(64 + colCount)}1`;
                 spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
-    
+
                 spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
-    
+
                 const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
                 spreadsheetRef.current.cellFormat({ border: 'none', borderBottom: '1px solid #FFFFFF' }, range);
-    
+
                 const outerBorderRange = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
                 spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, outerBorderRange, 'Outer');
-    
+
                 const horizontalBorderRange = `A2:${String.fromCharCode(64 + colCount)}${rowCount}`;
                 spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
                 setIsLoading(false);
             }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
         }
     };
 
@@ -307,41 +313,41 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     const handleCellRender = (args) => {
         try {
             const columnLetter = numberToAlphabet(args.colIndex + 1);
-        const rowNumber = args.rowIndex + 1;
-        const sheet = spreadsheetRef.current.getActiveSheet();
-        const rowCount = sheet.usedRange.rowIndex + 1;
+            const rowNumber = args.rowIndex + 1;
+            const sheet = spreadsheetRef.current.getActiveSheet();
+            const rowCount = sheet.usedRange.rowIndex + 1;
 
-        if (columnLetter === 'D' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-            const selectElement = document.createElement('select');
-            selectElement.style.width = '100%';
-            selectElement.style.height = '100%';
+            if (columnLetter === 'D' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                const selectElement = document.createElement('select');
+                selectElement.style.width = '100%';
+                selectElement.style.height = '100%';
 
-            itrList.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item;
-                option.textContent = item;
-                selectElement.appendChild(option);
-            });
+                itrList.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.textContent = item;
+                    selectElement.appendChild(option);
+                });
 
-            selectElement.value = args.cell?.value || '';
+                selectElement.value = args.cell?.value || '';
 
-            selectElement.onchange = async (event) => {
-                const selectedValue = event.target.value;
-                const cellAddress = `${columnLetter}${rowNumber}`;
+                selectElement.onchange = async (event) => {
+                    const selectedValue = event.target.value;
+                    const cellAddress = `${columnLetter}${rowNumber}`;
 
-                spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
-                const formattedData = await getSheetData();
-                await updateCsvData(clientId, formattedData);
-                formateSheet()
-            };
+                    spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+                    const formattedData = await getSheetData();
+                    await updateCsvData(clientId, formattedData);
+                    formateSheet()
+                };
 
-            args.element.innerHTML = '';
-            args.element.appendChild(selectElement);
-        } else if (columnLetter === 'C' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-            gstDropdown(args, columnLetter, rowNumber)
-        }
+                args.element.innerHTML = '';
+                args.element.appendChild(selectElement);
+            } else if (columnLetter === 'C' && args.rowIndex > 0 && args.rowIndex < rowCount) {
+                gstDropdown(args, columnLetter, rowNumber)
+            }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
         }
     };
 
