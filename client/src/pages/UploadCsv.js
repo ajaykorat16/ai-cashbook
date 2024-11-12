@@ -5,9 +5,11 @@ import Loader from '../components/Loader';
 import Papa from 'papaparse';
 import { useNavigate } from 'react-router-dom';
 import { useClient } from '../contexts/ClientContexts';
+import { useAuth } from '../contexts/AuthContext';
 
 const UploadCsv = () => {
     const { clientObject, setClientObject, createSpreadsheet, getAllClients } = useClient()
+    const {toast} = useAuth()
     const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +46,8 @@ const UploadCsv = () => {
                         setFile(null)
                         setFileName("")
                         navigate(`/user/spreadsheet/${clientObject?.value}`)
+                    } else {
+                        toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: spreadsheet.message, life: 3000 })
                     }
                     setIsLoading(false)
                 }

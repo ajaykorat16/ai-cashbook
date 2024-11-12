@@ -1298,6 +1298,11 @@ const createClientSpreadsheet = async (req, res) => {
                         newCsv.push(["", formattedDate, amount, narrative, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                     }
                 });
+            } else {
+                return res.status(200).json({
+                    error: true,
+                    message: "Your CSV file has an incorrect format.",
+                });
             }
         }
 
