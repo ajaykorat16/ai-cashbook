@@ -42,7 +42,7 @@ const Layout = ({ children, showSelection = false }) => {
     }, []);
 
     return (
-        <>
+        <div className='main_layout'>
             <Toast ref={toast} />
             <section className="main_header">
                 <header>
@@ -130,7 +130,7 @@ const Layout = ({ children, showSelection = false }) => {
                     </div>
                 </div>
             </section>
-        </>
+        </div>
     )
 }
 

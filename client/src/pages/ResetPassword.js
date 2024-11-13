@@ -48,7 +48,7 @@ const ResetPassword = () => {
         }
     }
     return (
-        <>
+        <div className='main_layout'>
             <AuthLayout />
             <section className="login_center_box">
                 <div className="wid450">
@@ -111,7 +111,7 @@ const ResetPassword = () => {
                     </div>
                 </div>
             </section>
-        </>
+        </div>
     )
 }
 

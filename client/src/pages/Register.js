@@ -107,124 +107,109 @@ const Register = () => {
     return (
         <>
             <Toast ref={toast} />
-            <section className="main_header login_header">
-                <header>
-                    <div className="container">
-                        <div className="main_logo">
-                            <a href="#"><img src="/images/accoutn_logo.svg" alt="" /></a>
-                        </div>
-                    </div>
-                </header>
-            </section>
-            <section className='login_center_box'>
-                <div className="wid700">
-                    <h1>Registration</h1>
-                    <div className='bg_white_box'>
-                        <div className='special_login_box'>
-                            <div className='row justify-content-center'>
-                                <div className='col-md-6'>
-                                    <div onClick={() => googleSignUp()} className="brd_green_box">
-                                        <img src="/images/google_icn.svg" alt="" />
-                                        <span>Sign up with google</span>
-                                    </div>
-                                </div>
-                                <div className="col-md-6">
-                                    <div onClick={handleMicrosoftSignUp} className="brd_green_box">
-                                        <img src="/images/microsoft_icn.svg" alt="" />
-                                        <span>Sign up with microsoft</span>
-                                    </div>
-                                </div>
-                                <div className="col-md-6">
-                                    <div href="#" className="brd_green_box">
-                                        <img src="/images/apple_icn.svg" alt="" />
-                                        <span>Sign up with apple</span>
-                                    </div>
-                                </div>
+            <div className='login_page'>
+                <section className="main_header login_header">
+                    <header>
+                        <div className="container">
+                            <div className="main_logo">
+                                <img className='web_logo' src="/images/accoutn_logo.svg" alt="" />
                             </div>
                         </div>
-                        <div className="brd_or_center">
-                            <div className="or_center">OR</div>
+                    </header>
+                </section>
+                <div className='container d-flex col login_container'>
+                    <div className='first_container'>
+                        <img className='img-responsive login_img' src="/images/login.png" alt="" />
+                    </div>
+                    <div className='second_container'>
+                        <div className='singnin_text text-center'>
+                            SIGN IN
                         </div>
-                        <div className='input_form_box'>
-                            <CForm onSubmit={handleSubmit} noValidate validated={validated}>
-                                <div className='row'>
-                                    <div className="col-md-6">
-                                        <div className="form-floating">
-                                            <CFormInput
-                                                type="email"
-                                                value={userDetails.email}
-                                                onChange={(e) => setUserDetails({ ...userDetails, email: e.target.value })}
-                                                required
-                                                feedbackInvalid={"Email is required."}
-                                                className={'form-control is_not_validated'}
-                                                id="floatingEmail"
-                                                placeholder="name@example.com"
-                                            />
-                                            <label htmlFor="floatingEmail">Email address</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="form-floating">
-                                            <CFormInput
-                                                type="text"
-                                                value={userDetails.first_name}
-                                                onChange={(e) => setUserDetails({ ...userDetails, first_name: e.target.value })}
-                                                required
-                                                feedbackInvalid={"First name is required."}
-                                                className={'form-control is_not_validated'}
-                                                id="floatingFirstName"
-                                                placeholder="First Name"
-                                            />
-                                            <label htmlFor="floatingFirstName">First name</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="form-floating">
-                                            <CFormInput
-                                                type="text"
-                                                value={userDetails.last_name}
-                                                onChange={(e) => setUserDetails({ ...userDetails, last_name: e.target.value })}
-                                                required
-                                                feedbackInvalid={"Last name is required."}
-                                                className={'form-control is_not_validated'}
-                                                id="floatingLastName"
-                                                placeholder="Last Name"
-                                            />
-                                            <label htmlFor="floatingLastName">Last name</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="form-floating">
-                                            <CFormInput
-                                                type="text"
-                                                minLength="10"
-                                                maxLength="13"
-                                                value={userDetails.phone}
-                                                onChange={(e) => {
-                                                    const inputValue = e.target.value;
-                                                    const numericValue = inputValue.replace(/[^\d+]/g, '');
-                                                    setUserDetails({ ...userDetails, phone: numericValue })
-                                                }}
-                                                required
-                                                feedbackInvalid={"Phone number is required."}
-                                                className={'form-control'}
-                                                id="floatingPhoneNumber"
-                                                placeholder="Phone Number"
-                                            />
-                                            <label htmlFor="floatingPhoneNumber">Phone number</label>
-                                        </div>
-                                    </div>
+                        <div>
+                            <div className='logo_container'>
+                                <div className='google_icn_container' onClick={() => googleSignUp()}>
+                                    <img className='mb-3 google_logo' src="/images/google_logo.svg" alt="" />
+                                    <span className='text-center'>Google</span>
                                 </div>
-                                <button type="submit" className="common_btn d-flex m-auto">Create account</button>
+                                <div className='google_icn_container' onClick={handleMicrosoftSignUp}>
+                                    <img className='mb-3 google_logo' src="/images/microsoft_logo.svg" alt="" />
+                                    <span className='text-center'>Microsoft</span>
+                                </div>
+                                <div className='google_icn_container'>
+                                    <img className='mb-3 google_logo' src="/images/apple_logo.svg" alt="" />
+                                    <span className='text-center'>Apple</span>
+                                </div>
+                            </div>
+                            <div className='justify-content-center d-flex'>
+                                <div class="line-with-verticals"></div>
+                            </div>
+                            <CForm onSubmit={handleSubmit} noValidate validated={validated} className='d-flex justify-content-center'>
+                                <div className='row credentials_container'>
+                                    <div className="col-md-6 mt-3">
+                                        <label htmlFor="floatingEmail" className='pb-2 credential_label'>Email Address</label>
+                                        <CFormInput
+                                            type="email"
+                                            value={userDetails.email}
+                                            onChange={(e) => setUserDetails({ ...userDetails, email: e.target.value })}
+                                            required
+                                            feedbackInvalid={"Email is required."}
+                                            className={'form-control is_not_validated credential_input'}
+                                            id="floatingEmail"
+                                        />
+                                    </div>
+                                    <div className="col-md-6 mt-3">
+                                        <label htmlFor="floatingFirstName" className='pb-2 credential_label'>First Name</label>
+                                        <CFormInput
+                                            type="text"
+                                            value={userDetails.first_name}
+                                            onChange={(e) => setUserDetails({ ...userDetails, first_name: e.target.value })}
+                                            required
+                                            feedbackInvalid={"First name is required."}
+                                            className={'form-control is_not_validated credential_input'}
+                                            id="floatingFirstName"
+                                        />
+                                    </div>
+                                    <div className="col-md-6 mt-3">
+                                        <label htmlFor="floatingLastName" className='pb-2 credential_label'>Last Name</label>
+                                        <CFormInput
+                                            type="text"
+                                            value={userDetails.last_name}
+                                            onChange={(e) => setUserDetails({ ...userDetails, last_name: e.target.value })}
+                                            required
+                                            feedbackInvalid={"Last name is required."}
+                                            className={'form-control is_not_validated credential_input'}
+                                            id="floatingLastName"
+                                        />
+                                    </div>
+                                    <div className="col-md-6 mt-3">
+                                        <label htmlFor="floatingPhoneNumber" className='pb-2 credential_label'>Phone Number</label>
+                                        <CFormInput
+                                            type="text"
+                                            minLength="10"
+                                            maxLength="13"
+                                            value={userDetails.phone}
+                                            onChange={(e) => {
+                                                const inputValue = e.target.value;
+                                                const numericValue = inputValue.replace(/[^\d+]/g, '');
+                                                setUserDetails({ ...userDetails, phone: numericValue })
+                                            }}
+                                            required
+                                            feedbackInvalid={"Phone number is required."}
+                                            className={'form-control credential_input'}
+                                            id="floatingPhoneNumber"
+                                        />
+                                    </div>
+                                    <button type="submit" className="lined_btn d-flex mx-auto login_btn">Sign up</button>
+                                </div>
                             </CForm>
                             <div className="sign-up">
                                 <span>Already have an account?</span>
-                                <Link to='/'>Sign in</Link>
+                                <Link to='/' className='mt-3'>Sign In</Link>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
         </>
     );
 };

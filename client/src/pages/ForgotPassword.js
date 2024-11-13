@@ -33,7 +33,7 @@ const ForgotPassword = () => {
     }
     
     return (
-        <>
+        <div className='main_layout'>
             <AuthLayout />
             <section className="login_center_box">
                 <div className="wid450">
@@ -63,7 +63,7 @@ const ForgotPassword = () => {
                     </div>
                 </div>
             </section>
-        </>
+        </div>
     )
 }
 

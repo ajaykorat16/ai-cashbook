@@ -113,104 +113,99 @@ const Login = () => {
     return (
         <>
             <Toast ref={toast} />
-            <section className="main_header login_header">
-                <header>
-                    <div className="container">
-                        <div className="main_logo">
-                            <a href="#"><img src="/images/accoutn_logo.svg" alt="" /></a>
-                        </div>
-                    </div>
-                </header>
-            </section>
-            <section className="login_center_box">
-                <div className="wid700">
-                    <h1>Login</h1>
-                    <div className="bg_white_box">
-                        <div className="special_login_box">
-                            <div className="row justify-content-center">
-                                <div className="col-md-6">
-                                    <div onClick={() => googleSignIn()} className="brd_green_box">
-                                        <img src="/images/google_icn.svg" alt="" />
-                                        <span>Sign in with google</span>
-                                    </div>
-                                </div>
-                                <div className="col-md-6">
-                                    <div onClick={handleMicrosoftSignIn} className="brd_green_box">
-                                        <img src="/images/microsoft_icn.svg" alt="" />
-                                        <span>Sign in with microsoft</span>
-                                    </div>
-                                </div>
-                                <div className="col-md-6">
-                                    <div className="brd_green_box">
-                                        <img src="/images/apple_icn.svg" alt="" />
-                                        <span>Sign in with apple</span>
-                                    </div>
-                                </div>
+            <div className='login_page'>
+                <section className="main_header login_header">
+                    <header>
+                        <div className="container">
+                            <div className="main_logo">
+                                <img className='web_logo' src="/images/accoutn_logo.svg" alt="" />
                             </div>
                         </div>
-                        <div className="brd_or_center">
-                            <div className="or_center">OR</div>
+                    </header>
+                </section>
+                <div className='container d-flex col login_container'>
+                    <div className='first_container'>
+                        <img className='img-responsive login_img' src="/images/login.png" alt="" />
+                    </div>
+                    <div className='second_container'>
+                        <div className='singnin_text text-center'>
+                            SIGN IN
                         </div>
-                        <div className="input_form_box">
-                            <CForm onSubmit={handleSubmit} noValidate validated={validated}>
-                                <div className="row">
-                                    <div className="col-md-6">
-                                        <div className="form-floating">
-                                            <CFormInput
-                                                type="email"
-                                                value={credentials.email}
-                                                onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
-                                                required
-                                                feedbackInvalid={"Email is required."}
-                                                className={'form-control is_not_validated'}
-                                                id="floatingEmail"
-                                                placeholder="name@example.com"
-                                            />
-                                            <label htmlFor="floatingEmail">Email</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="form-floating">
-                                            <CFormInput
-                                                value={credentials.password}
-                                                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                                                type={passwordVisible ? 'text' : 'password'}
-                                                required
-                                                feedbackInvalid={"Password is required."}
-                                                className={'form-control is_not_validated'}
-                                                id="floatingPassword"
-                                                placeholder="Password"
-                                            />
-                                            <button
-                                                type="button"
-                                                className="password-toggle"
-                                                onClick={() => setPasswordVisible(!passwordVisible)}
-                                            >
-                                                <Icon icon={passwordVisible ? 'ph:eye-slash' : 'ph:eye'} width={30} height={30} />
-                                            </button>
-                                            <label htmlFor="floatingPassword">Password</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <div className="check_box mb-20">
-                                            <input className="styled-checkbox" id="styled-checkbox-2" type="checkbox" value="value2" />
-                                            <label htmlFor="styled-checkbox-2">Keep me signed in</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-6 mb-20 forgot_psw_container">
-                                        <Link to='forgot-password' className="forgot_psw">Forgot password?</Link>
-                                    </div>
+                        <div className='container_body'>
+                            <div className='logo_container'>
+                                <div className='google_icn_container' onClick={() => googleSignIn()}>
+                                    <img className='mb-3 google_logo' src="/images/google_logo.svg" alt="" />
+                                    <span className='text-center'>Google</span>
                                 </div>
-                                <button type="submit" className="common_btn d-flex m-auto">Login</button>
+                                <div className='google_icn_container' onClick={handleMicrosoftSignIn}>
+                                    <img className='mb-3 google_logo' src="/images/microsoft_logo.svg" alt="" />
+                                    <span className='text-center'>Microsoft</span>
+                                </div>
+                                <div className='google_icn_container'>
+                                    <img className='mb-3 google_logo' src="/images/apple_logo.svg" alt="" />
+                                    <span className='text-center'>Apple</span>
+                                </div>
+                            </div>
+                            <div className='justify-content-center d-flex'>
+                                <div class="line-with-verticals"></div>
+                            </div>
+                            <CForm onSubmit={handleSubmit} noValidate validated={validated} className='d-flex justify-content-center'>
+                                <div className='row credentials_container'>
+                                    <div className="col-md-6 mt-3">
+                                        <label htmlFor="floatingEmail" className='pb-2 credential_label'>Email Address</label>
+                                        <CFormInput
+                                            type="email"
+                                            value={credentials.email}
+                                            onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+                                            required
+                                            feedbackInvalid={"Email is required."}
+                                            className={'is_not_validated credential_input'}
+                                            id="floatingEmail"
+                                        />
+                                    </div>
+                                    <div className="col-md-6 position-relative mt-3">
+                                        <label htmlFor="floatingPassword" className='pb-2 credential_label'>Password</label>
+                                        <CFormInput
+                                            value={credentials.password}
+                                            onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                                            type={passwordVisible ? 'text' : 'password'}
+                                            required
+                                            feedbackInvalid={"Password is required."}
+                                            className={'form-control is_not_validated credential_input'}
+                                            id="floatingPassword"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-visiblity"
+                                            onClick={() => setPasswordVisible(!passwordVisible)}
+                                        >
+                                            <Icon icon={passwordVisible ? 'ph:eye-slash' : 'ph:eye'} width={30} height={30} />
+                                        </button>
+                                    </div>
+                                    <div className='checks_container'>
+                                        <div className="col-md-6">
+                                            <div className="check_box mt-2">
+                                                <input className="styled-checkbox" id="styled-checkbox-2" type="checkbox" value="value2" />
+                                                <label htmlFor="styled-checkbox-2" className='green_label'>Keep me signed in</label>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <div className="forgot_psw_container mt-2">
+                                                <Link to='forgot-password' className="forgot_psw">Forgot password?</Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" className="lined_btn d-flex mx-auto login_btn">Login</button>
+                                </div>
                             </CForm>
                             <div className="sign-up">
                                 <span>Don’t have an account?</span>
-                                <Link to='/register' >Sign up</Link>
+                                <Link to='/register' className='mt-3' >Sign Up</Link>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
         </>
     )
 }
