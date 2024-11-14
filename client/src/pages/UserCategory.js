@@ -11,7 +11,7 @@ function UserCategory() {
             showSelection={false}
             getCsvData={getUserCategory}
             updateCsvData={updateUserCatrgory}
-            title={`${auth.user?.first_name}'s category`}
+            title={`Master category`}
         />
     )
 }

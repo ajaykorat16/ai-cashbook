@@ -146,6 +146,62 @@ const UploadCsv = () => {
         return <span>{rowData[columnName] || "-"}</span>;
     };
 
+    const handleCancel = () => {
+        setFiles([]);
+        setDiasbledUpload(true)
+        setFileName("")
+        setFailedImports([])
+    }
+
+    const handleExports = () => {
+        const clientList = [
+            {
+                abn_number: "DEMOUSER",
+                address: "test",
+                client_code: "DE0001",
+                email: "demo@gmail.com",
+                entity_name: "Demo",
+                individual: "false",
+                phone: "1234567890",
+                preferred_name: "Demo User",
+                user_defined: "true"
+            }
+        ]
+
+        const csvContent = convertToCSV(clientList);
+        downloadCSV(csvContent, "sample.csv");
+    };
+
+    const convertToCSV = (data) => {
+        const requiredHeaders = ['first_name', 'last_name', 'entity_name'];
+
+        const dataHeaders = new Set(Object.keys(data[0] || {}));
+        const allHeaders = [...new Set([...requiredHeaders, ...dataHeaders])];
+
+        const csvRows = [
+            allHeaders.join(','),
+            ...data.map(row =>
+                allHeaders.map(header => `"${row[header] || ''}"`).join(',')
+            )
+        ];
+
+        return csvRows.join('\n');
+    };
+
+    const downloadCSV = (csvContent, filename) => {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
     return (
         <>
             <Layout>
@@ -157,6 +213,9 @@ const UploadCsv = () => {
                             <div className="special_flex mb-25">
                                 <h1 className="main_title">Spreadsheet</h1>
                                 <div className="right_flex">
+                                    <button className="common_btn ms-4" onClick={() => handleExports()}>
+                                        <i className="pi pi-download btn_icon" style={{ color: 'white' }}></i>Sample File
+                                    </button>
                                     <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>
                                         <img src="images/pre_white.svg" alt="" /> Back to list
                                     </button>
@@ -219,6 +278,11 @@ const UploadCsv = () => {
                                 </div>
                             )}
                             <div className="flex_btn">
+                                {files?.length > 0 && (
+                                    <button className={`common_btn cancel_btn`} onClick={handleCancel}>
+                                        Cancel
+                                    </button>
+                                )}
                                 <button className={`common_btn ${disabledUpload && 'opacity-50'}`} onClick={() => handleUpload(files, true)} disabled={disabledUpload}>Upload</button>
                             </div>
                         </>

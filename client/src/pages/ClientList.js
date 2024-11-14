@@ -165,6 +165,10 @@ const ClientList = () => {
         setSelectedClients(selectedRow);
     };
 
+    const handleRowClick = (rowData) => {
+        navigate(`/user/spreadsheet/${rowData._id}`);
+    };
+
     return (
         <>
             <Layout showSelection={false}>
@@ -179,13 +183,13 @@ const ClientList = () => {
                             />
                         </div>
                         <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => setVisible(true)}>
-                        <i className="pi pi-plus btn_icon" style={{ color: 'white' }}></i> Add client
+                            <i className="pi pi-plus btn_icon" style={{ color: 'white' }}></i> Add client
                         </button>
                         <button className="common_btn ms-4" onClick={() => navigate('/user/upload-clients')}>
-                        <i className="pi pi-upload btn_icon" style={{ color: 'white' }}></i>Import
-                            </button>
+                            <i className="pi pi-upload btn_icon" style={{ color: 'white' }}></i>Import
+                        </button>
                         <button className="common_btn ms-4" onClick={() => handleExports()}>
-                        <i className="pi pi-download btn_icon" style={{ color: 'white' }}></i>Export
+                            <i className="pi pi-download btn_icon" style={{ color: 'white' }}></i>Export
                         </button>
                     </div>
                 </div>
@@ -210,6 +214,7 @@ const ClientList = () => {
                             responsiveLayout="scroll"
                             selection={selectedClients}
                             onSelectionChange={handleRowSelect}
+                            onRowClick={(e) => handleRowClick(e.data)}
                         >
                             <Column selectionMode="multiple" checked={selectedClients.length === clients.length} />
                             <Column field="first_name" header="First name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} sortable filterField="first_name" />
@@ -224,22 +229,24 @@ const ClientList = () => {
                             <Column field="user_defined" header="User defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} sortable />
                             <Column header="" className='action_td' align="left" body={(rowData) => (
                                 <div className='d-flex'>
-                                    <Link to={`/user/spreadsheet/${rowData._id}`} className="green_btn">
+                                    <Link to={`/user/spreadsheet/${rowData._id}`} className="green_btn" data-toggle="tooltip" title="Spreadsheet">
                                         <img src="/images/chart.svg" alt="Chart" />
                                     </Link>
                                     {/* <Link className="green_btn">
                                         <img src="/images/chart.svg" alt="Chart" />
                                     </Link> */}
-                                    <Link to={`/user/chart-of-accounts/${rowData._id}`} className="green_btn">
+                                    <Link to={`/user/chart-of-accounts/${rowData._id}`} className="green_btn" data-toggle="tooltip" title="Category">
                                         <img src="/images/file.svg" alt="File" />
                                     </Link>
-                                    <button className="green_btn" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => {
+                                    <button className="green_btn" data-bs-toggle="modal" data-bs-target="#add_client" data-toggle="tooltip" title="Edit" onClick={() => {
                                         setEditClientId(rowData?._id);
                                         setEditMode(true);
                                     }}>
                                         <img src="/images/edit.svg" alt="Edit" />
                                     </button>
                                     <button className="green_btn"
+                                        data-toggle="tooltip" 
+                                        title="Delete"
                                         onClick={() => setClientDelId(rowData?._id)}
                                         data-bs-toggle="modal"
                                         data-bs-target="#delete_client">

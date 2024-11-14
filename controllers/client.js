@@ -1096,6 +1096,48 @@ const classify = async (newData, id, database, email) => {
     return fromattedData
 }
 
+function removeMatchedItems(newCsv, spreadsheetCursor, startDate, endDate) {
+    const oldCsv = spreadsheetCursor.filter((record) => {
+        if (record.data[1]) {
+            const dateInString = record.data[1];
+            const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
+            if (dateInRecord.isValid()) {
+                return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
+            }
+        }
+    });
+
+    const formattedData = oldCsv.map((row) => {
+        const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
+        return [row.data[0], formattedDate, ...row.data.slice(2)];
+    });
+
+    const result = [];
+
+    for (let i = 0; i < newCsv.length; i++) {
+        let isMatched = false;
+
+        for (let j = 0; j < formattedData.length; j++) {
+            if (
+                newCsv[i][1] === formattedData[j][1] &&
+                newCsv[i][2] === formattedData[j][2] &&
+                newCsv[i][3] === formattedData[j][3]
+            ) {
+                isMatched = true;
+                break;
+            }
+        }
+
+        if (!isMatched) {
+            result.push(newCsv[i]);
+        }
+    }
+
+    return result;
+}
+
+
 const createClientSpreadsheet = async (req, res) => {
     try {
         const { id } = req.params;
@@ -1337,9 +1379,12 @@ const createClientSpreadsheet = async (req, res) => {
 
         const oldData = [["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn'], ...formattedData]
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
-        if (oldData.length > 1) {
+
+        const filteredNewCsv = removeMatchedItems(trimmedNewCsv, spreadsheetCursor, startDate, endDate)
+
+        if (oldData.length > 1 && filteredNewCsv.length > 0) {
             await train(oldData, id)
-            const classifiedData = await classify([oldData[0], ...trimmedNewCsv], id, database, user?.email)
+            const classifiedData = await classify([oldData[0], ...filteredNewCsv], id, database, user?.email)
             const newData = classifiedData.map((data) => {
                 return {
                     client_id: new ObjectId(id),
@@ -1351,7 +1396,7 @@ const createClientSpreadsheet = async (req, res) => {
 
             await userSpreadsheet.insertMany(newData)
         } else {
-            const insertData = trimmedNewCsv.map((data) => {
+            const insertData = filteredNewCsv.map((data) => {
                 return {
                     client_id: new ObjectId(id),
                     data,
@@ -1359,7 +1404,9 @@ const createClientSpreadsheet = async (req, res) => {
                     updatedAt: new Date(),
                 }
             })
-            await userSpreadsheet.insertMany(insertData)
+            if (insertData.length > 0) {
+                await userSpreadsheet.insertMany(insertData)
+            }
         }
 
         return res.status(200).json({
@@ -1483,6 +1530,43 @@ const autoCategorize = async (req, res) => {
     }
 }
 
+function checkIfItemMatched(item, spreadsheetCursor) {
+    const startDate = moment().startOf('year');
+    const endDate = moment().endOf('year');
+
+    const oldCsv = spreadsheetCursor.filter((record) => {
+        if (record.data[1]) {
+            const dateInString = record.data[1];
+            const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
+            if (dateInRecord.isValid()) {
+                return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
+            }
+        }
+        return false;
+    });
+
+    const formattedData = oldCsv.map((row) => {
+        const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
+        return [row.data[0], formattedDate, ...row.data.slice(2)];
+    });
+
+    let isMatched = false;
+
+    for (let j = 0; j < formattedData.length; j++) {
+        if (
+            formattedData[j][1] === item[1] &&
+            formattedData[j][2] === item[2] &&
+            formattedData[j][3] === item[3]
+        ) {
+            isMatched = true;
+            break;
+        }
+    }
+
+    return isMatched;
+}
+
 const updateClientSpreadsheet = async (req, res) => {
     try {
         const { id: clientId } = req.params;
@@ -1515,11 +1599,11 @@ const updateClientSpreadsheet = async (req, res) => {
         await mongoClient.connect();
         const database = mongoClient.db(process.env.DATABASE_NAME);
         const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+        const spreadsheetCursor = await clientSpreadsheet.find({ client_id: new ObjectId(clientId) }).toArray();
 
         const updatePromises = data.map(async (item) => {
             if (item.length > 0) {
                 if (item[0] === "Id") {
-                    const spreadsheetCursor = await clientSpreadsheet.find({ client_id: new ObjectId(clientId) }).toArray();
                     const headerId = spreadsheetCursor[0]._id
                     await clientSpreadsheet.updateOne(
                         { _id: headerId },
@@ -1560,13 +1644,16 @@ const updateClientSpreadsheet = async (req, res) => {
                             item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
                         }
 
-                        const insertedId = await clientSpreadsheet.insertOne({
-                            data: item,
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            client_id: new ObjectId(clientId)
-                        });
-                        insertedDataId.push(insertedId?.insertedId)
+                        const isMathed = checkIfItemMatched(item, spreadsheetCursor)
+                        if (!isMathed) {
+                            const insertedId = await clientSpreadsheet.insertOne({
+                                data: item,
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
+                                client_id: new ObjectId(clientId)
+                            });
+                            insertedDataId.push(insertedId?.insertedId)
+                        }
                     }
                 }
             }

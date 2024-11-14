@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const UploadCsv = () => {
     const { clientObject, setClientObject, createSpreadsheet, getAllClients } = useClient()
-    const {toast} = useAuth()
+    const { toast } = useAuth()
     const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +77,11 @@ const UploadCsv = () => {
         }
     }
 
+    const handleCancel = () => {
+        setFile(null)
+        setFileName("")
+    }
+
     useEffect(() => {
         if (!clientObject?.value) {
             fetchClient()
@@ -135,11 +140,17 @@ const UploadCsv = () => {
                         {fileName && (
                             <p>{fileName}</p>
                         )}
-                        <div className="flex_btn">
+                        <div className="flex_btn d-flex">
+                            {file && clientObject?.value && (
+                                <button className={`common_btn cancel_btn`} onClick={handleCancel}>
+                                    Cancel
+                                </button>
+                            )}
                             <button className={`common_btn ${(!file || !clientObject?.value) && 'opacity-50'}`} onClick={handleUpload} disabled={!file || !clientObject?.value}>
                                 Upload
                             </button>
                         </div>
+
                     </>
                 )}
             </Layout>

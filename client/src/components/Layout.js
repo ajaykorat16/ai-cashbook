@@ -42,11 +42,11 @@ const Layout = ({ children, showSelection = false }) => {
     }, []);
 
     return (
-        <div className='main_layout'>
+        <>
             <Toast ref={toast} />
             <section className="main_header">
                 <header>
-                    <div className="container">
+                    <div>
                         <div className="header_flex">
                             <div className="main_logo">
                                 <Link to={"/"}>
@@ -68,12 +68,6 @@ const Layout = ({ children, showSelection = false }) => {
                                         <img className="login_click" src="/images/down_white.svg" alt="" />
                                     </button>
                                     <div className={`login_open ${showMenu ? 'd-block' : 'd-none'}`}>
-                                        {clientObject?.value && (
-                                            <>
-                                                <button onClick={() => navigate("/user/gst-report")}>GST Report</button>
-                                                <button onClick={() => navigate("/user/itr-report")}>ITR Report</button>
-                                            </>
-                                        )}
                                         <button onClick={() => handleLogout()}>Logout</button>
                                     </div>
                                 </div>
@@ -83,8 +77,8 @@ const Layout = ({ children, showSelection = false }) => {
                 </header>
             </section>
             <section className="client_list_section spredsheet">
-                <div className="container">
-                    <div className="bg_white_box m-20 p-0">
+                <div>
+                    <div className="bg_white_box mt-20 p-0">
                         <div className="main_part_box wrapper">
                             <div id="sidebar" ref={sidebarRef}>
                                 <div className="side_data">
@@ -108,10 +102,16 @@ const Layout = ({ children, showSelection = false }) => {
                                                         <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>
                                                             <i className="pi pi-chart-bar btn_icon" style={{ color: 'white' }}></i>Auto categorize
                                                         </Link></li>
+                                                        <li><Link to={'/user/gst-report'} className={location.pathname.match("/user/gst-report") && `selected`}>
+                                                            <i className="pi pi-calculator btn_icon" style={{ color: 'white' }}></i>GST Report
+                                                        </Link></li>
+                                                        <li><Link to={'/user/itr-report'} className={location.pathname.match("/user/itr-report") && `selected`}>
+                                                            <i className="pi pi-file btn_icon" style={{ color: 'white' }}></i>ITR Report
+                                                        </Link></li>
                                                     </>
                                                 )}
                                                 <li><Link>
-                                                <i className="pi pi-credit-card btn_icon" style={{ color: 'white' }}></i>Inter Bank Transfer
+                                                    <i className="pi pi-credit-card btn_icon" style={{ color: 'white' }}></i>Inter Bank Transfer
                                                 </Link></li>
                                             </>
                                         ) : (
@@ -130,7 +130,7 @@ const Layout = ({ children, showSelection = false }) => {
                     </div>
                 </div>
             </section>
-        </div>
+        </>
     )
 }
 

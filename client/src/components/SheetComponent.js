@@ -13,6 +13,10 @@ import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, Sprea
 import Loader from '../components/Loader';
 import { useClient } from '../contexts/ClientContexts';
 import dayjs from 'dayjs';
+import moment from 'moment';
+import $ from 'jquery';
+import 'jquery-ui-dist/jquery-ui.css';
+import 'jquery-ui-dist/jquery-ui';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
@@ -25,14 +29,15 @@ const SheetComponent = ({ clientId }) => {
 
     const [dataLoaded, setDataLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const currentYearStart = dayjs().startOf('year');
-    const currentYearEnd = dayjs().endOf('year');
-    const [fromDate, setFromDate] = useState(currentYearStart);
-    const [toDate, setToDate] = useState(currentYearEnd);
+    const currentYearStart = moment().startOf('year');
+    const currentYearEnd = moment().endOf('year');
+    const [fromDate, setFromDate] = useState(currentYearStart.format('MM/DD/YYYY'));
+    const [toDate, setToDate] = useState(currentYearEnd.format('MM/DD/YYYY'));
     const [categortList, setCategoryList] = useState([])
     const [categoryData, setCategoryData] = useState({});
     const [categoryHeaders, setCategoryHeaders] = useState({});
     const [sheetData, setSheetData] = useState([])
+    const [showMenu, setShowMenu] = useState(false)
 
     const convertToCellFormat = (data) => {
         const convertedData = data?.map(row => ({
@@ -70,7 +75,7 @@ const SheetComponent = ({ clientId }) => {
     const fetchCsvLoaded = async () => {
         setIsLoading(true);
         try {
-            const csvDetail = await getSpreadsheet(clientId, fromDate.format('YYYY-MM-DD'), toDate.format('YYYY-MM-DD'));
+            const csvDetail = await getSpreadsheet(clientId, moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD'), moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD'));
             const csv = csvDetail || [];
             const firstRow = csv[0]
             const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
@@ -171,11 +176,11 @@ const SheetComponent = ({ clientId }) => {
     };
 
     useEffect(() => {
-        if (clientId) {
+        if (clientId && fromDate && toDate) {
             fetchClientCategory()
             fetchCsvLoaded();
         }
-    }, [clientId]);
+    }, [clientId, fromDate, toDate]);
 
     const convertCellsToValues = (data) => {
         if (!data || !Array.isArray(data.cells)) {
@@ -719,18 +724,239 @@ const SheetComponent = ({ clientId }) => {
         args.element.appendChild(selectElement);
     }
 
+    useEffect(() => {
+        $('#datepicker').datepicker({
+            uiLibrary: 'bootstrap5',
+            dateFormat: 'mm/dd/yy'
+        }).on('change', function () {
+            const selectedDate = $(this).val();
+            setFromDate(selectedDate);
+        });
+
+        $('#datepicker1').datepicker({
+            uiLibrary: 'bootstrap5',
+            dateFormat: 'mm/dd/yy'
+        }).on('change', function () {
+            const selectedDate = $(this).val();
+            setToDate(selectedDate);
+        });
+    }, []);
+
+
+    const calculateDateRange = (option) => {
+        let startDate, endDate;
+
+        switch (option) {
+            case 'thisMonth':
+                startDate = moment().startOf('month');
+                endDate = moment().endOf('month');
+                break;
+
+            case 'lastMonth':
+                startDate = moment().subtract(1, 'months').startOf('month');
+                endDate = moment().subtract(1, 'months').endOf('month');
+                break;
+
+            case 'thisQuarter':
+                startDate = moment().startOf('quarter');
+                endDate = moment().endOf('quarter');
+                break;
+
+            case 'lastQuarter':
+                startDate = moment().subtract(1, 'quarters').startOf('quarter');
+                endDate = moment().subtract(1, 'quarters').endOf('quarter');
+                break;
+
+            case 'thisYear':
+                startDate = moment().startOf('year');
+                endDate = moment().endOf('year');
+                break;
+
+            case 'lastYear':
+                startDate = moment().subtract(1, 'years').startOf('year');
+                endDate = moment().subtract(1, 'years').endOf('year');
+                break;
+
+            case 'currentMonthToDate':
+                startDate = moment().startOf('month');
+                endDate = moment();
+                break;
+
+            case 'currentQuarterToDate':
+                startDate = moment().startOf('quarter');
+                endDate = moment();
+                break;
+
+            case 'currentYearToDate':
+                startDate = moment().startOf('year');
+                endDate = moment();
+                break;
+
+            default:
+                startDate = null;
+                endDate = null;
+                break;
+        }
+
+        startDate = startDate ? startDate.format('MM/DD/YYYY') : ''
+        endDate = endDate ? endDate.format('MM/DD/YYYY') : ''
+        setFromDate(startDate)
+        setToDate(endDate)
+        setShowMenu(false)
+    };
+
+    const showDateRange = (option) => {
+        let startDate, endDate, rangeText;
+
+        switch (option) {
+            case 'thisMonth':
+                startDate = moment().startOf('month');
+                endDate = moment().endOf('month');
+                rangeText = `${startDate.format('MMM YYYY')}`;
+                break;
+
+            case 'lastMonth':
+                startDate = moment().subtract(1, 'months').startOf('month');
+                endDate = moment().subtract(1, 'months').endOf('month');
+                rangeText = `${startDate.format('MMM YYYY')}`;
+                break;
+
+            case 'thisQuarter':
+                startDate = moment().startOf('quarter');
+                endDate = moment().endOf('quarter');
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            case 'lastQuarter':
+                startDate = moment().subtract(1, 'quarters').startOf('quarter');
+                endDate = moment().subtract(1, 'quarters').endOf('quarter');
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            case 'thisYear':
+                startDate = moment().startOf('year');
+                endDate = moment().endOf('year');
+                rangeText = `1 Jan - 31 Dec ${endDate.format('YYYY')}`;
+                break;
+
+            case 'lastYear':
+                startDate = moment().subtract(1, 'years').startOf('year');
+                endDate = moment().subtract(1, 'years').endOf('year');
+                rangeText = `1 Jan - 31 Dec ${startDate.format('YYYY')}`;
+                break;
+
+            case 'currentMonthToDate':
+                startDate = moment().startOf('month');
+                endDate = moment();
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            case 'currentQuarterToDate':
+                startDate = moment().startOf('quarter');
+                endDate = moment();
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            case 'currentYearToDate':
+                startDate = moment().startOf('year');
+                endDate = moment();
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            default:
+                startDate = null;
+                endDate = null;
+                rangeText = '';
+                break;
+        }
+
+        return rangeText
+    };
+
     return (
-        <div>
+        <div className='h-100'>
             <div className="special_flex mb-25">
                 <div className='client_name position-absolute'>{clientObject?.label}</div>
-                <div className='title_part'>
-                    <div className='date_title'>
-                        <span className="date_label">From:</span>
-                        <span className='date_part'>{currentYearStart.format('DD/MM/YYYY')}</span>
+            </div>
+            <div className="input_form_box date_container">
+                <div className="row">
+                    <div className="col-md-12"><label htmlFor="datepicker" className="mb-2">Date Range</label></div>
+                    <div className="col-md-4">
+                        <div className="form-floating">
+                            <input
+                                type="text"
+                                value={fromDate}
+                                className="form-control date_icn py-0"
+                                id="datepicker"
+                                placeholder="From"
+                                readOnly
+                            />
+                            <label htmlFor="datepicker" className="floating-label">
+                                From
+                            </label>
+                        </div>
                     </div>
-                    <div className='date_title'>
-                        <span className="date_label">To:</span>
-                        <span className='date_part'>{toDate.format('DD/MM/YYYY')}</span>
+                    <div className="col-md-4">
+                        <div className="form-floating">
+                            <input
+                                type="text"
+                                value={toDate}
+                                className="form-control date_icn py-0"
+                                id="datepicker1"
+                                placeholder="To"
+                                readOnly
+                            />
+                            <label htmlFor="datepicker1" className="floating-label">
+                                To
+                            </label>
+                        </div>
+                    </div>
+                    <div className="col-md-1 pos_rel">
+                        <div className="box_brd_down" onClick={() => setShowMenu(!showMenu)}></div>
+                        <div className={`open_box_down_icon  ${showMenu ? 'd-block' : 'd-none'}`}>
+                            <div className="date_main_box">
+                                <div onClick={() => calculateDateRange('thisMonth')}>
+                                    <div className="dateleft_data">This Month</div>
+                                    <div className="dateright_data">{showDateRange('thisMonth')}</div>
+                                </div>
+                                <div onClick={() => calculateDateRange('thisQuarter')}>
+                                    <div className="dateleft_data">This Quarter</div>
+                                    <div className="dateright_data">{showDateRange('thisQuarter')}</div>
+                                </div>
+                                <div onClick={() => calculateDateRange('thisYear')}>
+                                    <div className="dateleft_data">This Financial Year</div>
+                                    <div className="dateright_data">{showDateRange('thisYear')}</div>
+                                </div>
+                            </div>
+                            <div className="date_main_box">
+                                <div onClick={() => calculateDateRange('lastMonth')}>
+                                    <div className="dateleft_data">Last Month</div>
+                                    <div className="dateright_data">{showDateRange('lastMonth')}</div>
+                                </div>
+                                <div onClick={() => calculateDateRange('lastQuarter')}>
+                                    <div className="dateleft_data">Last Quarter</div>
+                                    <div className="dateright_data">{showDateRange('lastQuarter')}</div>
+                                </div>
+                                <div onClick={() => calculateDateRange('lastYear')}>
+                                    <div className="dateleft_data">Last Financial Year</div>
+                                    <div className="dateright_data">{showDateRange('lastYear')}</div>
+                                </div>
+                            </div>
+                            <div className="date_main_box">
+                                <div onClick={() => calculateDateRange('currentMonthToDate')}>
+                                    <div className="dateleft_data">Month to date</div>
+                                    <div className="dateright_data">{showDateRange('currentMonthToDate')}</div>
+                                </div>
+                                <div onClick={() => calculateDateRange('currentQuarterToDate')}>
+                                    <div className="dateleft_data">Quarter to date</div>
+                                    <div className="dateright_data">{showDateRange('currentQuarterToDate')}</div>
+                                </div>
+                                <div onClick={() => calculateDateRange('currentYearToDate')}>
+                                    <div className="dateleft_data">Year to date</div>
+                                    <div className="dateright_data">{showDateRange('currentYearToDate')}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -739,7 +965,7 @@ const SheetComponent = ({ clientId }) => {
                     <Loader />) : (
                     <>
                         {dataLoaded && (<Loader />)}
-                        <div className={`account_sheet spreadsheet ${dataLoaded && 'invisible'}`}>
+                        <div className={`account_sheet spreadsheet ${dataLoaded && 'invisible'} spreadsheet_height`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 actionComplete={handleActionComplete}

@@ -430,7 +430,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     <Loader />) : (
                     <>
                         {dataLoaded && (<Loader />)}
-                        <div className={`account_sheet spreadsheet ${dataLoaded && 'invisible'}`}>
+                        <div className={`account_sheet spreadsheet account_height ${dataLoaded && 'invisible'}`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 actionComplete={handleActionComplete}
