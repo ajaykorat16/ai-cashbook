@@ -10,7 +10,6 @@ import AddClient from '../components/AddClient';
 import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
 import CustomSelect from '../components/CustomSelect';
 import ConfirmMultiDelete from '../components/ConfirmMultiDelete';
-import { Icon } from '@iconify/react';
 
 const ClientList = () => {
     const options = [10, 20, 50, 100];

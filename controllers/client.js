@@ -3,7 +3,7 @@ const Clients = require("../models/clientModel")
 const { MongoClient, ObjectId } = require('mongodb');
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
 const { validationResult } = require('express-validator');
-const { isValidEmail, createUserClientCategoryCollection, createBlankSpreadsheet } = require("../helpers/helper");
+const { isValidEmail, createUserClientCategoryCollection, createBlankSpreadsheet, createSpreadsheetList } = require("../helpers/helper");
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
@@ -361,6 +361,151 @@ const getClientCategory = async (req, res) => {
     }
 }
 
+const getClientSpreadsheets = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const sortField = req.query.sortField || "createdAt";
+        const sortOrder = parseInt(req.query.sortOrder) || -1;
+
+        const client = await getClient(id);
+        if (!client) {
+            return res.status(404).json({
+                error: true,
+                message: "Client does not exist.",
+            });
+        }
+
+        const user = await Users.findById(client?.user_id);
+        if (!user) {
+            return res.status(404).json({
+                error: true,
+                message: "User associated with the client does not exist.",
+            });
+        }
+
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userSheetsCollection = database.collection(`${user?.email.split("@")[0]}_spreadsheets`);
+
+        const totalDocuments = await userSheetsCollection.countDocuments({ client_id: new ObjectId(id) });
+
+        const totalPages = Math.ceil(totalDocuments / limit);
+        const skip = (page - 1) * limit;
+
+        const clientSpreadsheets = await userSheetsCollection
+            .find({ client_id: new ObjectId(id) })
+            .sort({ [sortField]: sortOrder })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+        return res.status(200).json({
+            error: false,
+            message: "Client spreadsheets fetched successfully.",
+            clientSpreadsheets,
+            currentPage: page,
+            totalPages,
+            totalSpreadsheets: totalDocuments
+        });
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+};
+
+const getSpreadsheetData = async (req, res) => {
+    try {
+        const { clientId, sheetId } = req.query;
+
+        const client = await getClient(clientId);
+        if (!client) {
+            return res.status(404).json({
+                error: true,
+                message: "Client does not exist.",
+            });
+        }
+
+        const user = await Users.findById(client?.user_id);
+        if (!user) {
+            return res.status(404).json({
+                error: true,
+                message: "User associated with the client does not exist.",
+            });
+        }
+
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userSreadsheetCollection = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+        const spreadsheet = await userSreadsheetCollection.find({ spreadsheet: new ObjectId(sheetId) }).toArray();
+
+        const userSheetsCollection = database.collection(`${user?.email.split("@")[0]}_spreadsheets`);
+        const sheet = await userSheetsCollection.findOne({ _id: new ObjectId(sheetId) });
+
+        const formattedData = spreadsheet.map((item) => item.data);
+
+        const headers = ["Bank Account", "Date", "Amt", "Narrative", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
+
+        return res.status(200).json({
+            error: false,
+            message: "Spreadsheet fetched successfully.",
+            spreadsheet: [headers, ...formattedData],
+            name: sheet?.name
+        })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+const deleteSpreadSheetData = async (req, res) => {
+    try {
+        const { clientId, sheetId } = req.body;
+
+        const client = await getClient(clientId);
+        if (!client) {
+            return res.status(404).json({
+                error: true,
+                message: "Client does not exist.",
+            });
+        }
+
+        const user = await Users.findById(client?.user_id);
+        if (!user) {
+            return res.status(404).json({
+                error: true,
+                message: "User associated with the client does not exist.",
+            });
+        }
+
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userSheetsCollection = database.collection(`${user?.email.split("@")[0]}_spreadsheets`);
+        await userSheetsCollection.deleteOne({ _id: new ObjectId(sheetId) });
+        await deleteSpreadsheetFromCLient(user, sheetId)
+
+        return res.status(200).json({
+            error: false,
+            message: "Spreadsheet deleted successfully.",
+        })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+const deleteSpreadsheetFromCLient = async (user, id) => {
+    try {
+        await mongoClient.connect();
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const userCategory = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+        await userCategory.deleteMany({ spreadsheet: new ObjectId(id) });
+    } catch (parseErr) {
+        console.error('Error parsing JSON:', parseErr);
+    }
+}
+
 const updateClientCategory = async (req, res) => {
     try {
         const { id } = req.params
@@ -425,6 +570,8 @@ const deleteSpreadsheet = async (user, id) => {
         const database = mongoClient.db(process.env.DATABASE_NAME);
         const userCategory = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
         await userCategory.deleteMany({ client_id: new ObjectId(id) });
+        const userSheetsCollection = database.collection(`${user?.email.split("@")[0]}_spreadsheets`);
+        await userSheetsCollection.deleteOne({ client_id: new ObjectId(id) });
     } catch (parseErr) {
         console.error('Error parsing JSON:', parseErr);
     }
@@ -1348,6 +1495,8 @@ const createClientSpreadsheet = async (req, res) => {
             }
         }
 
+        const spreadsheetId = await createSpreadsheetList(user?.email, id)
+
         const collections = await database.listCollections().toArray();
         const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
 
@@ -1388,6 +1537,7 @@ const createClientSpreadsheet = async (req, res) => {
             const newData = classifiedData.map((data) => {
                 return {
                     client_id: new ObjectId(id),
+                    spreadsheet: new ObjectId(spreadsheetId),
                     data: data.slice(0, -1),
                     createdAt: new Date(),
                     updatedAt: new Date(),
@@ -1399,6 +1549,7 @@ const createClientSpreadsheet = async (req, res) => {
             const insertData = filteredNewCsv.map((data) => {
                 return {
                     client_id: new ObjectId(id),
+                    spreadsheet: new ObjectId(spreadsheetId),
                     data,
                     createdAt: new Date(),
                     updatedAt: new Date(),
@@ -1650,7 +1801,8 @@ const updateClientSpreadsheet = async (req, res) => {
                                 data: item,
                                 createdAt: new Date(),
                                 updatedAt: new Date(),
-                                client_id: new ObjectId(clientId)
+                                client_id: new ObjectId(clientId),
+                                spreadsheet: null
                             });
                             insertedDataId.push(insertedId?.insertedId)
                         }
@@ -2020,6 +2172,10 @@ const getItrReport = async (req, res) => {
 };
 
 module.exports = {
-    createClient, getSingleClient, getClientCategory, getAllClients, exportClient, createClientSpreadsheet, getSpreadsheet, autoCategorize,
-    updateClient, updateClientCategory, deleteClient, clientImport, bulkClientDelete, updateClientSpreadsheet, getLastClient, getGstReport, getItrReport
+    createClient, getSingleClient, getClientCategory, getAllClients,
+    exportClient, createClientSpreadsheet, getSpreadsheet,
+    autoCategorize, getClientSpreadsheets, getSpreadsheetData,
+    updateClient, updateClientCategory, deleteClient, clientImport,
+    bulkClientDelete, updateClientSpreadsheet, getLastClient, getGstReport,
+    getItrReport, deleteSpreadSheetData
 }

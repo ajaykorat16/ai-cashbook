@@ -126,6 +126,34 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const deleteSpreadsheet = async (clientId, id) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/client/delete-spreadsheet`, { clientId, sheetId: id }, { headers });
+            if (data.error === false) {
+                setTimeout(function () {
+                    toast.current?.show({ severity: 'success', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+                }, 300);
+                return data
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+                return data;
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
+    const getSpreadsheetData = async (clientId, sheetId) => {
+        try {
+            let { data } = await axios.get(`${baseURL}/client/spreadsheet-data?clientId=${clientId}&&sheetId=${sheetId}`, { headers })
+            if (data.error === false) {
+                return data
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
     const getClientCategory = async (id) => {
         try {
             let { data } = await axios.get(`${baseURL}/client/category/${id}`, { headers })
@@ -139,9 +167,20 @@ const ClientProvider = ({ children }) => {
 
     const getSpreadsheet = async (id, fromDate, toDate) => {
         try {
-            let { data } = await axios.get(`${baseURL}/client/spreasheet/${id}?fromDate=${fromDate}&&toDate=${toDate}`, { headers })
+            let { data } = await axios.get(`${baseURL}/client/spreadsheet/${id}?fromDate=${fromDate}&&toDate=${toDate}`, { headers })
             if (data.error === false) {
                 return data?.spreadsheet
+            }
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
+    const getSpreadsheetList = async (id, currentPage, rowsPerPage, sortField, sortOrder) => {
+        try {
+            let { data } = await axios.get(`${baseURL}/client/spreadsheet-list/${id}?&sortField=${sortField}&sortOrder=${sortOrder}&page=${currentPage}&limit=${rowsPerPage}`, { headers })
+            if (data.error === false) {
+                return data
             }
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
@@ -288,8 +327,10 @@ const ClientProvider = ({ children }) => {
 
     return (
         <ClientContext.Provider value={{
-            createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, getSpreadsheet, updateSpreadsheet, createSpreadsheet, autoCategorize,
-            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, importClient, multipleDeleteClient, getLastClientCode, getItrReport, getGstReport
+            createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, deleteSpreadsheet,
+            getSpreadsheet, updateSpreadsheet, createSpreadsheet, autoCategorize, getSpreadsheetList, getSpreadsheetData,
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject,
+            multipleDeleteClient, getLastClientCode, getItrReport, getGstReport, importClient
         }}>
             {children}
         </ClientContext.Provider>

@@ -3,6 +3,7 @@ const hbs = require("handlebars")
 const { MongoClient, ObjectId } = require('mongodb');
 const mongoClient = new MongoClient(process.env.DATABASE_URL);
 const bcrypt = require("bcrypt");
+const moment = require('moment');
 const saltRounds = 10;
 
 const hashPassword = async (password) => {
@@ -129,6 +130,36 @@ const createBlankSpreadsheet = async (email, id) => {
     }
 }
 
+const createSpreadsheetList = async (email, id) => {
+    try {
+        await mongoClient.connect();
+
+        const database = mongoClient.db(process.env.DATABASE_NAME);
+        const collections = await database.listCollections().toArray();
+
+        const collectionExists = collections.some(col => col.name === `${email.split("@")[0]}_client_spreadsheet`);
+
+        if (!collectionExists) {
+            await database.createCollection(`${email.split("@")[0]}_spreadsheets`);
+        }
+
+        const userSpreadsheet = database.collection(`${email.split("@")[0]}_spreadsheets`);
+        const formattedDate = moment().format('DD-MM-YYYY_HH-mm')
+
+        const spreadsheet = {
+            name: `${id}_${formattedDate}`,
+            client_id: new ObjectId(id),
+            createdAt: new Date(),
+            updatedAt: new Date()
+        }
+
+        const sheet = await userSpreadsheet.insertOne(spreadsheet);
+        return sheet?.insertedId
+    } catch (parseErr) {
+        console.error('Error parsing JSON:', parseErr);
+    }
+}
+
 module.exports = {
     hashPassword,
     comparePassword,
@@ -136,5 +167,6 @@ module.exports = {
     isValidEmail,
     createUserMasterCategoryCollection,
     createUserClientCategoryCollection,
-    createBlankSpreadsheet
+    createBlankSpreadsheet,
+    createSpreadsheetList
 }
