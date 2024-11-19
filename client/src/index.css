@@ -1517,17 +1517,15 @@ span[data-pc-section="sort"] svg {
   padding: 10px 16px !important;
 }
 
+.search_box input {
+  width: 160px;
+}
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
     padding: 100px 0;
     height: auto;
-  }
-
-  .title_container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
   }
 }
 
