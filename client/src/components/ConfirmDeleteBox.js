@@ -68,7 +68,7 @@ const ConfirmDeleteBox = ({ fetchClients, clientsLength, currentPage, setCurrent
                             Are you sure you want to delete this client?
                         </div>
                         <div className="modal-footer delte-modal-footer">
-                            <button type="button" className="btn close_btn" data-bs-dismiss="modal">No</button>
+                            <button type="button" className="btn common_btn" data-bs-dismiss="modal">No</button>
                             <button type="submit" className="btn common_btn" onClick={() => handleDelete()}>Yes</button>
                         </div>
                     </div>

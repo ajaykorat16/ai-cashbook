@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import { useClient } from '../contexts/ClientContexts';
 import { useAuth } from '../contexts/AuthContext';
 import CustomSelect from '../components/CustomSelect';
-import { Icon } from '@iconify/react';
 import SpreadSheetConfirmBox from '../components/SpreadSheetConfirmBox';
 
 const options = [10, 20, 50, 100];
@@ -249,7 +248,7 @@ const UploadCsv = () => {
                                         >
                                             <Column field="name" header="Name" sortable filterField="name" />
                                             <Column header="" className='action_td' align="left" body={(rowData) => (
-                                                <div className='d-flex'>
+                                                <div className='d-flex justify-content-center'>
                                                     <button className="green_btn"
                                                         data-toggle="tooltip"
                                                         title="Delete"

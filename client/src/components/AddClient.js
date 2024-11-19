@@ -401,7 +401,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn close_btn" data-bs-dismiss="modal">Close</button>
+                                <button type="button" className="btn common_btn" data-bs-dismiss="modal">Close</button>
                                 {!editMode &&
                                     <button type="button" className="btn common_btn" onClick={() => setShowFullDetail(!showFullDetail)}>{showFullDetail ? `Hide full detail` : `Full client detail`}</button>
                                 }

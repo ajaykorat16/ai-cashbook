@@ -1,3 +1,4 @@
+import { Icon } from '@iconify/react';
 import React, { useState, useRef, useEffect } from 'react';
 
 const CustomSelect = ({ options, defaultValue, onChange }) => {
@@ -31,10 +32,10 @@ const CustomSelect = ({ options, defaultValue, onChange }) => {
     }, []);
 
     return (
-        <div className="custom-select" ref={selectRef}>
-            <button onClick={handleSelectClick}>
+        <div className={`custom-select`} ref={selectRef}>
+            <button onClick={handleSelectClick} className={`${showMenu && 'custom-active'}`}>
                 <span>{selectedOption}</span>
-                <img className="login_click" src="/images/down_white.svg" alt="Dropdown" />
+                <Icon icon="ep:arrow-down-bold" className='custom-select-icon' style={{ color: '#4dd0a6' }} />    
             </button>
             <div className={`select-menu ${showMenu ? 'd-block' : 'd-none'}`}>
                 {options.map((option, index) => (

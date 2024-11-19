@@ -67,7 +67,7 @@ const ConfirmStatus = ({ fetchUsers, userInfo, setUserInfo }) => {
                             }
                         </div>
                         <div className="modal-footer delte-modal-footer">
-                            <button type="button" className="btn close_btn" data-bs-dismiss="modal">No</button>
+                            <button type="button" className="btn common_btn" data-bs-dismiss="modal">No</button>
                             <button type="submit" className="btn common_btn" onClick={() => handleStatus()}>Yes</button>
                         </div>
                     </div>

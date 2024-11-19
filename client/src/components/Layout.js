@@ -15,6 +15,11 @@ const Layout = ({ children, showSelection = false }) => {
     const contentRef = useRef(null);
     const slidebarArrowRef = useRef(null);
     const [showMenu, setShowMenu] = useState(false)
+    const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
+
+    const toggleSubmenu = () => {
+        setIsSubmenuOpen(!isSubmenuOpen);
+    };
 
     const user_name = auth?.user?.first_name.length > 7 ? `${auth?.user?.first_name.slice(0, 5)}...` : auth?.user?.first_name
 
@@ -23,28 +28,28 @@ const Layout = ({ children, showSelection = false }) => {
         navigate("/")
     }
 
-    useEffect(() => {
-        const handleToggle = () => {
-            if (window.innerWidth > 768) {
-                sidebarRef.current.classList.toggle('active');
-                contentRef.current.classList.toggle('active');
-            } else {
-                sidebarRef.current.style.display = sidebarRef.current.style.display === 'none' ? 'block' : 'none';
-            }
-        };
+    // useEffect(() => {
+    //     const handleToggle = () => {
+    //         if (window.innerWidth > 768) {
+    //             sidebarRef.current.classList.toggle('active');
+    //             contentRef.current.classList.toggle('active');
+    //         } else {
+    //             sidebarRef.current.style.display = sidebarRef.current.style.display === 'none' ? 'block' : 'none';
+    //         }
+    //     };
 
-        const slidebarArrow = slidebarArrowRef.current;
-        slidebarArrow.addEventListener('click', handleToggle);
+    //     const slidebarArrow = slidebarArrowRef.current;
+    //     slidebarArrow.addEventListener('click', handleToggle);
 
-        return () => {
-            slidebarArrow.removeEventListener('click', handleToggle);
-        };
-    }, []);
+    //     return () => {
+    //         slidebarArrow.removeEventListener('click', handleToggle);
+    //     };
+    // }, []);
 
     return (
-        <>
+        <div className='main_layout'>
             <Toast ref={toast} />
-            <section className="main_header">
+            {/* <section className="main_header">
                 <header>
                     <div>
                         <div className="header_flex">
@@ -75,7 +80,7 @@ const Layout = ({ children, showSelection = false }) => {
                         </div>
                     </div>
                 </header>
-            </section>
+            </section> */}
             <section className="client_list_section spredsheet">
                 <div>
                     <div className="bg_white_box mt-20 p-0">
@@ -83,36 +88,56 @@ const Layout = ({ children, showSelection = false }) => {
                             <div id="sidebar" ref={sidebarRef}>
                                 <div className="side_data">
                                     <ul>
+                                        <Link to={"/"} className='header_logo'>
+                                            <img src="/images/accoutn_logo.svg" alt="" />
+                                        </Link>
                                         {auth.user.role === 'user' ? (
                                             <>
-                                                <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>
-                                                    <i className="pi pi-home btn_icon" style={{ color: 'white' }}></i>Home
-                                                </Link></li>
                                                 <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>
-                                                    <i className="pi pi-bars btn_icon" style={{ color: 'white' }}></i>Category
+                                                    <Icon icon="f7:menu" className='btn_icon' />Category
+                                                </Link></li>
+                                                <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>
+                                                    <Icon icon="solar:user-bold" className='btn_icon' />{user_name}
                                                 </Link></li>
                                                 <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>
-                                                    <i className="pi pi-upload btn_icon" style={{ color: 'white' }}></i>Upload CSV
+                                                    <Icon icon="mynaui:upload" className='btn_icon' />Upload CSV
                                                 </Link></li>
                                                 {clientObject?.value && (
                                                     <>
                                                         <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>
-                                                            <i className="pi pi-address-book btn_icon" style={{ color: 'white' }}></i>Chart of accounts
+                                                            <Icon icon="carbon:account" className='btn_icon' />Chart of accounts
                                                         </Link></li>
                                                         <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>
-                                                            <i className="pi pi-chart-bar btn_icon" style={{ color: 'white' }}></i>Auto categorize
+                                                            <Icon icon="uil:chart-growth" className='btn_icon' />Auto categorize
                                                         </Link></li>
-                                                        <li><Link to={'/user/gst-report'} className={location.pathname.match("/user/gst-report") && `selected`}>
-                                                            <i className="pi pi-calculator btn_icon" style={{ color: 'white' }}></i>GST Report
-                                                        </Link></li>
-                                                        <li><Link to={'/user/itr-report'} className={location.pathname.match("/user/itr-report") && `selected`}>
-                                                            <i className="pi pi-file btn_icon" style={{ color: 'white' }}></i>ITR Report
-                                                        </Link></li>
+
                                                     </>
                                                 )}
                                                 <li><Link>
-                                                    <i className="pi pi-credit-card btn_icon" style={{ color: 'white' }}></i>Inter Bank Transfer
+                                                    <Icon icon="mdi:bank" className='btn_icon' />Inter Bank Transfer
                                                 </Link></li>
+                                                {clientObject?.value && (
+                                                    <li className='report_dropdown'>
+                                                        <span onClick={toggleSubmenu} className="dropdown_trigger">
+                                                            <Icon icon="lsicon:report-filled" className='btn_icon' />Report
+                                                            <Icon icon={`ep:arrow-${isSubmenuOpen ? 'up' : 'down'}-bold`} className='icon_for_btn dropdown_icn' style={{ color: 'white' }} />
+                                                        </span>
+                                                        {isSubmenuOpen && (
+                                                            <ul className="submenu">
+                                                                <li>
+                                                                    <Link to={'/user/gst-report'} className={location.pathname.match("/user/gst-report") && `selected`}>
+                                                                        <Icon icon="hugeicons:taxes" className='btn_icon' />GST Report
+                                                                    </Link>
+                                                                </li>
+                                                                <li>
+                                                                    <Link to={'/user/itr-report'} className={location.pathname.match("/user/itr-report") && `selected`}>
+                                                                        <Icon icon="lsicon:report-filled" className='btn_icon' />ITR Report
+                                                                    </Link>
+                                                                </li>
+                                                            </ul>
+                                                        )}
+                                                    </li>
+                                                )}
                                             </>
                                         ) : (
                                             <li><Link to={'/admin/users'} className={location.pathname.match("/admin/users") && `selected`}>Home</Link></li>
@@ -120,17 +145,25 @@ const Layout = ({ children, showSelection = false }) => {
                                         }
 
                                     </ul>
+
+                                </div>
+                                <div className='logout_btn_container'>
+                                    <button className="btn logout_btn" onClick={() => handleLogout()}>
+                                        Logout <Icon icon="ant-design:logout-outlined" className='logout_btn_icon' />
+                                    </button>
                                 </div>
                             </div>
                             <div id="content" ref={contentRef}>
-                                <div className="slidebar_arrow" ref={slidebarArrowRef}><img src="/images/menu.svg" alt="" /></div>
+                                {showSelection && (
+                                    <ClientSelection className="head_select" />
+                                )}
                                 {children}
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-        </>
+        </div>
     )
 }
 

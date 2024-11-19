@@ -10,6 +10,7 @@ import AddClient from '../components/AddClient';
 import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
 import CustomSelect from '../components/CustomSelect';
 import ConfirmMultiDelete from '../components/ConfirmMultiDelete';
+import { Icon } from '@iconify/react';
 
 const ClientList = () => {
     const options = [10, 20, 50, 100];
@@ -182,13 +183,13 @@ const ClientList = () => {
                             />
                         </div>
                         <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => setVisible(true)}>
-                            <i className="pi pi-plus btn_icon" style={{ color: 'white' }}></i> Add client
+                            Add client
                         </button>
                         <button className="common_btn ms-4" onClick={() => navigate('/user/upload-clients')}>
-                            <i className="pi pi-upload btn_icon" style={{ color: 'white' }}></i>Import
+                            <Icon icon="ep:arrow-up-bold" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Import
                         </button>
                         <button className="common_btn ms-4" onClick={() => handleExports()}>
-                            <i className="pi pi-download btn_icon" style={{ color: 'white' }}></i>Export
+                            <Icon icon="ep:arrow-down-bold" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Export
                         </button>
                     </div>
                 </div>
@@ -244,7 +245,7 @@ const ClientList = () => {
                                         <img src="/images/edit.svg" alt="Edit" />
                                     </button>
                                     <button className="green_btn"
-                                        data-toggle="tooltip" 
+                                        data-toggle="tooltip"
                                         title="Delete"
                                         onClick={() => setClientDelId(rowData?._id)}
                                         data-bs-toggle="modal"
@@ -263,7 +264,7 @@ const ClientList = () => {
                         defaultValue={10}
                     />
                     {selectedClients.length > 0 && (
-                        <button className="common_btn ms-4 bg-danger" data-bs-toggle="modal" data-bs-target="#delete_multi_client">Delete All </button>
+                        <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#delete_multi_client">Delete All </button>
                     )}
                     {/* <label>Entries per page </label> */}
                 </div>
@@ -276,7 +277,7 @@ const ClientList = () => {
             </Layout >
 
             {/* Modals for Add and Edit Client here */}
-            <AddClient
+            < AddClient
                 editMode={editMode}
                 editClientId={editClientId}
                 setEditClientId={setEditClientId}

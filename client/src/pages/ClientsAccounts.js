@@ -27,7 +27,13 @@ const ClientsAccounts = () => {
     }, [])
     return (
         <>
-            <Accounts clientId={clientObject?.value} showSelection={true} getCsvData={getClientCategory} updateCsvData={updateClientCatrgory} />
+            <Accounts
+                clientId={clientObject?.value}
+                showSelection={true}
+                getCsvData={getClientCategory}
+                updateCsvData={updateClientCatrgory}
+                title={'Chart of accounts'}
+            />
         </>
     )
 }
