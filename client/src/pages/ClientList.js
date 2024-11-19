@@ -172,7 +172,7 @@ const ClientList = () => {
     return (
         <>
             <Layout showSelection={false}>
-                <div className="special_flex mb-25">
+                <div className="special_flex mb-25 title_container">
                     <h1 className="main_title">Client list</h1>
                     <div className="right_flex">
                         <div className="search_box">

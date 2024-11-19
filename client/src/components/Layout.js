@@ -28,59 +28,9 @@ const Layout = ({ children, showSelection = false }) => {
         navigate("/")
     }
 
-    // useEffect(() => {
-    //     const handleToggle = () => {
-    //         if (window.innerWidth > 768) {
-    //             sidebarRef.current.classList.toggle('active');
-    //             contentRef.current.classList.toggle('active');
-    //         } else {
-    //             sidebarRef.current.style.display = sidebarRef.current.style.display === 'none' ? 'block' : 'none';
-    //         }
-    //     };
-
-    //     const slidebarArrow = slidebarArrowRef.current;
-    //     slidebarArrow.addEventListener('click', handleToggle);
-
-    //     return () => {
-    //         slidebarArrow.removeEventListener('click', handleToggle);
-    //     };
-    // }, []);
-
     return (
         <div className='main_layout'>
             <Toast ref={toast} />
-            {/* <section className="main_header">
-                <header>
-                    <div>
-                        <div className="header_flex">
-                            <div className="main_logo">
-                                <Link to={"/"}>
-                                    <img src="/images/accoutn_logo.svg" alt="" />
-                                </Link>
-                            </div>
-                            <div className="right_head">
-                                {
-                                    showSelection && (
-                                        <ClientSelection className="head_select" />
-                                    )
-                                }
-                                <div className="login_box_top pos_rel">
-                                    <button onClick={() => setShowMenu(!showMenu)}>
-                                        <img src="/images/login_icn.svg" alt="" />
-                                        <span>
-                                            {user_name}
-                                        </span>
-                                        <img className="login_click" src="/images/down_white.svg" alt="" />
-                                    </button>
-                                    <div className={`login_open ${showMenu ? 'd-block' : 'd-none'}`}>
-                                        <button onClick={() => handleLogout()}>Logout</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-            </section> */}
             <section className="client_list_section spredsheet">
                 <div>
                     <div className="bg_white_box mt-20 p-0">

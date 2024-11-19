@@ -1523,6 +1523,12 @@ span[data-pc-section="sort"] svg {
     padding: 100px 0;
     height: auto;
   }
+
+  .title_container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 @media screen and (max-width: 991px) {
