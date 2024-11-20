@@ -17,13 +17,14 @@ import moment from 'moment';
 import $ from 'jquery';
 import 'jquery-ui-dist/jquery-ui.css';
 import 'jquery-ui-dist/jquery-ui';
+import ClientSelection from './ClientSelection';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
     '2.5-Interest paid Australia', '2.5-Interest paid Overseas', '2.5-Rent', '5.1-Depreciation', '2.6-Lease payments Australia', '5.1-Depreciation', '5.2-MV Expenses',
     '5.3-Repair and Maintenance', '9.1-All Other Expenses', '9.3-Director Fees', '9.2-Non Deductible Expenses']
 
-const SheetComponent = ({ clientId }) => {
+const SheetComponent = ({ clientId, showSelection }) => {
     const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject } = useClient();
     const spreadsheetRef = useRef(null);
 
@@ -873,10 +874,25 @@ const SheetComponent = ({ clientId }) => {
         return rangeText
     };
 
+
+    useEffect(() => {
+        const handleResize = () => {
+            spreadsheetRef.current.refresh();
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
     return (
-        <div className='h-100'>
-            <div className="special_flex mb-25">
-                <div className='client_name position-absolute'>{clientObject?.label}</div>
+        <>
+            <div className="special_flex d-flex justify-content-space-between">
+                <h1 className="main_title client_name mb-0">{clientObject?.label}</h1>
+                {showSelection && (
+                    <ClientSelection className="head_select align-self-end" />
+                )}
             </div>
             <div className="input_form_box date_container">
                 <div className="row">
@@ -998,7 +1014,7 @@ const SheetComponent = ({ clientId }) => {
                     </>
                 )}
             </>
-        </div>
+        </>
     );
 };
 

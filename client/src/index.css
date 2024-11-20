@@ -335,7 +335,6 @@ h1.main_title {
 .special_flex {
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .right_flex {
@@ -842,7 +841,7 @@ tbody tr[role="row"] {
   color: #fff;
   transition: all 0.3s;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 16px 0px 0 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -884,7 +883,7 @@ tbody tr[role="row"] {
 }
 
 .side_data ul {
-  margin: 0;
+  margin: 20px 0 0 0;
   padding: 0;
 }
 
@@ -921,10 +920,8 @@ tbody tr[role="row"] {
 }
 
 .head_select {
-  /* margin-right: 20px; */
   display: flex;
   justify-content: end;
-  margin-bottom: 20px;
 }
 
 .paginate_container {
@@ -1189,7 +1186,7 @@ div[style*="z-index: 99999"] {
   align-items: center;
   justify-content: space-between;
   color: #000;
-  padding: 10px;
+  padding: 10px 10px 5px 10px;
   border-radius: 5px;
   font-size: 15px;
   cursor: pointer;
@@ -1496,6 +1493,10 @@ span[data-pc-section="sort"] svg {
   margin: 30px 0;
 }
 
+.logout_btn:hover {
+  border: 3px solid #4dd0a6;
+}
+
 .logout_btn_icon {
   color: #4dd0a6;
   font-size: 16px;
@@ -1519,6 +1520,17 @@ span[data-pc-section="sort"] svg {
 
 .search_box input {
   width: 160px;
+}
+
+.content .flex_selection {
+  flex-direction: row !important;
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header_logo img {
+  width: 94%;
 }
 
 @media screen and (max-width: 1550px) {
@@ -1613,6 +1625,14 @@ span[data-pc-section="sort"] svg {
 
   .spreadsheet-loader {
     justify-content: center;
+  }
+
+  #sidebar {
+    border-radius: 16px;
+  }
+
+  .header_logo img {
+    width: 60%;
   }
 }
 
@@ -1838,8 +1858,7 @@ span[data-pc-section="sort"] svg {
 
   .special_flex {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
   }
 }
 
@@ -1893,7 +1912,33 @@ span[data-pc-section="sort"] svg {
 
   .paginate_container {
     width: 100%;
-  } 
+  }
+
+  .special_flex {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .special_flex .head_select {
+    align-self: unset !important;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .back_to_list {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .flex_selection {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .header_logo img {
+    width: 80%;
+  }
 }
 
 @media screen and (max-width: 376px) {

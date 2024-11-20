@@ -6,6 +6,7 @@ import $ from 'jquery';
 import 'jquery-ui-dist/jquery-ui.css';
 import 'jquery-ui-dist/jquery-ui';
 import Loader from '../components/Loader';
+import ClientSelection from '../components/ClientSelection';
 
 const quarterMapping = {
     'Q1': 'Jan - Mar',
@@ -233,9 +234,10 @@ const GstReport = () => {
 
 
     return (
-        <Layout showSelection={true}>
-            <div className="special_flex mb-25">
-                <h1 className="main_title">Report</h1>
+        <Layout>
+            <div className="special_flex d-flex justify-content-space-between">
+                <h1 className="main_title mb-0">GST Report</h1>
+                <ClientSelection className="head_select align-self-end" />
             </div>
             <div className="input_form_box">
                 <div className="row">

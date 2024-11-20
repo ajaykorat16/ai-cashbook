@@ -13,6 +13,7 @@ import Layout from '../components/Layout';
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
+import ClientSelection from './ClientSelection';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
@@ -416,14 +417,30 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         args.element.innerHTML = '';
         args.element.appendChild(selectElement);
     }
+
+    useEffect(() => {
+        const handleResize = () => {
+            spreadsheetRef.current.refresh();
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
     return (
         <div>
-            <Layout showSelection={showSelection}>
-                <div className="special_flex mb-25">
-                    <h1 className="main_title">{title}</h1>
-                    <div className="right_flex">
-                        <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>Back to list</button>
-                    </div>
+            <Layout>
+                <div className="special_flex d-flex justify-content-space-between">
+                    <h1 className="main_title mb-0">{title}</h1>
+                    {showSelection && (
+                        <ClientSelection className="head_select align-self-end" />
+                    )}
+                </div>
+                <div className="right_flex mb-25 justify-content-end mt-3">
+                    <button className="common_btn ms-4 back_to_list" onClick={() => navigate("/user/clients")}>Back to list</button>
                 </div>
                 {isLoading ? (
                     <Loader />) : (

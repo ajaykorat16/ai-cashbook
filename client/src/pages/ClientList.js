@@ -171,7 +171,7 @@ const ClientList = () => {
 
     return (
         <>
-            <Layout showSelection={false}>
+            <Layout>
                 <div className="special_flex mb-25 title_container">
                     <h1 className="main_title">Client list</h1>
                     <div className="right_flex">
@@ -186,10 +186,10 @@ const ClientList = () => {
                             Add client
                         </button>
                         <button className="common_btn ms-4" onClick={() => navigate('/user/upload-clients')}>
-                            <Icon icon="ep:arrow-up-bold" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Import
+                            <Icon icon="ep:arrow-down-bold" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Import
                         </button>
                         <button className="common_btn ms-4" onClick={() => handleExports()}>
-                            <Icon icon="ep:arrow-down-bold" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Export
+                            <Icon icon="ep:arrow-up-bold" className='icon_for_btn' style={{ color: '#4dd0a6' }} /> Export
                         </button>
                     </div>
                 </div>

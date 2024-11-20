@@ -28,7 +28,7 @@ const AutoCategorize = () => {
     }, []);
 
     return (
-        <Layout showSelection={false}>
+        <Layout>
             {isLoading && (
                 <Loader />
             )}

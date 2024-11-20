@@ -7,6 +7,7 @@ import Loader from './Loader'
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { useAuth } from '../contexts/AuthContext';
+import { Icon } from '@iconify/react';
 
 const UploadCsv = () => {
     const navigate = useNavigate()
@@ -214,10 +215,10 @@ const UploadCsv = () => {
                                 <h1 className="main_title">Spreadsheet</h1>
                                 <div className="right_flex">
                                     <button className="common_btn ms-4" onClick={() => handleExports()}>
-                                        <i className="pi pi-download btn_icon" style={{ color: 'white' }}></i>Sample File
+                                        <Icon icon="material-symbols:download" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Sample File
                                     </button>
                                     <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>
-                                        <img src="images/pre_white.svg" alt="" /> Back to list
+                                        Back to list
                                     </button>
                                 </div>
                             </div>

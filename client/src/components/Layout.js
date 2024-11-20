@@ -6,7 +6,7 @@ import ClientSelection from './ClientSelection';
 import { useClient } from '../contexts/ClientContexts';
 import { Icon } from '@iconify/react';
 
-const Layout = ({ children, showSelection = false }) => {
+const Layout = ({ children }) => {
     const { toast, logout, auth } = useAuth()
     const { clientObject } = useClient()
     const navigate = useNavigate();
@@ -38,12 +38,12 @@ const Layout = ({ children, showSelection = false }) => {
                             <div id="sidebar" ref={sidebarRef}>
                                 <div className="side_data">
                                     <ul>
-                                        <Link to={"/"} className='header_logo'>
-                                            <img src="/images/accoutn_logo.svg" alt="" />
+                                        <Link to={"/"} className='header_logo px-2 d-flex justify-content-center'>
+                                            <img src="/images/accoutn_logo_2.png" alt="" />
                                         </Link>
                                         {auth.user.role === 'user' ? (
                                             <>
-                                                <li><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>
+                                                <li className='mt-2'><Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>
                                                     <Icon icon="f7:menu" className='btn_icon' />Category
                                                 </Link></li>
                                                 <li><Link to={'/user/clients'} className={location.pathname.match("/user/clients") && `selected`}>
@@ -69,7 +69,7 @@ const Layout = ({ children, showSelection = false }) => {
                                                 {clientObject?.value && (
                                                     <li className='report_dropdown'>
                                                         <span onClick={toggleSubmenu} className="dropdown_trigger">
-                                                            <Icon icon="lsicon:report-filled" className='btn_icon' />Report
+                                                            <Icon icon="fluent:arrow-growth-24-filled" className='btn_icon' />Reports
                                                             <Icon icon={`ep:arrow-${isSubmenuOpen ? 'up' : 'down'}-bold`} className='icon_for_btn dropdown_icn' style={{ color: 'white' }} />
                                                         </span>
                                                         {isSubmenuOpen && (
@@ -104,9 +104,6 @@ const Layout = ({ children, showSelection = false }) => {
                                 </div>
                             </div>
                             <div id="content" ref={contentRef}>
-                                {showSelection && (
-                                    <ClientSelection className="head_select" />
-                                )}
                                 {children}
                             </div>
                         </div>

@@ -48,6 +48,11 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
         control: (provided, state) => ({
             ...provided,
             height: '45px',
+            borderColor: '#4dd0a6',
+            '&:hover': {
+                borderColor: '#4dd0a6',
+            },
+            boxShadow: state.isFocused ? '0 0 0 1px #4dd0a6' : null,
         }),
         option: (provided, state) => ({
             ...provided,
@@ -56,6 +61,21 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
             wordWrap: state.isFocused ? 'break-word' : null,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
+        }),
+        indicatorSeparator: (provided) => ({
+            ...provided,
+            display: 'none',
+        }),
+        dropdownIndicator: (provided) => ({
+            ...provided,
+            color: '#4dd0a6',
+            '&:hover': {
+                color: '#4dd0a6',
+            },
+        }),
+        clearIndicator: (provided) => ({
+            ...provided,
+            color: '#4dd0a6',
         }),
     };
 

@@ -26,18 +26,18 @@ const Spreadsheet = () => {
     if (params?.id) {
       fetchSingleClient()
     }
-    
+
     return setClientObject({})
   }, [])
 
   return (
     <>
-      <Layout showSelection={true}>
+      <Layout>
         {isLoading === true && !clientObject?.value ? (
           <Loader />
         ) : (
           <>
-            <SheetComponent clientId={clientObject?.value} />
+            <SheetComponent clientId={clientObject?.value} showSelection={true} />
           </>
         )}
       </Layout>

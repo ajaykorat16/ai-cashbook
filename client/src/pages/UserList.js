@@ -101,7 +101,7 @@ const UserList = () => {
 
     return (
         <>
-            <Layout showSelection={false}>
+            <Layout>
                 <div className="special_flex mb-25">
                     <h1 className="main_title">User list</h1>
                     <div className="right_flex">

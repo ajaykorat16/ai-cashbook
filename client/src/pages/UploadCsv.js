@@ -11,6 +11,7 @@ import { useClient } from '../contexts/ClientContexts';
 import { useAuth } from '../contexts/AuthContext';
 import CustomSelect from '../components/CustomSelect';
 import SpreadSheetConfirmBox from '../components/SpreadSheetConfirmBox';
+import ClientSelection from '../components/ClientSelection';
 
 const options = [10, 20, 50, 100];
 
@@ -169,18 +170,17 @@ const UploadCsv = () => {
 
     return (
         <>
-            <Layout showSelection={true}>
+            <Layout>
                 {isLoading ? (
                     <Loader />
                 ) : (
                     <>
-                        <div className="special_flex mb-25">
-                            <h1 className="main_title">Spreadsheet</h1>
-                            <div className="right_flex">
-                                <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>
-                                    <img src="images/pre_white.svg" alt="" /> Back to list
-                                </button>
-                            </div>
+                        <div className="special_flex d-flex justify-content-space-between">
+                            <h1 className="main_title mb-0">Spreadsheet</h1>
+                            <ClientSelection className="head_select align-self-end" />
+                        </div>
+                        <div className="right_flex mb-25 justify-content-end mt-3">
+                            <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>Back to list</button>
                         </div>
                         <div className="sheet_accodian">
                             <div className="accordion" id="accordionExample">
