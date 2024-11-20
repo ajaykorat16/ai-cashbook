@@ -1417,11 +1417,11 @@ div[style*="z-index: 99999"] {
 }
 
 .spreadsheet_height {
-  height: calc(100vh - 300px)
+  height: 100vh
 }
 
 .account_height {
-  height: calc(100vh - 230px)
+  height: 100vh
 }
 
 .client_list_section {
