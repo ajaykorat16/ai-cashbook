@@ -927,9 +927,10 @@ const clientImport = async (req, res) => {
                 if (!existingEmail) {
                     if (!emailMap.has(email)) {
                         emailMap.set(email, []);
+                    } else {
+                        failedImports += 1;
                     }
                     emailMap.get(email).push(index);
-                    failedImports += 1;
                 }
             }
 
@@ -939,9 +940,10 @@ const clientImport = async (req, res) => {
                 if (!existingAbn) {
                     if (!abnMap.has(abn_number)) {
                         abnMap.set(abn_number, []);
+                    } else {
+                        failedImports += 1;
                     }
                     abnMap.get(abn_number).push(index);
-                    failedImports += 1;
                 }
             }
         }
