@@ -52,42 +52,38 @@ const Layout = ({ children }) => {
                                                 <li><Link to={'/user/upload-csv'} className={location.pathname.match("/user/upload-csv") && `selected`}>
                                                     <Icon icon="mynaui:upload" className='btn_icon' />Upload CSV
                                                 </Link></li>
-                                                {clientObject?.value && (
-                                                    <>
-                                                        <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>
-                                                            <Icon icon="carbon:account" className='btn_icon' />Chart of accounts
-                                                        </Link></li>
-                                                        <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>
-                                                            <Icon icon="uil:chart-growth" className='btn_icon' />Auto categorize
-                                                        </Link></li>
+                                                <>
+                                                    <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>
+                                                        <Icon icon="carbon:account" className='btn_icon' />Chart of accounts
+                                                    </Link></li>
+                                                    <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>
+                                                        <Icon icon="uil:chart-growth" className='btn_icon' />Auto categorize
+                                                    </Link></li>
 
-                                                    </>
-                                                )}
+                                                </>
                                                 <li><Link>
                                                     <Icon icon="mdi:bank" className='btn_icon' />Inter Bank Transfer
                                                 </Link></li>
-                                                {clientObject?.value && (
-                                                    <li className='report_dropdown'>
-                                                        <span onClick={toggleSubmenu} className="dropdown_trigger">
-                                                            <Icon icon="fluent:arrow-growth-24-filled" className='btn_icon' />Reports
-                                                            <Icon icon={`ep:arrow-${isSubmenuOpen ? 'up' : 'down'}-bold`} className='icon_for_btn dropdown_icn' style={{ color: 'white' }} />
-                                                        </span>
-                                                        {isSubmenuOpen && (
-                                                            <ul className="submenu">
-                                                                <li>
-                                                                    <Link to={'/user/gst-report'} className={location.pathname.match("/user/gst-report") && `selected`}>
-                                                                        <Icon icon="hugeicons:taxes" className='btn_icon' />GST Report
-                                                                    </Link>
-                                                                </li>
-                                                                <li>
-                                                                    <Link to={'/user/itr-report'} className={location.pathname.match("/user/itr-report") && `selected`}>
-                                                                        <Icon icon="lsicon:report-filled" className='btn_icon' />ITR Report
-                                                                    </Link>
-                                                                </li>
-                                                            </ul>
-                                                        )}
-                                                    </li>
-                                                )}
+                                                <li className='report_dropdown'>
+                                                    <span onClick={toggleSubmenu} className="dropdown_trigger">
+                                                        <Icon icon="fluent:arrow-growth-24-filled" className='btn_icon' />Reports
+                                                        <Icon icon={`ep:arrow-${isSubmenuOpen ? 'up' : 'down'}-bold`} className='icon_for_btn dropdown_icn' style={{ color: 'white' }} />
+                                                    </span>
+                                                    {isSubmenuOpen && (
+                                                        <ul className="submenu">
+                                                            <li>
+                                                                <Link to={'/user/gst-report'} className={location.pathname.match("/user/gst-report") && `selected`}>
+                                                                    <Icon icon="hugeicons:taxes" className='btn_icon' />GST Report
+                                                                </Link>
+                                                            </li>
+                                                            <li>
+                                                                <Link to={'/user/itr-report'} className={location.pathname.match("/user/itr-report") && `selected`}>
+                                                                    <Icon icon="lsicon:report-filled" className='btn_icon' />ITR Report
+                                                                </Link>
+                                                            </li>
+                                                        </ul>
+                                                    )}
+                                                </li>
                                             </>
                                         ) : (
                                             <li><Link to={'/admin/users'} className={location.pathname.match("/admin/users") && `selected`}>Home</Link></li>

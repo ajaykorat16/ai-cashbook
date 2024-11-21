@@ -185,12 +185,12 @@ const Login = () => {
                                     <div className='checks_container'>
                                         <div className="col-md-6">
                                             <div className="check_box mt-2">
-                                                <input className="styled-checkbox" id="styled-checkbox-2" type="checkbox" value="value2" />
-                                                <label htmlFor="styled-checkbox-2" className='green_label'>Keep me signed in</label>
+                                                <input className="styled-checkbox checkbox-hover" id="styled-checkbox-2" type="checkbox" value="value2" />
+                                                <label htmlFor="styled-checkbox-2" className='blue_label'>Keep me signed in</label>
                                             </div>
                                         </div>
                                         <div className="col-md-6">
-                                            <div className="forgot_psw_container mt-2">
+                                            <div className="sign-up mt-2">
                                                 <Link to='forgot-password' className="forgot_psw">Forgot password?</Link>
                                             </div>
                                         </div>

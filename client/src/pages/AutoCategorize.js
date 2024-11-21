@@ -5,7 +5,7 @@ import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
 
 const AutoCategorize = () => {
-    const { clientObject, autoCategorize } = useClient();
+    const { getAllClients, clientObject, setClientObject, getSingleClient, autoCategorize } = useClient();
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -15,17 +15,45 @@ const AutoCategorize = () => {
         const data = await autoCategorize(id);
         if (!data?.error) {
             setIsLoading(false);
-            navigate(`/user/spreadsheet/${clientObject?.value}`);
+            navigate(`/user/spreadsheet/${id}`);
         }
     };
 
     useEffect(() => {
-        if (clientObject?.value && !hasCategorized.current) {
-            setIsLoading(true);
-            categorize(clientObject?.value);
-            hasCategorized.current = true;
-        }
+
     }, []);
+
+    const fetchClient = async () => {
+        const { clients } = await getAllClients(1, 1, "_id", -1, "")
+        if (clients.length > 0) {
+            setClientObject({
+                label: clients[0].entity_name ? clients[0].entity_name : `${clients[0].first_name} ${clients[0].last_name}`,
+                value: clients[0]._id,
+            })
+            if (!hasCategorized.current) {
+                setIsLoading(true);
+                categorize(clients[0]._id);
+                hasCategorized.current = true;
+            }
+        }
+    }
+
+    useEffect(() => {
+        if (!clientObject?.value) {
+            fetchClient()
+        } else {
+            setClientObject({
+                label: clientObject?.label,
+                value: clientObject?.value,
+            })
+            if (!hasCategorized.current) {
+                setIsLoading(true);
+                categorize(clientObject?.value);
+                hasCategorized.current = true;
+            }
+        }
+    }, [])
+
 
     return (
         <Layout>
