@@ -1497,8 +1497,6 @@ const createClientSpreadsheet = async (req, res) => {
             }
         }
 
-        const spreadsheetId = await createSpreadsheetList(user?.email, id)
-
         const collections = await database.listCollections().toArray();
         const collectionExists = collections.some(col => col.name === `${user?.email.split("@")[0]}_client_spreadsheet`);
 
@@ -1532,6 +1530,12 @@ const createClientSpreadsheet = async (req, res) => {
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
 
         const filteredNewCsv = removeMatchedItems(trimmedNewCsv, spreadsheetCursor, startDate, endDate)
+
+        let spreadsheetId;
+        if(filteredNewCsv.length > 0) {
+            spreadsheetId = await createSpreadsheetList(user?.email, id)
+        }
+
 
         if (oldData.length > 1 && filteredNewCsv.length > 0) {
             await train(oldData, id)

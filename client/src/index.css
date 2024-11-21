@@ -232,25 +232,17 @@ div.brd_green_box span {
   border: 1px solid #4dd0a6;
 }
 
-.check_box .styled-checkbox+label:before {
-  border: 1px solid #1F305E !important;
-}
-
 .check_box .styled-checkbox:hover+label:before {
   background: #4dd0a6;
-  ;
 }
 
 .check_box .checkbox-hover:hover+label:before {
-  background: #1F305E !important;
+  background: #1e3855!important;
+  border: 1px solid #1e3855 !important;
 }
 
 .check_box .styled-checkbox:checked+label:before {
   background: #4dd0a6;
-}
-
-.check_box .checkbox-hover:checked+label:before {
-  background: #1F305E !important;
 }
 
 .check_box .styled-checkbox:disabled+label {
@@ -1392,7 +1384,11 @@ div[style*="z-index: 99999"] {
 }
 
 .green_label {
-  color: #4dd0a6;
+  color: #4dd0a6 !important;
+}
+
+.green_label:hover  {
+  color: #1e3855 !important;
 }
 
 .lined_btn {
@@ -1553,9 +1549,12 @@ span[data-pc-section="sort"] svg {
   line-height: 37px;
 }
 
-.blue_label {
-  color: #1F305E;
+.login_btn:hover {
+  background: #1F305E;
+  color: var(--white-color) !important;
+  border: 1px solid #1F305E;
 }
+
 
 @media screen and (max-width: 1550px) {
   .login_center_box {

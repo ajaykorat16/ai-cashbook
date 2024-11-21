@@ -109,7 +109,7 @@ const forgotPassword = async (req, res) => {
         if (!user) {
             return res.status(200).json({
                 error: true,
-                message: "Please sign up first.",
+                message: "You are not registered with the system, Please signup first.",
             });
         }
 

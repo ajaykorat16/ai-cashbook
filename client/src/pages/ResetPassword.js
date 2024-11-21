@@ -117,7 +117,7 @@ const ResetPassword = () => {
                                 </div>
                             </CForm>
                             <div className="sign-up">
-                                <Link to='/'>Back to Login</Link>
+                                <Link to='/' className='green_label'>Back to Login</Link>
                             </div>
                         </div>
                     </div>

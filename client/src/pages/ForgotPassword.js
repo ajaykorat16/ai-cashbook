@@ -71,7 +71,7 @@ const ForgotPassword = () => {
                                 <button type="submit" className="lined_btn d-flex mx-auto login_btn">Submit</button>
                             </CForm>
                             <div className="sign-up">
-                                <Link to='/'>Back to Login</Link>
+                                <Link to='/' className='green_label'>Back to Login</Link>
                             </div>
                         </div>
                     </div>
