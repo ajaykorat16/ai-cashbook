@@ -103,7 +103,6 @@ const ResetPassword = () => {
                                             feedbackInvalid={"Confirm password must be at least 8 characters long."}
                                             className='form-control is_not_validated credential_input'
                                             id="floatingConfirmPassword"
-                                            placeholder="Password"
                                         />
                                         <button
                                             type="button"
