@@ -130,7 +130,7 @@ const createBlankSpreadsheet = async (email, id) => {
     }
 }
 
-const createSpreadsheetList = async (email, id) => {
+const createSpreadsheetList = async (email, id, baseName) => {
     try {
         await mongoClient.connect();
 
@@ -147,7 +147,7 @@ const createSpreadsheetList = async (email, id) => {
         const formattedDate = moment().format('DD-MM-YYYY_HH-mm')
 
         const spreadsheet = {
-            name: `${id}_${formattedDate}`,
+            name: `${baseName}_${formattedDate}`,
             client_id: new ObjectId(id),
             createdAt: new Date(),
             updatedAt: new Date()

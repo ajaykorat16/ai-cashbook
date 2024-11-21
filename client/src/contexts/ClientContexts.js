@@ -207,9 +207,9 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-    const createSpreadsheet = async (id, csvData) => {
+    const createSpreadsheet = async (id, csvData, fileName) => {
         try {
-            const { data } = await axios.post(`${baseURL}/client/create-spreasheet/${id}`, { data: csvData }, { headers });
+            const { data } = await axios.post(`${baseURL}/client/create-spreasheet/${id}`, { data: csvData, fileName }, { headers });
             if (data.error === false) {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Spreadsheet', detail: data.message, life: 3000 })

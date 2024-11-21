@@ -75,7 +75,7 @@ const UploadCsv = () => {
                     );
 
                     setIsLoading(true)
-                    const spreadsheet = await createSpreadsheet(clientObject?.value, [headers, ...formattedData])
+                    const spreadsheet = await createSpreadsheet(clientObject?.value, [headers, ...formattedData], fileName)
                     if (!spreadsheet?.error) {
                         setClientObject("")
                         setFile(null)
@@ -220,7 +220,7 @@ const UploadCsv = () => {
                                     Cancel
                                 </button>
                             )}
-                            <button className={`common_btn ${(!file || !clientObject?.value) && 'opacity-50'}`} onClick={handleUpload} disabled={!file || !clientObject?.value}>
+                            <button className={`common_btn upload_btn ${(!file || !clientObject?.value) && 'opacity-50'}`} onClick={handleUpload} disabled={!file || !clientObject?.value}>
                                 Upload
                             </button>
                         </div>
@@ -246,7 +246,9 @@ const UploadCsv = () => {
                                             emptyMessage="No spreadsheet found."
                                             responsiveLayout="scroll"
                                         >
-                                            <Column field="name" header="Name" sortable filterField="name" />
+                                            <Column field="name" header="Name" sortable filterField="name" body={(rowData) => (
+                                                <span>{`${rowData.name}.csv`}</span>
+                                            )} />
                                             <Column header="" className='action_td' align="left" body={(rowData) => (
                                                 <div className='d-flex justify-content-center'>
                                                     <button className="green_btn"

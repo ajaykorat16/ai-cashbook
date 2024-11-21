@@ -405,11 +405,6 @@ h1.main_title {
   background-color: #4dd0a6;
 }
 
-.p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
-  text-align: center;
-  padding: 10px 540px 10px 0;
-}
-
 .p-datatable .p-datatable-tbody>tr>td {
   border-right: 1px solid #d9d9d9;
   text-align: center;
@@ -1049,9 +1044,8 @@ div[style*="z-index: 99999"] {
   width: 100%;
 }
 
-.user-table .p-datatable-wrapper .p-datatable-emptymessage td {
-  text-align: center;
-  padding: 10px 0 10px 0;
+.p-datatable-tbody .p-datatable-emptymessage td {
+  text-align: start !important;
 }
 
 .spreadsheet-loader {
@@ -1555,6 +1549,11 @@ span[data-pc-section="sort"] svg {
   border: 1px solid #1F305E;
 }
 
+.upload_btn:hover {
+  background: white !important;
+  color: var(--black-color) !important;
+  border: 1px solid #4dd0a6  !important;
+}
 
 @media screen and (max-width: 1550px) {
   .login_center_box {
@@ -1639,11 +1638,6 @@ span[data-pc-section="sort"] svg {
 
   .main_header header {
     padding: 32px 20px;
-  }
-
-  .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
-    text-align: center;
-    padding: 10px 695px 10px 0;
   }
 
   .spreadsheet-loader {
@@ -1840,11 +1834,6 @@ span[data-pc-section="sort"] svg {
 }
 
 @media screen and (min-width: 1024px) {
-  .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
-    text-align: center;
-    padding: 10px 720px 10px 0;
-  }
-
   .spreadsheet-loader {
     justify-content: end;
   }
@@ -1886,12 +1875,7 @@ span[data-pc-section="sort"] svg {
 }
 
 @media screen and (max-width: 426px) {
-  .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
-    text-align: center;
-    padding: 10px 990px 10px 0;
-  }
-
-  .spreadsheet-loader {
+.spreadsheet-loader {
     justify-content: center;
   }
 
@@ -1965,11 +1949,6 @@ span[data-pc-section="sort"] svg {
 }
 
 @media screen and (max-width: 376px) {
-  .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
-    text-align: center;
-    padding: 10px 1040px 10px 0;
-  }
-
   .spreadsheet-loader {
     justify-content: center;
   }
@@ -1980,11 +1959,6 @@ span[data-pc-section="sort"] svg {
 }
 
 @media screen and (max-width: 320px) {
-  .p-datatable .p-datatable-wrapper .p-datatable-emptymessage td {
-    text-align: center;
-    padding: 10px 1095px 10px 0;
-  }
-
   .spreadsheet-loader {
     justify-content: center;
   }

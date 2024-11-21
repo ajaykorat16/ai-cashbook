@@ -212,7 +212,7 @@ const UploadCsv = () => {
                     (
                         <>
                             <div className="special_flex mb-25">
-                                <h1 className="main_title">Spreadsheet</h1>
+                                <h1 className="main_title">Upload Clients</h1>
                                 <div className="right_flex">
                                     <button className="common_btn ms-4" onClick={() => handleExports()}>
                                         <Icon icon="material-symbols:download" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Sample File
@@ -284,7 +284,7 @@ const UploadCsv = () => {
                                         Cancel
                                     </button>
                                 )}
-                                <button className={`common_btn ${disabledUpload && 'opacity-50'}`} onClick={() => handleUpload(files, true)} disabled={disabledUpload}>Upload</button>
+                                <button className={`common_btn upload_btn ${disabledUpload && 'opacity-50'}`} onClick={() => handleUpload(files, true)} disabled={disabledUpload}>Upload</button>
                             </div>
                         </>
                     )}

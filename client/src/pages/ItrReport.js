@@ -11,8 +11,10 @@ const ItrReport = () => {
     const { getAllClients, clientObject, setClientObject, getItrReport } = useClient()
 
     const [showMenu, setShowMenu] = useState(false)
-    const [fromDate, setFromDate] = useState()
-    const [toDate, setToDate] = useState()
+    const currentYearStart = moment().startOf('year');
+    const currentYearEnd = moment().endOf('year');
+    const [fromDate, setFromDate] = useState(currentYearStart.format('MM/DD/YYYY'));
+    const [toDate, setToDate] = useState(currentYearEnd.format('MM/DD/YYYY'));
     const [itrReport, setItrRport] = useState([])
     const [totalExcGst, setTotaltotalExcGst] = useState([])
 
@@ -205,12 +207,6 @@ const ItrReport = () => {
         setItrRport(data?.excGstResult)
         setTotaltotalExcGst(data?.grandTotalExcGst)
     }
-
-    useEffect(() => {
-        if (clientObject?.value) {
-            getReportData()
-        }
-    }, [clientObject?.value])
 
     useEffect(() => {
         if (clientObject?.value && fromDate && toDate) {

@@ -1290,7 +1290,7 @@ function removeMatchedItems(newCsv, spreadsheetCursor, startDate, endDate) {
 const createClientSpreadsheet = async (req, res) => {
     try {
         const { id } = req.params;
-        const { data } = req.body;
+        const { data, fileName } = req.body;
 
         const client = await getClient(id);
         if (!client) {
@@ -1532,10 +1532,10 @@ const createClientSpreadsheet = async (req, res) => {
         const filteredNewCsv = removeMatchedItems(trimmedNewCsv, spreadsheetCursor, startDate, endDate)
 
         let spreadsheetId;
-        if(filteredNewCsv.length > 0) {
-            spreadsheetId = await createSpreadsheetList(user?.email, id)
+        if (filteredNewCsv.length > 0) {
+            const baseName = fileName.split('.')[0];
+            spreadsheetId = await createSpreadsheetList(user?.email, id, baseName)
         }
-
 
         if (oldData.length > 1 && filteredNewCsv.length > 0) {
             await train(oldData, id)

@@ -19,8 +19,10 @@ const GstReport = () => {
     const { getAllClients, clientObject, setClientObject, getGstReport } = useClient()
 
     const [showMenu, setShowMenu] = useState(false)
-    const [fromDate, setFromDate] = useState()
-    const [toDate, setToDate] = useState()
+    const currentYearStart = moment().startOf('year');
+    const currentYearEnd = moment().endOf('year');
+    const [fromDate, setFromDate] = useState(currentYearStart.format('MM/DD/YYYY'));
+    const [toDate, setToDate] = useState(currentYearEnd.format('MM/DD/YYYY'));
     const [taxableAmt, setTaxableAmt] = useState([])
     const [taxableAmtTotal, setTaxableAmtTotal] = useState([])
     const [gstAmt, setGstAmt] = useState([])
@@ -219,12 +221,6 @@ const GstReport = () => {
         setGstAmtTotal(data?.gstAmtReport?.basLabnGrandTotal)
         setIsLoading(false)
     }
-
-    useEffect(() => {
-        if (clientObject?.value) {
-            getReportData()
-        }
-    }, [clientObject?.value])
 
     useEffect(() => {
         if (clientObject?.value && fromDate && toDate) {
