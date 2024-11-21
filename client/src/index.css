@@ -1533,6 +1533,14 @@ span[data-pc-section="sort"] svg {
   width: 94%;
 }
 
+.reset_pass_input {
+  margin-top: 30px;
+}
+
+.reset_pass_text {
+  line-height: 37px;
+}
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
