@@ -152,7 +152,7 @@ const Login = () => {
                             <CForm onSubmit={handleSubmit} noValidate validated={validated} className='d-flex justify-content-center'>
                                 <div className='row credentials_container'>
                                     <div className="col-md-6 mt-3">
-                                        <label htmlFor="floatingEmail" className='pb-2 credential_label'>Email Address</label>
+                                        <label htmlFor="floatingEmail" className='pb-2 credential_label'>Email</label>
                                         <CFormInput
                                             type="email"
                                             value={credentials.email}
