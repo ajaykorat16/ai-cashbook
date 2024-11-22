@@ -11,7 +11,7 @@ body {
 }
 
 .main_layout {
-  background: #4dd0a6;
+  background: white;
 }
 
 a,
@@ -84,6 +84,8 @@ img {
   padding: 25px 30px;
   min-height: calc(100vh - 151px);
   border-radius: 16px;
+  border: 4px solid #4dd0a6;
+  border-radius: 20px;
 }
 
 .login_center_box .bg_white_box {
@@ -169,7 +171,8 @@ div.brd_green_box span {
   width: auto;
 }
 
-.common_btn:hover {
+.common_btn:hover, 
+.common_btn:focus {
   background: #1F305E;
   color: var(--white-color) !important;
   border: 1px solid #1F305E;
@@ -1517,7 +1520,12 @@ span[data-pc-section="sort"] svg {
 }
 
 .submenu li a {
-  padding: 10px 16px !important;
+  padding: 10px 20px !important;
+  font-size: 14px !important;
+}
+
+.submenu .btn_icon {
+  font-size: 30px;
 }
 
 .search_box input {

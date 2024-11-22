@@ -218,7 +218,7 @@ const UploadCsv = () => {
                                         <Icon icon="material-symbols:download" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Sample File
                                     </button>
                                     <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>
-                                        Back to list
+                                        Back To List
                                     </button>
                                 </div>
                             </div>
@@ -228,7 +228,7 @@ const UploadCsv = () => {
                                         <h2 className="accordion-header" id="headingOne">
                                             <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
                                                 aria-expanded="true" aria-controls="collapseOne">
-                                                Drag and Drop file
+                                                Drag And Drop File
                                             </button>
                                         </h2>
                                         <div id="collapseOne" className="accordion-collapse collapse show" aria-labelledby="headingOne"
@@ -239,12 +239,12 @@ const UploadCsv = () => {
                                                     {
                                                         isDragActive ?
                                                             <h2>
-                                                                Drop the files here...
+                                                                Drop The Files Here...
                                                             </h2> :
                                                             <h2 className="text-center">
-                                                                Drag and Drop file here
+                                                                Drag And Drop File Here
                                                                 <div className="my-2 fw-bold">Or</div>
-                                                                <span className="select-file">Click to select file</span>
+                                                                <span className="select-file">Click To Select File</span>
                                                             </h2>
                                                     }
                                                 </div>
@@ -265,16 +265,16 @@ const UploadCsv = () => {
                                         emptyMessage="No users found."
                                         responsiveLayout="scroll"
                                     >
-                                        <Column field="first_name" header="First name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} />
-                                        <Column field="last_name" header="Last name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} />
-                                        <Column field="entity_name" header="Entity name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} />
-                                        <Column field="preferred_name" header="Preferred name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} />
-                                        <Column field="abn_number" header="ABN number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} />
-                                        <Column field="email" className='table-email-field' header="Email address" body={(rowData) => customBodyTemplate(rowData, 'email')} />
-                                        <Column field="phone" header="Phone number" body={(rowData) => customBodyTemplate(rowData, 'phone')} />
+                                        <Column field="first_name" header="First Name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} />
+                                        <Column field="last_name" header="Last Name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} />
+                                        <Column field="entity_name" header="Entity Name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} />
+                                        <Column field="preferred_name" header="Preferred Name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} />
+                                        <Column field="abn_number" header="ABN Number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} />
+                                        <Column field="email" className='table-email-field' header="Email Address" body={(rowData) => customBodyTemplate(rowData, 'email')} />
+                                        <Column field="phone" header="Phone Number" body={(rowData) => customBodyTemplate(rowData, 'phone')} />
                                         <Column field="address" header="Address" body={(rowData) => customBodyTemplate(rowData, 'address')} />
-                                        <Column field="client_code" header="Client code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} />
-                                        <Column field="user_defined" header="User defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} />
+                                        <Column field="client_code" header="Client Code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} />
+                                        <Column field="user_defined" header="User Defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} />
                                     </DataTable>
                                 </div>
                             )}

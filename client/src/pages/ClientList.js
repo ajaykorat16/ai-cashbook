@@ -173,7 +173,7 @@ const ClientList = () => {
         <>
             <Layout>
                 <div className="special_flex mb-25 title_container">
-                    <h1 className="main_title">Client list</h1>
+                    <h1 className="main_title">Client List</h1>
                     <div className="right_flex">
                         <div className="search_box">
                             <input
@@ -183,7 +183,7 @@ const ClientList = () => {
                             />
                         </div>
                         <button className="common_btn ms-4" data-bs-toggle="modal" data-bs-target="#add_client" onClick={() => setVisible(true)}>
-                            Add client
+                            Add Client
                         </button>
                         <button className="common_btn ms-4" onClick={() => navigate('/user/upload-clients')}>
                             <Icon icon="ep:arrow-down-bold" className='icon_for_btn' style={{ color: '#4dd0a6' }} />Import
@@ -217,16 +217,16 @@ const ClientList = () => {
                             onRowClick={(e) => handleRowClick(e.data)}
                         >
                             <Column selectionMode="multiple" checked={selectedClients.length === clients.length} />
-                            <Column field="first_name" header="First name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} sortable filterField="first_name" />
-                            <Column field="last_name" header="Last name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} sortable filterField="last_name" />
-                            <Column field="entity_name" header="Entity name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} sortable filterField="entity_name" />
-                            <Column field="preferred_name" header="Preferred name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} sortable />
-                            <Column field="abn_number" header="ABN number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} sortable />
-                            <Column field="email" className='table-email-field' header="Email address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
+                            <Column field="first_name" header="First Name" body={(rowData) => customBodyTemplate(rowData, 'first_name')} sortable filterField="first_name" />
+                            <Column field="last_name" header="Last Name" body={(rowData) => customBodyTemplate(rowData, 'last_name')} sortable filterField="last_name" />
+                            <Column field="entity_name" header="Entity Name" body={(rowData) => customBodyTemplate(rowData, 'entity_name')} sortable filterField="entity_name" />
+                            <Column field="preferred_name" header="Preferred Name" body={(rowData) => customBodyTemplate(rowData, 'preferred_name')} sortable />
+                            <Column field="abn_number" header="ABN Number" body={(rowData) => customBodyTemplate(rowData, 'abn_number')} sortable />
+                            <Column field="email" className='table-email-field' header="Email Address" body={(rowData) => customBodyTemplate(rowData, 'email')} sortable filterField="email" />
                             <Column field="phone" header="Phone number" body={(rowData) => customBodyTemplate(rowData, 'phone')} sortable />
                             <Column field="address" header="Address" body={(rowData) => customBodyTemplate(rowData, 'address')} sortable />
-                            <Column field="client_code" header="Client code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} sortable />
-                            <Column field="user_defined" header="User defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} sortable />
+                            <Column field="client_code" header="Client Code" body={(rowData) => customBodyTemplate(rowData, 'client_code')} sortable />
+                            <Column field="user_defined" header="User Defined" body={(rowData) => customBodyTemplate(rowData, 'user_defined')} sortable />
                             <Column header="" className='action_td' align="left" body={(rowData) => (
                                 <div className='d-flex'>
                                     <Link to={`/user/spreadsheet/${rowData._id}`} className="green_btn" data-toggle="tooltip" title="Spreadsheet">

@@ -440,7 +440,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     )}
                 </div>
                 <div className="right_flex mb-25 justify-content-end mt-3">
-                    <button className="common_btn ms-4 back_to_list" onClick={() => navigate("/user/clients")}>Back to list</button>
+                    <button className="common_btn ms-4 back_to_list" onClick={() => navigate("/user/clients")}>Back To List</button>
                 </div>
                 {isLoading ? (
                     <Loader />) : (

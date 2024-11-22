@@ -287,15 +287,15 @@ const ItrReport = () => {
                             </div>
                             <div className="date_main_box">
                                 <div onClick={() => calculateDateRange('currentMonthToDate')}>
-                                    <div className="dateleft_data">Month to date</div>
+                                    <div className="dateleft_data">Month To Date</div>
                                     <div className="dateright_data">{showDateRange('currentMonthToDate')}</div>
                                 </div>
                                 <div onClick={() => calculateDateRange('currentQuarterToDate')}>
-                                    <div className="dateleft_data">Quarter to date</div>
+                                    <div className="dateleft_data">Quarter To Date</div>
                                     <div className="dateright_data">{showDateRange('currentQuarterToDate')}</div>
                                 </div>
                                 <div onClick={() => calculateDateRange('currentYearToDate')}>
-                                    <div className="dateleft_data">Year to date</div>
+                                    <div className="dateleft_data">Year To Date</div>
                                     <div className="dateright_data">{showDateRange('currentYearToDate')}</div>
                                 </div>
                             </div>

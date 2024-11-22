@@ -205,7 +205,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                 <div className="modal-dialog modal-dialog-centered modal-lg">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title" id="exampleModalLabel">{editMode ? "Edit client" : "Add client"}</h5>
+                            <h5 className="modal-title" id="exampleModalLabel">{editMode ? "Edit Client" : "Add Client"}</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={() => handleClose()}></button>
                         </div>
                         <CForm onSubmit={handleSubmit} noValidate validated={validated}>
@@ -219,7 +219,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                             checked={showIndividual}
                                             onChange={(e) => { handleIndividual(e) }}
                                         />
-                                        <label htmlFor="styled-checkbox-2">Non-individual</label>
+                                        <label htmlFor="styled-checkbox-2">Non-Individual</label>
                                     </div>
                                     {
                                         showIndividual ? (
@@ -239,7 +239,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                     id="floatingInput3"
                                                                     placeholder="Entity name"
                                                                 />
-                                                                <label htmlFor="floatingInput3">Entity name<span className='text-danger'>*</span></label>
+                                                                <label htmlFor="floatingInput3">Entity Name<span className='text-danger'>*</span></label>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -263,7 +263,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                         id="floatingInput1"
                                                                         placeholder="First name"
                                                                     />
-                                                                    <label htmlFor="floatingInput1">First name<span className='text-danger'>*</span></label>
+                                                                    <label htmlFor="floatingInput1">First Name<span className='text-danger'>*</span></label>
                                                                 </div>
                                                             </div>
                                                             <div className="col-md-6">
@@ -279,7 +279,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                                         id="floatingInput2"
                                                                         placeholder="Last name"
                                                                     />
-                                                                    <label htmlFor="floatingInput2">Last name<span className='text-danger'>*</span></label>
+                                                                    <label htmlFor="floatingInput2">Last Name<span className='text-danger'>*</span></label>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -300,7 +300,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         id="floatingInput6"
                                                         placeholder="ABN number"
                                                     />
-                                                    <label htmlFor="floatingInput6">ABN number</label>
+                                                    <label htmlFor="floatingInput6">ABN Number</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -313,7 +313,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         id="floatingInput7"
                                                         placeholder="Preferred name"
                                                     />
-                                                    <label htmlFor="floatingInput7">Preferred name</label>
+                                                    <label htmlFor="floatingInput7">Preferred Name</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -333,7 +333,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         id="floatingInput8"
                                                         placeholder="Phone number"
                                                     />
-                                                    <label htmlFor="floatingInput8">Phone number</label>
+                                                    <label htmlFor="floatingInput8">Phone Number</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -347,7 +347,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         placeholder="Email address"
                                                         feedbackInvalid='Enter valid email address'
                                                     />
-                                                    <label htmlFor="floatingInput9">Email address</label>
+                                                    <label htmlFor="floatingInput9">Email Address</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -367,7 +367,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         id="floatingInput10"
                                                         placeholder="Client code"
                                                     />
-                                                    <label htmlFor="floatingInput10">Client code<span className='text-danger'>*</span></label>
+                                                    <label htmlFor="floatingInput10">Client Code<span className='text-danger'>*</span></label>
                                                 </div>
                                             </div>
                                             <div className="col-md-6">
@@ -380,7 +380,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                                                         id="floatingInput11"
                                                         placeholder="User defined"
                                                     />
-                                                    <label htmlFor="floatingInput11">User defined</label>
+                                                    <label htmlFor="floatingInput11">User Defined</label>
                                                 </div>
                                             </div>
                                             <div className="col-md-12">
@@ -403,7 +403,7 @@ const AddClient = ({ fetchClients, editMode, editClientId, setEditMode, setEditC
                             <div className="modal-footer">
                                 <button type="button" className="btn common_btn" data-bs-dismiss="modal">Close</button>
                                 {!editMode &&
-                                    <button type="button" className="btn common_btn" onClick={() => setShowFullDetail(!showFullDetail)}>{showFullDetail ? `Hide full detail` : `Full client detail`}</button>
+                                    <button type="button" className="btn common_btn" onClick={() => setShowFullDetail(!showFullDetail)}>{showFullDetail ? `Hide Full Detail` : `Full Client Detail`}</button>
                                 }
                                 <button type="submit" className="btn common_btn">Save</button>
                             </div>

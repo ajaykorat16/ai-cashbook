@@ -54,10 +54,10 @@ const Layout = ({ children }) => {
                                                 </Link></li>
                                                 <>
                                                     <li><Link to={'/user/chart-of-accounts'} className={location.pathname.match("/user/chart-of-accounts") && `selected`}>
-                                                        <Icon icon="carbon:account" className='btn_icon' />Chart of accounts
+                                                        <Icon icon="carbon:account" className='btn_icon' />Chart Of Accounts
                                                     </Link></li>
                                                     <li><Link to={'/user/auto-categorize'} className={location.pathname.match("/user/auto-categorize") && `selected`}>
-                                                        <Icon icon="uil:chart-growth" className='btn_icon' />Auto categorize
+                                                        <Icon icon="uil:chart-growth" className='btn_icon' />Auto Categorize
                                                     </Link></li>
 
                                                 </>

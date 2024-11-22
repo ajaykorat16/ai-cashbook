@@ -32,7 +32,7 @@ const ClientsAccounts = () => {
                 showSelection={true}
                 getCsvData={getClientCategory}
                 updateCsvData={updateClientCatrgory}
-                title={'Chart of accounts'}
+                title={'Chart Of Accounts'}
             />
         </>
     )

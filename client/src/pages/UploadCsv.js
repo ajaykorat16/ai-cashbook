@@ -180,7 +180,7 @@ const UploadCsv = () => {
                             <ClientSelection className="head_select align-self-end" />
                         </div>
                         <div className="right_flex mb-25 justify-content-end mt-3">
-                            <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>Back to list</button>
+                            <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>Back To List</button>
                         </div>
                         <div className="sheet_accodian">
                             <div className="accordion" id="accordionExample">
@@ -188,7 +188,7 @@ const UploadCsv = () => {
                                     <h2 className="accordion-header" id="headingOne">
                                         <button className="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
                                             aria-expanded="true" aria-controls="collapseOne">
-                                            Drag and Drop file
+                                            Drag And Drop File
                                         </button>
                                     </h2>
                                     <div id="collapseOne" className="accordion-collapse collapse show" aria-labelledby="headingOne"
@@ -198,11 +198,11 @@ const UploadCsv = () => {
                                                 <input {...getInputProps()} />
                                                 {
                                                     isDragActive ?
-                                                        <h2>Drop the files here...</h2> :
+                                                        <h2>Drop The Files Here...</h2> :
                                                         <h2 className="text-center">
-                                                            Drag and Drop file here
+                                                            Drag And Drop File Here
                                                             <div className="my-2 fw-bold">Or</div>
-                                                            <span className="select-file">Click to select file</span>
+                                                            <span className="select-file">Click To Select File</span>
                                                         </h2>
                                                 }
                                             </div>

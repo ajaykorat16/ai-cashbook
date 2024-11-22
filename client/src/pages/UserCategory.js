@@ -11,7 +11,7 @@ function UserCategory() {
             showSelection={false}
             getCsvData={getUserCategory}
             updateCsvData={updateUserCatrgory}
-            title={`Master category`}
+            title={`Master Category`}
         />
     )
 }

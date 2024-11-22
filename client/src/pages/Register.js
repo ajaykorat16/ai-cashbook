@@ -203,7 +203,7 @@ const Register = () => {
                                 </div>
                             </CForm>
                             <div className="sign-up">
-                                <span>Already have an account?</span>
+                                <span>Already Have An Account?</span>
                                 <Link to='/' className='mt-3 green_label'>Sign In</Link>
                             </div>
                         </div>

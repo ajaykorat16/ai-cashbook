@@ -14,7 +14,7 @@ const ChartOfAccounts = () => {
                 showSelection={false}
                 getCsvData={getClientCategory}
                 updateCsvData={updateClientCatrgory}
-                title={'Chart of accounts'}
+                title={'Chart Of Accounts'}
             />
         </>
     )
