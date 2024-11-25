@@ -67,30 +67,22 @@ const UploadCsv = () => {
 
 
     const validateRowData = async (rowData) => {
-        console.log("rowData--", rowData)
         for (const row of rowData) {
-            const clientCode = row?.client_code?.trim();
-            const hasClientCode = clientCode !== '' && typeof clientCode !== 'undefined';
+            const clientInfo = {
+                abn_number: row?.abn_number || "",
+                preferred_name: row?.preferred_name || "",
+                phone: row?.phone || "",
+                client_code: row?.client_code?.trim() ? row?.client_code?.trim() : "",
+                email: row?.email || "",
+                user_defined: row?.user_defined || "",
+                address: row?.address || "",
+                entity_name: row?.entity_name || "",
+                first_name: row?.first_name || "",
+                last_name: row?.last_name || "",
+                individual: row?.individual || ""
+            };
 
-            if (hasClientCode) {
-                const clientInfo = {
-                    abn_number: row?.abn_number || "",
-                    preferred_name: row?.preferred_name || "",
-                    phone: row?.phone || "",
-                    client_code: row?.client_code?.trim() ? row?.client_code?.trim() : "",
-                    email: row?.email || "",
-                    user_defined: row?.user_defined || "",
-                    address: row?.address || "",
-                    entity_name: row?.entity_name || "",
-                    first_name: row?.first_name || "",
-                    last_name: row?.last_name || "",
-                    individual: row?.individual || ""
-                };
-
-                return clientInfo
-            } else {
-                return null
-            }
+            return clientInfo
         }
     };
 
