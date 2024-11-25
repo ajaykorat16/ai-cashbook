@@ -32,27 +32,42 @@ const UploadCsv = () => {
 
     const csvToObject = (csvData) => {
         const rows = csvData.split('\n').filter(row => row.trim() !== '');
+
         const headers = rows[0].split(',').map(header => header.trim());
 
         return rows.slice(1).map(row => {
-            const values = row.split(',').map(value => {
-                value = value.trim();
-                if (value.startsWith('"') && value.endsWith('"')) {
-                    value = value.slice(1, -1);
-                }
-                return value || '';
-            });
+            const values = parseCSVRow(row);
+
+            while (values.length < headers.length) {
+                values.push('');
+            }
 
             let obj = {};
             headers.forEach((header, index) => {
                 const key = header.toLowerCase().replace(/\s+/g, '_');
                 obj[key] = values[index] || '';
             });
+
             return obj;
         });
     };
 
+    const parseCSVRow = (row) => {
+        const regex = /(?<=,|^)(?=,|$)|(".*?"|[^",\n]+)(?=\s*,|\s*$)/g;
+
+        const matches = [...row.matchAll(regex)].map(match => match[1] || match[2] || '').filter(value => value !== undefined);
+
+        return matches.map(value => {
+            if (value.startsWith('"') && value.endsWith('"')) {
+                return value.slice(1, -1);
+            }
+            return value.trim();
+        });
+    };
+
+
     const validateRowData = async (rowData) => {
+        console.log("rowData--", rowData)
         for (const row of rowData) {
             const clientCode = row?.client_code?.trim();
             const hasClientCode = clientCode !== '' && typeof clientCode !== 'undefined';
@@ -157,15 +172,15 @@ const UploadCsv = () => {
     const handleExports = () => {
         const clientList = [
             {
-                abn_number: "DEMOUSER",
-                address: "test",
-                client_code: "DE0001",
-                email: "demo@gmail.com",
                 entity_name: "Demo",
-                individual: "false",
-                phone: "1234567890",
+                abn_number: "DEMOUSER",
                 preferred_name: "Demo User",
-                user_defined: "true"
+                phone: "1234567890",
+                email: "demo@gmail.com",
+                client_code: "DE0001",
+                user_defined: "true",
+                address: "test",
+                individual: "No",
             }
         ]
 

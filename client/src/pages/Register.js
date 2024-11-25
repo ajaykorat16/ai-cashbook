@@ -141,7 +141,7 @@ const Register = () => {
                                 </div>
                             </div>
                             <div className='justify-content-center d-flex'>
-                                <div class="line-with-verticals"></div>
+                                <div className="line-with-verticals"></div>
                             </div>
                             <CForm onSubmit={handleSubmit} noValidate validated={validated} className='d-flex justify-content-center'>
                                 <div className='row credentials_container'>

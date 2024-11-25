@@ -273,12 +273,12 @@ const exportClient = async (req, res) => {
             if (client?.entity_name) {
                 return {
                     ...client.toObject(),
-                    individual: "false"
+                    individual: "No"
                 }
             } else {
                 return {
                     ...client.toObject(),
-                    individual: "true"
+                    individual: "Yes"
                 }
             }
         });
@@ -605,7 +605,16 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
     const errors = [];
 
     try {
-        if (individual == "true" || individual == "TRUE") {
+        if (individual == "no" || individual == "No") {
+            if (!entity_name || entity_name.length < 2) {
+                const errorObj = {
+                    field: "entity_name",
+                    message: "Entity name is required and must be at least two characters long."
+                };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
+            }
+        } else {
             if (!first_name || first_name.length < 2) {
                 const errorObj = {
                     field: "first_name",
@@ -619,15 +628,6 @@ const validateAndUpdateClient = async (clientData, id, user_id, isInsert) => {
                 const errorObj = {
                     field: "last_name",
                     message: "Last name is required and must be at least two characters long."
-                };
-                if (isInsert) return { status: 200, error: true, ...errorObj };
-                errors.push(errorObj);
-            }
-        } else {
-            if (!entity_name || entity_name.length < 2) {
-                const errorObj = {
-                    field: "entity_name",
-                    message: "Entity name is required and must be at least two characters long."
                 };
                 if (isInsert) return { status: 200, error: true, ...errorObj };
                 errors.push(errorObj);
@@ -742,7 +742,16 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
     const errors = [];
 
     try {
-        if (individual == "true" || individual == "TRUE") {
+        if (individual == "no" || individual == "No") {
+            if (!entity_name || entity_name.length < 2) {
+                const errorObj = {
+                    field: "entity_name",
+                    message: "Entity name is required and must be at least two characters long."
+                };
+                if (isInsert) return { status: 200, error: true, ...errorObj };
+                errors.push(errorObj);
+            }
+        } else {
             if (!first_name || first_name.length < 2) {
                 const errorObj = {
                     field: "first_name",
@@ -756,15 +765,6 @@ const validateAndCreateClient = async (clientData, user_id, isInsert) => {
                 const errorObj = {
                     field: "last_name",
                     message: "Last name is required and must be at least two characters long."
-                };
-                if (isInsert) return { status: 200, error: true, ...errorObj };
-                errors.push(errorObj);
-            }
-        } else {
-            if (!entity_name || entity_name.length < 2) {
-                const errorObj = {
-                    field: "entity_name",
-                    message: "Entity name is required and must be at least two characters long."
                 };
                 if (isInsert) return { status: 200, error: true, ...errorObj };
                 errors.push(errorObj);
@@ -880,6 +880,7 @@ const clientImport = async (req, res) => {
         let successImports = 0;
         let failedImports = 0;
         let { clients, isInsert } = req.body;
+        console.log("clients--",clients)
         const user_id = req.user._id;
         clients = JSON.parse(clients);
         const failedClients = [];
