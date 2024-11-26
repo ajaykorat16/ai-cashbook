@@ -880,7 +880,6 @@ const clientImport = async (req, res) => {
         let successImports = 0;
         let failedImports = 0;
         let { clients, isInsert } = req.body;
-        console.log("clients--",clients)
         const user_id = req.user._id;
         clients = JSON.parse(clients);
         const failedClients = [];
@@ -1287,6 +1286,80 @@ function removeMatchedItems(newCsv, spreadsheetCursor, startDate, endDate) {
     return result;
 }
 
+const checkInterBank = async (spreadsheetCursor, classifiedData, client_id, spreadsheet, userSpreadsheet) => {
+    const startDate = moment().subtract(2, 'days');
+    const endDate = moment();
+
+    const filteredData = spreadsheetCursor.filter((record) => {
+        if (record.data[4]) {
+            const dateInString = record.data[1];
+            const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
+            if (dateInRecord.isValid()) {
+                return dateInRecord.isBetween(startDate, endDate, null, '[]');
+            }
+        }
+    });
+
+    const formattedData = filteredData.map((row) => {
+        const dateInString = row.data[1];
+        const formattedDate = moment(dateInString, 'YYYY-MM-DD').format('YYYY-MM-DD');
+
+        if (row?.data[0] && row?.data[1] && row?.data[2] && row.data[4] && moment(dateInString, 'YYYY-MM-DD').isValid()) {
+            return [row.data[0], formattedDate, ...row.data.slice(2), row._id];
+        }
+        return null;
+    }).filter(row => row !== null);
+
+
+    const newData = classifiedData.map((data) => {
+        if (data[0] && data[1] && data[2] && data[4]) {
+            return data;
+        }
+        return null;
+    }).filter(row => row !== null);
+
+    const interBankData = [];
+    for (const newRow of newData) {
+        const newRowAmount = parseFloat(newRow[2]);
+
+        for (const formattedRow of formattedData) {
+            if (formattedRow[0] !== newRow[0] && parseFloat(formattedRow[2]) + newRowAmount === 0) {
+                interBankData.push(newRow);
+
+                await userSpreadsheet.insertOne({
+                    data: newRow,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    client_id,
+                    spreadsheet,
+                    inter_bank: true
+                });
+
+                await userSpreadsheet.updateOne(
+                    { _id: formattedRow[formattedRow.length - 1] },
+                    {
+                        $set: {
+                            inter_bank: true,
+                        }
+                    }
+                );
+                break;
+            }
+        }
+    }
+
+    const newCsv = classifiedData.filter(data => {
+        return !interBankData.some(interBank =>
+            data[0] === interBank[0] &&
+            data[1] === interBank[1] &&
+            data[2] === interBank[2] &&
+            data[4] === interBank[4]
+        );
+    });
+
+    return newCsv
+}
 
 const createClientSpreadsheet = async (req, res) => {
     try {
@@ -1541,13 +1614,16 @@ const createClientSpreadsheet = async (req, res) => {
         if (oldData.length > 1 && filteredNewCsv.length > 0) {
             await train(oldData, id)
             const classifiedData = await classify([oldData[0], ...filteredNewCsv], id, database, user?.email)
-            const newData = classifiedData.map((data) => {
+            const newClassifiedData = await checkInterBank(spreadsheetCursor, classifiedData, id, spreadsheetId, userSpreadsheet)
+
+            const newData = newClassifiedData.map((data) => {
                 return {
                     client_id: new ObjectId(id),
                     spreadsheet: new ObjectId(spreadsheetId),
                     data: data.slice(0, -1),
                     createdAt: new Date(),
                     updatedAt: new Date(),
+                    inter_bank: false
                 }
             })
 
@@ -1560,6 +1636,7 @@ const createClientSpreadsheet = async (req, res) => {
                     data,
                     createdAt: new Date(),
                     updatedAt: new Date(),
+                    inter_bank: false
                 }
             })
             if (insertData.length > 0) {
@@ -1809,7 +1886,8 @@ const updateClientSpreadsheet = async (req, res) => {
                                 createdAt: new Date(),
                                 updatedAt: new Date(),
                                 client_id: new ObjectId(clientId),
-                                spreadsheet: null
+                                spreadsheet: null,
+                                inter_bank: false
                             });
                             insertedDataId.push(insertedId?.insertedId)
                         }
