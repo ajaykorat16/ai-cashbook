@@ -1331,7 +1331,7 @@ const checkInterBank = async (spreadsheetCursor, classifiedData, client_id, spre
                     data: newRow,
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    client_id,
+                    client_id: new ObjectId(client_id),
                     spreadsheet,
                     inter_bank: true
                 });
