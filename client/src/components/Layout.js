@@ -39,7 +39,7 @@ const Layout = ({ children }) => {
                                 <div className="side_data">
                                     <ul>
                                         <Link to={"/"} className='header_logo px-2 d-flex justify-content-center mb-3'>
-                                            <img src="/images/accoutn_logo_2.png" alt="" />
+                                            <img src="/images/accoutn_logo_3.png" alt="" />
                                         </Link>
                                         {auth.user.role === 'user' ? (
                                             <>
