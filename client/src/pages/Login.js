@@ -118,7 +118,7 @@ const Login = () => {
                     <header>
                         <div className="container">
                             <div className="main_logo">
-                                <img className='web_logo' src="/images/accoutn_logo.svg" alt="" />
+                                <img className='web_logo' src="/images/accoutn_logo_4.jpeg" alt="" />
                             </div>
                         </div>
                     </header>
