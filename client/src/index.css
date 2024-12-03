@@ -170,7 +170,7 @@ div.brd_green_box span {
   width: auto;
 }
 
-.common_btn:hover, 
+.common_btn:hover,
 .common_btn:focus {
   background: #1F305E;
   color: var(--white-color) !important;
@@ -1568,6 +1568,10 @@ span[data-pc-section="sort"] svg {
   border: 1px solid #1F305E !important;
 }
 
+.tooltip .tooltip-inner {
+  font-size: 1  rem; /* Adjust size as needed */
+}
+
 @media screen and (max-width: 1550px) {
   .login_center_box {
     display: block;
@@ -1981,6 +1985,9 @@ span[data-pc-section="sort"] svg {
     height: 140px;
   }
 
+  h1.main_title {
+    font-size: 25px;
+  }
 }
 
 .css-20bmp1-MuiSvgIcon-root {

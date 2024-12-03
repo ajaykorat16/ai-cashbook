@@ -12,7 +12,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent, ColumnsDirective, ColumnDirective } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
 import { useClient } from '../contexts/ClientContexts';
-import dayjs from 'dayjs';
 import moment from 'moment';
 import $ from 'jquery';
 import 'jquery-ui-dist/jquery-ui.css';
@@ -32,13 +31,30 @@ const SheetComponent = ({ clientId, showSelection }) => {
     const [isLoading, setIsLoading] = useState(true);
     const currentYearStart = moment().startOf('year');
     const currentYearEnd = moment().endOf('year');
-    const [fromDate, setFromDate] = useState(currentYearStart.format('MM/DD/YYYY'));
-    const [toDate, setToDate] = useState(currentYearEnd.format('MM/DD/YYYY'));
+    const [fromDate, setFromDate] = useState();
+    const [toDate, setToDate] = useState();
     const [categortList, setCategoryList] = useState([])
     const [categoryData, setCategoryData] = useState({});
     const [categoryHeaders, setCategoryHeaders] = useState({});
     const [sheetData, setSheetData] = useState([])
     const [showMenu, setShowMenu] = useState(false)
+
+    useEffect(() => {
+        const storedFromDate = localStorage.getItem('fromDate');
+        const storedToDate = localStorage.getItem('toDate');
+
+        if (storedFromDate) {
+            setFromDate(storedFromDate);
+        } else {
+            setFromDate(currentYearStart.format('MM/DD/YYYY'))
+        }
+
+        if (storedToDate) {
+            setToDate(storedToDate);
+        } else {
+            setToDate(currentYearEnd.format('MM/DD/YYYY'));
+        }
+    }, []);
 
     const convertToCellFormat = (data) => {
         const convertedData = data?.map(row => ({
@@ -419,7 +435,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     const firstRowRange = `B1:${String.fromCharCode(64 + colCount)}1`;
                     spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
 
-                    spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
+                    // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
 
                     spreadsheetRef.current.lockCells(`A1:A${rowCount}`, true);
                     spreadsheetRef.current.hideColumn(0, 0);
@@ -455,59 +471,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
             console.log("error--", error)
         }
     };
-
-    // const applyFilterOnColumn = (columnLetter) => {
-    //     if (spreadsheetRef.current) {
-    //         const sheet = spreadsheetRef.current.getActiveSheet();
-    //         const colCount = sheet.usedRange.colIndex + 1;
-    //         const rowCount = sheet.usedRange.rowIndex + 1;
-    //         const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
-
-    //         spreadsheetRef.current.applyFilter(
-    //             [{
-    //                 field: columnLetter,
-    //                 operator: 'notEqual',
-    //                 value: ''
-    //             }],
-    //             range
-    //         );
-    //     }
-    //     // spreadsheetRef.current.refresh();
-    // };
-
-    // const applyGstDropdown = async () => {
-    //     if (spreadsheetRef.current) {
-    //         const sheet = spreadsheetRef.current.getActiveSheet();
-    //         const rowCount = sheet.usedRange.rowIndex + 1;
-    //         const dropdownRange = `H2:H${rowCount}`;
-    //         const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
-    //         const data = gstList.join(',')
-
-    //         await spreadsheetRef.current.addDataValidation({
-    //             type: 'List',
-    //             operator: 'InBetween',
-    //             value1: data,
-    //             ignoreBlank: false
-    //         }, dropdownRange);
-    //     }
-    // };
-
-    // const applyBasLabN = async () => {
-    //     if (spreadsheetRef.current) {
-    //         const sheet = spreadsheetRef.current.getActiveSheet();
-    //         const rowCount = sheet.usedRange.rowIndex + 1;
-    //         const dropdownRange = `N2:N${rowCount}`;
-    //         const labN = ['1A', '1B']
-    //         const data = labN.join(',')
-
-    //         await spreadsheetRef.current.addDataValidation({
-    //             type: 'List',
-    //             operator: 'InBetween',
-    //             value1: data,
-    //             ignoreBlank: false
-    //         }, dropdownRange);
-    //     }
-    // };
 
     const fetchClientCategory = async () => {
         try {
@@ -728,18 +691,26 @@ const SheetComponent = ({ clientId, showSelection }) => {
     useEffect(() => {
         $('#datepicker').datepicker({
             uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy'
+            dateFormat: 'mm/dd/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1900:2100",
         }).on('change', function () {
             const selectedDate = $(this).val();
             setFromDate(selectedDate);
+            localStorage.setItem('fromDate', selectedDate);
         });
 
         $('#datepicker1').datepicker({
             uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy'
+            dateFormat: 'mm/dd/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1900:2100",
         }).on('change', function () {
             const selectedDate = $(this).val();
             setToDate(selectedDate);
+            localStorage.setItem('toDate', selectedDate);
         });
     }, []);
 
@@ -802,7 +773,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
         startDate = startDate ? startDate.format('MM/DD/YYYY') : ''
         endDate = endDate ? endDate.format('MM/DD/YYYY') : ''
         setFromDate(startDate)
+        localStorage.setItem('fromDate', startDate);
         setToDate(endDate)
+        localStorage.setItem('toDate', endDate);
         setShowMenu(false)
     };
 
@@ -993,6 +966,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     mode: 'Multiple'
                                 }}
                                 created={() => {
+                                    const sheet = spreadsheetRef.current.getActiveSheet();
+                                    const colCount = sheet.usedRange.colIndex + 1;
+                                    spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
                                     spreadsheetRef.current.selectRange('B1');
                                     applyCalculations();
                                     formateSheet();

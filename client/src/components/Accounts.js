@@ -14,6 +14,7 @@ import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, Sprea
 import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
+import { useClient } from '../contexts/ClientContexts';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
@@ -23,6 +24,7 @@ const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '
 const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title }) => {
     const navigate = useNavigate();
     const spreadsheetRef = useRef(null);
+    const {clientObject} = useClient()
 
     const [dataLoaded, setDataLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -282,7 +284,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 const firstRowRange = `A1:${String.fromCharCode(64 + colCount)}1`;
                 spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
 
-                spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
+                // spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
 
                 const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
                 spreadsheetRef.current.cellFormat({ border: 'none', borderBottom: '1px solid #FFFFFF' }, range);
@@ -435,6 +437,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             <Layout>
                 <div className="special_flex d-flex justify-content-space-between">
                     <h1 className="main_title mb-0">{title}</h1>
+                    <h1 className="main_title mb-0">{clientObject?.label}</h1>
                     {showSelection && (
                         <ClientSelection className="head_select align-self-end" />
                     )}
@@ -455,8 +458,10 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                 allowSorting={true}
                                 allowFiltering={true}
                                 created={() => {
+                                    const sheet = spreadsheetRef.current.getActiveSheet();
+                                    const colCount = sheet.usedRange.colIndex + 1;
+                                    spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
                                     formateSheet();
-                                    // applyFilterOnColumn('A')
                                     getSheetData();
                                     setDataLoaded(false)
                                 }}

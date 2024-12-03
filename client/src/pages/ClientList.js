@@ -15,7 +15,7 @@ import { Icon } from '@iconify/react';
 const ClientList = () => {
     const options = [10, 20, 50, 100];
     const navigate = useNavigate()
-    const { getAllClients, clientsWithoutPagination } = useClient()
+    const { getAllClients, clientsWithoutPagination, setClientsAvalible } = useClient()
 
     const [clients, setClients] = useState([]);
     const [sortField, setSortField] = useState('createdAt');
@@ -40,9 +40,11 @@ const ClientList = () => {
             if (clientList?.clients?.length !== 0) {
                 setClients(clientList?.clients)
                 setTotalRecords(clientList.totalClients)
+                setClientsAvalible(true)
             } else {
                 setClients([])
                 setTotalRecords(0)
+                setClientsAvalible(false)
             }
             setIsLoading(false);
         } catch (error) {

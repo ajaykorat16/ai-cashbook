@@ -8,6 +8,7 @@ const ClientContext = createContext()
 const ClientProvider = ({ children }) => {
     const { auth, toast } = useAuth()
     const [clientObject, setClientObject] = useState("")
+    const [clientsAvalible, setClientsAvalible] = useState(true)
 
     const headers = {
         Authorization: auth?.token,
@@ -228,9 +229,9 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-    const autoCategorize = async (id) => {
+    const autoCategorize = async (id, fromDate, toDate) => {
         try {
-            const { data } = await axios.post(`${baseURL}/client/auto-categorize/${id}`, { headers });
+            const { data } = await axios.post(`${baseURL}/client/auto-categorize/${id}`, { fromDate, toDate }, { headers });
             if (data.error === false) {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
@@ -329,7 +330,7 @@ const ClientProvider = ({ children }) => {
         <ClientContext.Provider value={{
             createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, deleteSpreadsheet,
             getSpreadsheet, updateSpreadsheet, createSpreadsheet, autoCategorize, getSpreadsheetList, getSpreadsheetData,
-            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject,
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, clientsAvalible, setClientsAvalible,
             multipleDeleteClient, getLastClientCode, getItrReport, getGstReport, importClient
         }}>
             {children}

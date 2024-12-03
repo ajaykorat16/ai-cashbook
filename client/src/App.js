@@ -39,6 +39,7 @@ const App = () => {
           <Route path="category" element={<UserCategory />} />
           <Route path="upload-clients" element={<UploadClients />} />
           <Route path="upload-csv" element={<UploadCsv />} />
+          <Route path="spreadsheet" element={<Spreadsheet />} />
           <Route path="spreadsheet/:id" element={<Spreadsheet />} />
           <Route path="auto-categorize" element={<AutoCategorize />} />
           <Route path="gst-report" element={<GstReport />} />

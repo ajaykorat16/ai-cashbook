@@ -29,17 +29,6 @@ const GstReport = () => {
     const [gstAmtTotal, setGstAmtTotal] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
-    useEffect(() => {
-        $('#datepicker').datepicker({
-            uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy',
-        });
-        $('#datepicker1').datepicker({
-            uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy',
-        });
-    }, []);
-
     const fetchClient = async () => {
         const { clients } = await getAllClients(1, 1, "_id", -1, "")
         if (clients.length > 0) {
@@ -64,7 +53,10 @@ const GstReport = () => {
     useEffect(() => {
         $('#datepicker').datepicker({
             uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy'
+            dateFormat: 'mm/dd/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1900:2100",
         }).on('change', function () {
             const selectedDate = $(this).val();
             setFromDate(selectedDate);
@@ -72,7 +64,10 @@ const GstReport = () => {
 
         $('#datepicker1').datepicker({
             uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy'
+            dateFormat: 'mm/dd/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1900:2100",
         }).on('change', function () {
             const selectedDate = $(this).val();
             setToDate(selectedDate);
@@ -233,6 +228,7 @@ const GstReport = () => {
         <Layout>
             <div className="special_flex d-flex justify-content-space-between">
                 <h1 className="main_title mb-0">GST Report</h1>
+                <h1 className="main_title mb-0">{clientObject?.label}</h1>
                 <ClientSelection className="head_select align-self-end" />
             </div>
             <div className="input_form_box">

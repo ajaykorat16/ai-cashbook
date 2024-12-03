@@ -1589,9 +1589,7 @@ const createClientSpreadsheet = async (req, res) => {
                 const dateInString = record.data[1];
                 const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
-                if (dateInRecord.isValid()) {
-                    return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
-                }
+                return dateInRecord.isValid();
             }
         });
 
@@ -1661,6 +1659,10 @@ const createClientSpreadsheet = async (req, res) => {
 const autoCategorize = async (req, res) => {
     try {
         const { id } = req.params;
+        const { fromDate, toDate } = req.body
+
+        const startDate = fromDate ? moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD') : moment().startOf('year').format('YYYY-MM-DD');
+        const endDate = toDate ? moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD') : moment().endOf('year').format('YYYY-MM-DD');
 
         const client = await getClient(id);
         if (!client) {
@@ -1683,8 +1685,6 @@ const autoCategorize = async (req, res) => {
 
         const userSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
 
-        const startDate = moment().startOf('year');
-        const endDate = moment().endOf('year');
         const spreadsheetCursor = await userSpreadsheet.find({ client_id: new ObjectId(id) }).toArray();
 
         const filteredData = spreadsheetCursor.filter((record) => {
@@ -1693,7 +1693,7 @@ const autoCategorize = async (req, res) => {
                 const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
                 if (dateInRecord.isValid()) {
-                    return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
+                    return dateInRecord.isBetween(startDate, endDate, null, '[]');
                 }
             }
         });
@@ -1709,7 +1709,7 @@ const autoCategorize = async (req, res) => {
                 const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
                 if (dateInRecord.isValid()) {
-                    return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
+                    return dateInRecord.isBetween(startDate, endDate, null, '[]');
                 }
             }
         });

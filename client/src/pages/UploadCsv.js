@@ -177,10 +177,11 @@ const UploadCsv = () => {
                     <>
                         <div className="special_flex d-flex justify-content-space-between">
                             <h1 className="main_title mb-0">Spreadsheet</h1>
+                            <h1 className="main_title mb-0">{clientObject?.label}</h1>
                             <ClientSelection className="head_select align-self-end" />
                         </div>
                         <div className="right_flex mb-25 justify-content-end mt-3">
-                            <button className="common_btn ms-4" onClick={() => navigate("/user/clients")}>Back To List</button>
+                            <button className="common_btn ms-4 back_to_list" onClick={() => navigate("/user/clients")}>Back To List</button>
                         </div>
                         <div className="sheet_accodian">
                             <div className="accordion" id="accordionExample">

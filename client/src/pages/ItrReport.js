@@ -18,18 +18,6 @@ const ItrReport = () => {
     const [itrReport, setItrRport] = useState([])
     const [totalExcGst, setTotaltotalExcGst] = useState([])
 
-
-    useEffect(() => {
-        $('#datepicker').datepicker({
-            uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy',
-        });
-        $('#datepicker1').datepicker({
-            uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy',
-        });
-    }, []);
-
     const fetchClient = async () => {
         const { clients } = await getAllClients(1, 1, "_id", -1, "")
         if (clients.length > 0) {
@@ -54,7 +42,10 @@ const ItrReport = () => {
     useEffect(() => {
         $('#datepicker').datepicker({
             uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy'
+            dateFormat: 'mm/dd/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1900:2100",
         }).on('change', function () {
             const selectedDate = $(this).val();
             setFromDate(selectedDate);
@@ -62,7 +53,10 @@ const ItrReport = () => {
 
         $('#datepicker1').datepicker({
             uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy'
+            dateFormat: 'mm/dd/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1900:2100",
         }).on('change', function () {
             const selectedDate = $(this).val();
             setToDate(selectedDate);
@@ -219,6 +213,7 @@ const ItrReport = () => {
         <Layout>
             <div className="special_flex d-flex justify-content-space-between">
                 <h1 className="main_title mb-0">ITR Report</h1>
+                <h1 className="main_title mb-0">{clientObject?.label}</h1>
                 <ClientSelection className="head_select align-self-end" />
             </div>
             <div className="input_form_box">
