@@ -10,7 +10,7 @@ import '@syncfusion/ej2-grids/styles/material.css';
 import '@syncfusion/ej2-react-spreadsheet/styles/material.css';
 import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
-import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent } from '@syncfusion/ej2-react-spreadsheet';
+import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, SpreadsheetComponent, ColumnDirective, ColumnsDirective } from '@syncfusion/ej2-react-spreadsheet';
 import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
@@ -24,7 +24,7 @@ const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '
 const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title }) => {
     const navigate = useNavigate();
     const spreadsheetRef = useRef(null);
-    const {clientObject} = useClient()
+    const { clientObject } = useClient()
 
     const [dataLoaded, setDataLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -458,9 +458,9 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                 allowSorting={true}
                                 allowFiltering={true}
                                 created={() => {
-                                    const sheet = spreadsheetRef.current.getActiveSheet();
-                                    const colCount = sheet.usedRange.colIndex + 1;
-                                    spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
+                                    // const sheet = spreadsheetRef.current.getActiveSheet();
+                                    // const colCount = sheet.usedRange.colIndex + 1;
+                                    // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
                                     formateSheet();
                                     getSheetData();
                                     setDataLoaded(false)
@@ -471,6 +471,13 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                         <RangesDirective>
                                             <RangeDirective dataSource={sheetData}></RangeDirective>
                                         </RangesDirective>
+                                        <ColumnsDirective>
+                                            <ColumnDirective width={300} allowResizing={false}  ></ColumnDirective>
+                                            <ColumnDirective width={115} allowResizing={false} ></ColumnDirective>
+                                            <ColumnDirective width={160} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={240} allowResizing={false} ></ColumnDirective>
+                                            <ColumnDirective width={60} allowResizing={false} ></ColumnDirective>
+                                        </ColumnsDirective>
                                     </SheetDirective>
                                 </SheetsDirective>
                             </SpreadsheetComponent>

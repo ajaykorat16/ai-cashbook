@@ -966,9 +966,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     mode: 'Multiple'
                                 }}
                                 created={() => {
-                                    const sheet = spreadsheetRef.current.getActiveSheet();
-                                    const colCount = sheet.usedRange.colIndex + 1;
-                                    spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
+                                    // const sheet = spreadsheetRef.current.getActiveSheet();
+                                    // const colCount = sheet.usedRange.colIndex + 1;
+                                    // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
                                     spreadsheetRef.current.selectRange('B1');
                                     applyCalculations();
                                     formateSheet();
@@ -981,7 +981,21 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                             <RangeDirective dataSource={sheetData}></RangeDirective>
                                         </RangesDirective>
                                         <ColumnsDirective>
-                                            <ColumnDirective width={0} allowResizing={false} headerText="ID" ></ColumnDirective>
+                                            <ColumnDirective width={0} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={130} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={650} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={200} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={170} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={80} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={200} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
                                         </ColumnsDirective>
                                     </SheetDirective>
                                 </SheetsDirective>
