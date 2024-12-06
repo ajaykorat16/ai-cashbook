@@ -669,6 +669,7 @@ tbody tr[role="row"] {
   justify-content: center;
   align-items: center;
   padding: 28px;
+  min-height: 230px;
 }
 
 .dragdrop_box .upload-area:hover {
