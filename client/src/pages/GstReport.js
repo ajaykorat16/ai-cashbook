@@ -21,13 +21,30 @@ const GstReport = () => {
     const [showMenu, setShowMenu] = useState(false)
     const currentYearStart = moment().startOf('year');
     const currentYearEnd = moment().endOf('year');
-    const [fromDate, setFromDate] = useState(currentYearStart.format('MM/DD/YYYY'));
-    const [toDate, setToDate] = useState(currentYearEnd.format('MM/DD/YYYY'));
+    const [fromDate, setFromDate] = useState();
+    const [toDate, setToDate] = useState();
     const [taxableAmt, setTaxableAmt] = useState([])
     const [taxableAmtTotal, setTaxableAmtTotal] = useState([])
     const [gstAmt, setGstAmt] = useState([])
     const [gstAmtTotal, setGstAmtTotal] = useState([])
     const [isLoading, setIsLoading] = useState(false)
+
+    useEffect(() => {
+        const storedFromDate = localStorage.getItem('fromDate');
+        const storedToDate = localStorage.getItem('toDate');
+
+        if (storedFromDate) {
+            setFromDate(storedFromDate);
+        } else {
+            setFromDate(currentYearStart.format('MM/DD/YYYY'))
+        }
+
+        if (storedToDate) {
+            setToDate(storedToDate);
+        } else {
+            setToDate(currentYearEnd.format('MM/DD/YYYY'));
+        }
+    }, []);
 
     const fetchClient = async () => {
         const { clients } = await getAllClients(1, 1, "_id", -1, "")
@@ -60,6 +77,7 @@ const GstReport = () => {
         }).on('change', function () {
             const selectedDate = $(this).val();
             setFromDate(selectedDate);
+            localStorage.setItem('fromDate', selectedDate);
         });
 
         $('#datepicker1').datepicker({
@@ -71,6 +89,7 @@ const GstReport = () => {
         }).on('change', function () {
             const selectedDate = $(this).val();
             setToDate(selectedDate);
+            localStorage.setItem('toDate', selectedDate);
         });
     }, []);
 
@@ -129,11 +148,12 @@ const GstReport = () => {
                 endDate = null;
                 break;
         }
-
         startDate = startDate ? startDate.format('MM/DD/YYYY') : ''
         endDate = endDate ? endDate.format('MM/DD/YYYY') : ''
         setFromDate(startDate)
+        localStorage.setItem('fromDate', startDate);
         setToDate(endDate)
+        localStorage.setItem('toDate', endDate);
         setShowMenu(false)
     };
 

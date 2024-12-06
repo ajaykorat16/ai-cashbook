@@ -13,10 +13,27 @@ const ItrReport = () => {
     const [showMenu, setShowMenu] = useState(false)
     const currentYearStart = moment().startOf('year');
     const currentYearEnd = moment().endOf('year');
-    const [fromDate, setFromDate] = useState(currentYearStart.format('MM/DD/YYYY'));
-    const [toDate, setToDate] = useState(currentYearEnd.format('MM/DD/YYYY'));
+    const [fromDate, setFromDate] = useState();
+    const [toDate, setToDate] = useState();
     const [itrReport, setItrRport] = useState([])
     const [totalExcGst, setTotaltotalExcGst] = useState([])
+
+    useEffect(() => {
+        const storedFromDate = localStorage.getItem('fromDate');
+        const storedToDate = localStorage.getItem('toDate');
+
+        if (storedFromDate) {
+            setFromDate(storedFromDate);
+        } else {
+            setFromDate(currentYearStart.format('MM/DD/YYYY'))
+        }
+
+        if (storedToDate) {
+            setToDate(storedToDate);
+        } else {
+            setToDate(currentYearEnd.format('MM/DD/YYYY'));
+        }
+    }, []);
 
     const fetchClient = async () => {
         const { clients } = await getAllClients(1, 1, "_id", -1, "")
@@ -49,6 +66,7 @@ const ItrReport = () => {
         }).on('change', function () {
             const selectedDate = $(this).val();
             setFromDate(selectedDate);
+            localStorage.setItem('fromDate', selectedDate);
         });
 
         $('#datepicker1').datepicker({
@@ -60,6 +78,7 @@ const ItrReport = () => {
         }).on('change', function () {
             const selectedDate = $(this).val();
             setToDate(selectedDate);
+            localStorage.setItem('toDate', selectedDate);
         });
     }, []);
 
@@ -122,7 +141,9 @@ const ItrReport = () => {
         startDate = startDate ? startDate.format('MM/DD/YYYY') : ''
         endDate = endDate ? endDate.format('MM/DD/YYYY') : ''
         setFromDate(startDate)
+        localStorage.setItem('fromDate', startDate);
         setToDate(endDate)
+        localStorage.setItem('toDate', endDate);
         setShowMenu(false)
     };
 

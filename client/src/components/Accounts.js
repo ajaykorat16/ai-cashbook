@@ -437,7 +437,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             <Layout>
                 <div className="special_flex d-flex justify-content-space-between">
                     <h1 className="main_title mb-0">{title}</h1>
-                    <h1 className="main_title mb-0">{clientObject?.label}</h1>
+                    {title !== 'Master Category' && <h1 className="main_title mb-0">{clientObject?.label}</h1>}
                     {showSelection && (
                         <ClientSelection className="head_select align-self-end" />
                     )}
