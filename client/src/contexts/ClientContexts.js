@@ -117,6 +117,8 @@ const ClientProvider = ({ children }) => {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
                 }, 500);
+                localStorage.removeItem(`fromDate_${id}`);
+                localStorage.removeItem(`toDate_${id}`);
                 return data
             } else {
                 toast.current?.show({ severity: 'error', summary: 'Client', detail: data.message, life: 3000 })
@@ -295,6 +297,17 @@ const ClientProvider = ({ children }) => {
                 setTimeout(function () {
                     toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
                 }, 500);
+
+                const clients = JSON.parse(selectedClientIds);
+                if (clients.length > 0) {
+                    for (let i = 0; i < clients.length; i++) {
+                        const id = clients[i];
+                        if (id) {
+                            localStorage.removeItem(`fromDate_${id}`);
+                            localStorage.removeItem(`toDate_${id}`);
+                        }
+                    }
+                }
             } else {
                 toast.current?.show({ severity: 'error', summary: 'Client', detail: data.message, life: 3000 })
             }
