@@ -31,8 +31,8 @@ const SheetComponent = ({ clientId, showSelection }) => {
     const [isLoading, setIsLoading] = useState(true);
     const currentYearStart = moment().startOf('year');
     const currentYearEnd = moment().endOf('year');
-    const [fromDate, setFromDate] = useState();
-    const [toDate, setToDate] = useState();
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
     const [categortList, setCategoryList] = useState([])
     const [categoryData, setCategoryData] = useState({});
     const [categoryHeaders, setCategoryHeaders] = useState({});
@@ -40,8 +40,8 @@ const SheetComponent = ({ clientId, showSelection }) => {
     const [showMenu, setShowMenu] = useState(false)
 
     useEffect(() => {
-        const storedFromDate = localStorage.getItem('fromDate');
-        const storedToDate = localStorage.getItem('toDate');
+        const storedFromDate = localStorage.getItem(`fromDate_${clientObject?.value}`);
+        const storedToDate = localStorage.getItem(`toDate_${clientObject?.value}`);
 
         if (storedFromDate) {
             setFromDate(storedFromDate);
@@ -54,7 +54,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
         } else {
             setToDate(currentYearEnd.format('MM/DD/YYYY'));
         }
-    }, []);
+    }, [clientObject?.value]);
 
     const convertToCellFormat = (data) => {
         const convertedData = data?.map(row => ({
@@ -194,10 +194,15 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
     useEffect(() => {
         if (clientId && fromDate && toDate) {
-            fetchClientCategory()
             fetchCsvLoaded();
         }
     }, [clientId, fromDate, toDate]);
+
+    useEffect(() => {
+        if (clientId) {
+            fetchClientCategory()
+        }
+    }, [clientId]);
 
     const convertCellsToValues = (data) => {
         if (!data || !Array.isArray(data.cells)) {
@@ -698,7 +703,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
         }).on('change', function () {
             const selectedDate = $(this).val();
             setFromDate(selectedDate);
-            localStorage.setItem('fromDate', selectedDate);
+            localStorage.setItem(`fromDate_${clientObject?.value}`, selectedDate);
         });
 
         $('#datepicker1').datepicker({
@@ -710,7 +715,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
         }).on('change', function () {
             const selectedDate = $(this).val();
             setToDate(selectedDate);
-            localStorage.setItem('toDate', selectedDate);
+            localStorage.setItem(`toDate_${clientObject?.value}`, selectedDate);
         });
     }, []);
 
@@ -773,9 +778,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
         startDate = startDate ? startDate.format('MM/DD/YYYY') : ''
         endDate = endDate ? endDate.format('MM/DD/YYYY') : ''
         setFromDate(startDate)
-        localStorage.setItem('fromDate', startDate);
+        localStorage.setItem(`fromDate_${clientObject?.value}`, startDate);
         setToDate(endDate)
-        localStorage.setItem('toDate', endDate);
+        localStorage.setItem(`toDate_${clientObject?.value}`, endDate);
         setShowMenu(false)
     };
 

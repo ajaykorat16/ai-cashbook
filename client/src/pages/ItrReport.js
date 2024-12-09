@@ -13,14 +13,14 @@ const ItrReport = () => {
     const [showMenu, setShowMenu] = useState(false)
     const currentYearStart = moment().startOf('year');
     const currentYearEnd = moment().endOf('year');
-    const [fromDate, setFromDate] = useState();
-    const [toDate, setToDate] = useState();
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
     const [itrReport, setItrRport] = useState([])
     const [totalExcGst, setTotaltotalExcGst] = useState([])
 
     useEffect(() => {
-        const storedFromDate = localStorage.getItem('fromDate');
-        const storedToDate = localStorage.getItem('toDate');
+        const storedFromDate = localStorage.getItem(`fromDate_${clientObject?.value}`);
+        const storedToDate = localStorage.getItem(`toDate_${clientObject?.value}`);
 
         if (storedFromDate) {
             setFromDate(storedFromDate);
@@ -33,7 +33,7 @@ const ItrReport = () => {
         } else {
             setToDate(currentYearEnd.format('MM/DD/YYYY'));
         }
-    }, []);
+    }, [clientObject?.value]);
 
     const fetchClient = async () => {
         const { clients } = await getAllClients(1, 1, "_id", -1, "")
@@ -66,7 +66,7 @@ const ItrReport = () => {
         }).on('change', function () {
             const selectedDate = $(this).val();
             setFromDate(selectedDate);
-            localStorage.setItem('fromDate', selectedDate);
+            localStorage.setItem(`fromDate_${clientObject?.value}`, selectedDate);
         });
 
         $('#datepicker1').datepicker({
@@ -78,7 +78,7 @@ const ItrReport = () => {
         }).on('change', function () {
             const selectedDate = $(this).val();
             setToDate(selectedDate);
-            localStorage.setItem('toDate', selectedDate);
+            localStorage.setItem(`toDate_${clientObject?.value}`, selectedDate);
         });
     }, []);
 
@@ -141,9 +141,9 @@ const ItrReport = () => {
         startDate = startDate ? startDate.format('MM/DD/YYYY') : ''
         endDate = endDate ? endDate.format('MM/DD/YYYY') : ''
         setFromDate(startDate)
-        localStorage.setItem('fromDate', startDate);
+        localStorage.setItem(`fromDate_${clientObject?.value}`, startDate);
         setToDate(endDate)
-        localStorage.setItem('toDate', endDate);
+        localStorage.setItem(`toDate_${clientObject?.value}`, endDate);
         setShowMenu(false)
     };
 

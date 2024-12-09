@@ -48,9 +48,9 @@ const Spreadsheet = () => {
     } else if (!clientObject?.value) {
       fetchDefaultClient();
     } else {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [params?.id, clientObject?.value]);
+  }, [params?.id]);
 
   return (
     <Layout>
