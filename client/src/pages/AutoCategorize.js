@@ -16,8 +16,8 @@ const AutoCategorize = () => {
     const [toDate, setToDate] = useState();
 
     useEffect(() => {
-        const storedFromDate = localStorage.getItem('fromDate');
-        const storedToDate = localStorage.getItem('toDate');
+        const storedFromDate = localStorage.getItem(`fromDate_${clientObject?.value}`);
+        const storedToDate = localStorage.getItem(`toDate_${clientObject?.value}`);
 
         if (storedFromDate) {
             setFromDate(storedFromDate);
