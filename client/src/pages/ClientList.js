@@ -11,11 +11,13 @@ import ConfirmDeleteBox from '../components/ConfirmDeleteBox';
 import CustomSelect from '../components/CustomSelect';
 import ConfirmMultiDelete from '../components/ConfirmMultiDelete';
 import { Icon } from '@iconify/react';
+import { useAuth } from '../contexts/AuthContext';
 
 const ClientList = () => {
     const options = [10, 20, 50, 100];
     const navigate = useNavigate()
     const { getAllClients, clientsWithoutPagination, setClientsAvalible } = useClient()
+    const { auth } = useAuth()
 
     const [clients, setClients] = useState([]);
     const [sortField, setSortField] = useState('createdAt');
@@ -57,7 +59,7 @@ const ClientList = () => {
 
         if (clientList?.clients?.length > 0) {
             const csvContent = convertToCSV(clientList.clients);
-            downloadCSV(csvContent, "clients.csv");
+            downloadCSV(csvContent, `${auth?.user?.first_name}_clients.csv`);
         }
     };
     const convertToCSV = (data) => {

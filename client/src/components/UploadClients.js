@@ -177,7 +177,7 @@ const UploadCsv = () => {
         ]
 
         const csvContent = convertToCSV(clientList);
-        downloadCSV(csvContent, "sample.csv");
+        downloadCSV(csvContent, "sample_clients.csv");
     };
 
     const convertToCSV = (data) => {
