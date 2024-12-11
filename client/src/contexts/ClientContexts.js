@@ -190,9 +190,9 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-    const updateClientCatrgory = async (id, csvData) => {
+    const updateClientCatrgory = async (id, csvData, deletedCategory) => {
         try {
-            const { data } = await axios.put(`${baseURL}/client/update-category/${id}`, { data: csvData }, { headers });
+            const { data } = await axios.put(`${baseURL}/client/update-category/${id}`, { data: csvData, deletedCategory }, { headers });
             if (data.error === false) {
                 return data;
             } else {

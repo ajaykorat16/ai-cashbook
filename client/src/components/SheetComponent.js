@@ -864,6 +864,11 @@ const SheetComponent = ({ clientId, showSelection }) => {
             window.removeEventListener('resize', handleResize);
         };
     }, []);
+
+    const lockSheet = () => {
+        spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+    }
+
     return (
         <>
             <div className="special_flex d-flex justify-content-space-between">
@@ -977,9 +982,10 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     spreadsheetRef.current.selectRange('B1');
                                     applyCalculations();
                                     formateSheet();
+                                    lockSheet()
                                     setDataLoaded(false)
                                 }}
-                            >
+                                >
                                 <SheetsDirective>
                                     <SheetDirective frozenRows={1}>
                                         <RangesDirective>

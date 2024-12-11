@@ -509,7 +509,7 @@ const deleteSpreadsheetFromCLient = async (user, id) => {
 const updateClientCategory = async (req, res) => {
     try {
         const { id } = req.params
-        let { data } = req.body
+        let { data, deletedCategory } = req.body
 
         const client = await getClient(id)
         if (!client) {
@@ -540,6 +540,39 @@ const updateClientCategory = async (req, res) => {
             { $set: { data } },
             { returnOriginal: false }
         );
+
+        if (deletedCategory.length > 0) {
+            const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+
+            for (const category of deletedCategory) {
+                const spreadsheetCursor = await clientSpreadsheet
+                    .find({ client_id: new ObjectId(id), category: category })
+                    .toArray();
+
+                for (const spreadsheet of spreadsheetCursor) {
+                    const data = [...spreadsheet.data];
+
+                    const indicesToBlank = [4, 7, 8, 9, 12, 13];
+                    indicesToBlank.forEach(index => {
+                        if (index < data.length) {
+                            data[index] = "";
+                        }
+                    });
+                    await clientSpreadsheet.updateOne(
+                        { _id: spreadsheet._id },
+                        {
+                            $set: {
+                                data,
+                                category: data[4],
+                                updatedAt: new Date(),
+                            }
+                        }
+                    );
+                }
+            }
+        }
+
+
         return res.status(200).json({
             error: false,
             message: "Client category is updated successfully.",
@@ -1333,7 +1366,8 @@ const checkInterBank = async (spreadsheetCursor, classifiedData, client_id, spre
                     updatedAt: new Date(),
                     client_id: new ObjectId(client_id),
                     spreadsheet,
-                    inter_bank: true
+                    inter_bank: true,
+                    category: newRow[4]
                 });
 
                 await userSpreadsheet.updateOne(
@@ -1621,7 +1655,8 @@ const createClientSpreadsheet = async (req, res) => {
                     data: data.slice(0, -1),
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    inter_bank: false
+                    inter_bank: false,
+                    category: data[4]
                 }
             })
 
@@ -1634,7 +1669,8 @@ const createClientSpreadsheet = async (req, res) => {
                     data,
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                    inter_bank: false
+                    inter_bank: false,
+                    category: data[4]
                 }
             })
             if (insertData.length > 0) {
@@ -1743,6 +1779,7 @@ const autoCategorize = async (req, res) => {
                     _id: new ObjectId(_id),
                     data: updatedData,
                     updatedAt: new Date(),
+                    category: updatedData[4]
                 };
             });
 
@@ -1750,7 +1787,7 @@ const autoCategorize = async (req, res) => {
                 newData.map((item) =>
                     userSpreadsheet.updateOne(
                         { _id: item._id },
-                        { $set: { data: item.data, updatedAt: item.updatedAt } }
+                        { $set: { data: item.data, updatedAt: item.updatedAt, category: item.category } }
                     )
                 )
             );
@@ -1845,6 +1882,7 @@ const updateClientSpreadsheet = async (req, res) => {
                         {
                             $set: {
                                 data: item,
+                                category: item[5]
                             }
                         }
                     );
@@ -1868,6 +1906,7 @@ const updateClientSpreadsheet = async (req, res) => {
                                     {
                                         $set: {
                                             data: item,
+                                            category: item[4],
                                             updatedAt: new Date(),
                                         }
                                     }

@@ -15,6 +15,7 @@ import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
 import { useClient } from '../contexts/ClientContexts';
+import { useAuth } from '../contexts/AuthContext';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
@@ -25,10 +26,12 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     const navigate = useNavigate();
     const spreadsheetRef = useRef(null);
     const { clientObject } = useClient()
+    const { toast } = useAuth()
 
     const [dataLoaded, setDataLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [sheetData, setSheetData] = useState([])
+    const [csvData, setCsvData] = useState([])
 
     const getSheetData = async () => {
         if (spreadsheetRef.current) {
@@ -117,11 +120,18 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         return convertedData;
     };
 
+    const fetchCsv = async () => {
+        const csvDetail = await getCsvData(clientId);
+        const csv = csvDetail?.data || [];
+        setCsvData(csv)
+    }
+
     const fetchCsvLoaded = async () => {
         setIsLoading(true);
         try {
             const csvDetail = await getCsvData(clientId);
             const csv = csvDetail?.data || [];
+            setCsvData(csv)
             const firstRow = csv[0]
             const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
             const convertedData = convertToCellFormat(csv);
@@ -222,13 +232,35 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
 
     const handleActionComplete = async (args) => {
-        if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
-            args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert' || args.action === 'autofill') {
-
+        const deletedCategory = []
+        if ([
+            'format',
+            'cellSave',
+            'clipboard',
+            'cellDelete',
+            'delete',
+            'insert',
+            'autofill',
+        ].includes(args.action)) {
             const sheet = spreadsheetRef.current.getActiveSheet();
 
+            if (args.action === 'cellSave') {
+                const cellAddress = args.eventArgs.address;
+                const [col, row] = [cellAddress.split('!')[1][0], parseInt(cellAddress.slice(1), 10)];
+                const cellValue = args.eventArgs.displayText;
+
+                if ((!cellValue || cellValue.trim() === "") && col === 'A') {
+                    spreadsheetRef.current.updateCell(
+                        { value: args.eventArgs.oldValue },
+                        cellAddress.split('!')[1]
+                    );
+                    toast.current?.show({ severity: 'error', summary: 'Category', detail: 'Tax category is required.', life: 3000 })
+                    return;
+                }
+            }
+
             if (args.action === 'autofill') {
-                const cellAddress = args.eventArgs.fillRange
+                const cellAddress = args.eventArgs.fillRange;
                 const cellAddressWithoutSheet = cellAddress.split('!')[1];
                 const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                 const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
@@ -237,9 +269,29 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
                 renderDropdownsForColumns(rowIndex, ['C', 'D'], param1, param2);
             } else if (args?.eventArgs?.address) {
-                const cellAddress = args.eventArgs.address
+                const cellAddress = args.eventArgs.address;
 
-                if (args.action !== 'cellDelete') {
+                if (args.action == 'cellDelete') {
+                    const [firstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
+                    const firstRowNumber = parseInt(firstAddress.match(/\d+/)[0], 10);
+                    const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
+                    let showToast = false
+
+                    for (let row = firstRowNumber; row <= secondRowNumber; row++) {
+                        const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
+                        if (currentRowData[0] === '' || !currentRowData[0]) {
+                            const value = csvData[row - 1][0]
+                            spreadsheetRef.current.updateCell(
+                                { value },
+                                `A${row}`
+                            );
+                            showToast = true
+                        }
+                    }
+                    if (showToast) {
+                        toast.current?.show({ severity: 'error', summary: 'Category', detail: 'Tax category is required.', life: 3000 })
+                    }
+                } else {
                     const cellAddressWithoutSheet = cellAddress.split('!')[1];
                     const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                     const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
@@ -248,15 +300,25 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
                     renderDropdownsForColumns(rowIndex, ['C', 'D'], param1, param2);
                 }
-            } else {
-                let cellAddress
-                if (args?.eventArgs?.pastedRange) {
-                    cellAddress = args.eventArgs.pastedRange
-                } else {
-                    cellAddress = args.eventArgs.range
+            } else if (args.action === 'delete') {
+                const startIndex = args.eventArgs.startIndex
+                const endIndex = args.eventArgs.endIndex
+
+                for (let row = startIndex; row <= endIndex; row++) {
+                    const currentRowData = csvData[row];
+                    if (currentRowData[0]) {
+                        deletedCategory.push(currentRowData[0])
+                    }
                 }
-                const [firtstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
-                const firstRowNumber = parseInt(firtstAddress.match(/\d+/)[0], 10);
+            } else {
+                let cellAddress;
+                if (args?.eventArgs?.pastedRange) {
+                    cellAddress = args.eventArgs.pastedRange;
+                } else {
+                    cellAddress = args.eventArgs.range;
+                }
+                const [firstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
+                const firstRowNumber = parseInt(firstAddress.match(/\d+/)[0], 10);
                 const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
 
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
@@ -267,12 +329,14 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     renderDropdownsForColumns(row, ['C', 'D'], param1, param2);
                 }
             }
-
-            const formattedData = await getSheetData();
-            await updateCsvData(clientId, formattedData);
-            formateSheet()
         }
+
+        const formattedData = await getSheetData();
+        await updateCsvData(clientId, formattedData, deletedCategory);
+        formateSheet();
+        fetchCsv()
     };
+
 
     const formateSheet = () => {
         try {
@@ -420,6 +484,10 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         args.element.appendChild(selectElement);
     }
 
+    const lockSheet = () => {
+        spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+    }
+
     useEffect(() => {
         const handleResize = () => {
             spreadsheetRef.current.refresh();
@@ -463,6 +531,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                     // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
                                     formateSheet();
                                     getSheetData();
+                                    lockSheet();
                                     setDataLoaded(false)
                                 }}
                             >
