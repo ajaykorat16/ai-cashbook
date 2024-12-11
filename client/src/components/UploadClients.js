@@ -20,15 +20,26 @@ const UploadCsv = () => {
     const [disabledUpload, setDiasbledUpload] = useState(true)
 
     const onDrop = useCallback((acceptedFiles) => {
-        setFileName(acceptedFiles[0]?.name)
-        setFiles(acceptedFiles)
-        handleUpload(acceptedFiles, false);
-        if (acceptedFiles.length <= 0) {
-            setDiasbledUpload(true)
-        } else if (acceptedFiles.length > 0) {
-            setDiasbledUpload(false)
+        if (acceptedFiles.length > 1) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'File Error',
+                detail: 'You can only upload one file at a time.',
+                life: 3000,
+            });
+            setFiles([]);
+            setFileName('');
+            setDiasbledUpload(true);
+        } else if (acceptedFiles.length === 1) {
+            setFileName(acceptedFiles[0]?.name);
+            setFiles(acceptedFiles);
+            handleUpload(acceptedFiles, false);
+            setDiasbledUpload(false);
+        } else {
+            setDiasbledUpload(true);
         }
     }, []);
+    
 
     const csvToObject = (csvData) => {
         const rows = csvData.split('\n').filter(row => row.trim() !== '');

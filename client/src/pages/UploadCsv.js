@@ -52,11 +52,19 @@ const UploadCsv = () => {
     }
 
     const onDrop = useCallback((acceptedFiles) => {
-        if (acceptedFiles.length > 0) {
+        if (acceptedFiles.length > 1) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'File Error',
+                detail: 'You can only upload one file at a time.',
+                life: 3000,
+            });
+        } else if (acceptedFiles.length === 1) {
             setFileName(acceptedFiles[0]?.name);
             setFile(acceptedFiles[0]);
         }
     }, []);
+
 
     const handleUpload = async () => {
         if (!file) return;
