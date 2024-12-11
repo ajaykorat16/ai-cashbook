@@ -143,7 +143,7 @@ const UploadCsv = () => {
         accept: {
             'text/csv': [],
         },
-        multiple: false
+        multiple: true
     });
 
     const customBodyTemplate = (rowData, columnName, errors) => {

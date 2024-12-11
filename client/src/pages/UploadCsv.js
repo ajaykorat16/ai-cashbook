@@ -107,7 +107,7 @@ const UploadCsv = () => {
         accept: {
             'text/csv': [],
         },
-        multiple: false
+        multiple: true
     });
 
     const fetchClient = async () => {
