@@ -583,50 +583,51 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     selectElement.value = (args.cell?.value || '').trim();
 
                     selectElement.onchange = async (event) => {
-                        const selectedValue = event.target.value;
-                        const cellAddress = `${columnLetter}${rowNumber}`;
+                        setTimeout(async () => {
+                            const selectedValue = event.target.value;
+                            const cellAddress = `${columnLetter}${rowNumber}`;
+                            spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
 
-                        spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+                            const headings = convertCellsToValues(sheet.rows[0]);
+                            const removeHtmlTags = (text) => text.replace(/<[^>]*>/g, '');
+                            const headers = headings.map(removeHtmlTags);
 
-                        const headings = convertCellsToValues(sheet.rows[0]);
-                        const removeHtmlTags = (text) => text.replace(/<[^>]*>/g, '');
-                        const headers = headings.map(removeHtmlTags);
+                            const matchingValues = headers.filter(header =>
+                                categoryHeaders.includes(header)
+                            );
+                            const correspondingData = categoryData[selectedValue];
 
-                        const matchingValues = headers.filter(header =>
-                            categoryHeaders.includes(header)
-                        );
-                        const correspondingData = categoryData[selectedValue];
+                            if (matchingValues.length > 0 && correspondingData) {
+                                const rowIndexMatch = cellAddress.match(/\d+/);
+                                const rowIndex = rowIndexMatch ? parseInt(rowIndexMatch[0], 10) : null;
 
-                        if (matchingValues.length > 0 && correspondingData) {
-                            const rowIndexMatch = cellAddress.match(/\d+/);
-                            const rowIndex = rowIndexMatch ? parseInt(rowIndexMatch[0], 10) : null;
+                                matchingValues.forEach(value => {
+                                    const index = headers.indexOf(value);
+                                    const address = `${numberToAlphabet(index + 1)}${rowIndex}`;
 
-                            matchingValues.forEach(value => {
-                                const index = headers.indexOf(value);
-                                const address = `${numberToAlphabet(index + 1)}${rowIndex}`;
+                                    const categoryHeaderIndex = categoryHeaders.indexOf(value);
+                                    const headerValue = correspondingData[categoryHeaderIndex];
 
-                                const categoryHeaderIndex = categoryHeaders.indexOf(value);
-                                const headerValue = correspondingData[categoryHeaderIndex];
-
-                                if (headerValue && spreadsheetRef.current) {
-                                    try {
-                                        spreadsheetRef.current.updateCell({ value: headerValue }, address);
-                                        const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${14}"] select`);
-                                        const gstDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${9}"] select`);
-                                        if (itrDropdownElement && categoryHeaderIndex === 2) {
-                                            itrDropdownElement.value = headerValue
-                                        } else if (gstDropdownElement && categoryHeaderIndex === 1) {
-                                            gstDropdownElement.value = headerValue
+                                    if (headerValue && spreadsheetRef.current) {
+                                        try {
+                                            spreadsheetRef.current.updateCell({ value: headerValue }, address);
+                                            const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${14}"] select`);
+                                            const gstDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${9}"] select`);
+                                            if (itrDropdownElement && categoryHeaderIndex === 2) {
+                                                itrDropdownElement.value = headerValue;
+                                            } else if (gstDropdownElement && categoryHeaderIndex === 1) {
+                                                gstDropdownElement.value = headerValue;
+                                            }
+                                            applyCalculations();
+                                        } catch (error) {
+                                            console.error(`Error updating cell ${address}:`, error);
                                         }
-                                        applyCalculations()
-                                    } catch (error) {
-                                        console.error(`Error updating cell ${address}:`, error);
                                     }
-                                }
-                            });
-                        }
-                        handleDropdown(cellAddress, selectedValue);
-                        formateSheet()
+                                });
+                            }
+                            handleDropdown(cellAddress, selectedValue);
+                            formateSheet();
+                        }, 0);
                     };
 
                     args.element.innerHTML = '';
@@ -985,7 +986,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     lockSheet()
                                     setDataLoaded(false)
                                 }}
-                                >
+                            >
                                 <SheetsDirective>
                                     <SheetDirective frozenRows={1}>
                                         <RangesDirective>
