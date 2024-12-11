@@ -17,6 +17,7 @@ import $ from 'jquery';
 import 'jquery-ui-dist/jquery-ui.css';
 import 'jquery-ui-dist/jquery-ui';
 import ClientSelection from './ClientSelection';
+import LoaderOverlay from './LoaderOverlay';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
@@ -29,6 +30,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
     const [dataLoaded, setDataLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [categoryLoader, setCategoryLoader] = useState(false);
     const currentYearStart = moment().startOf('year');
     const currentYearEnd = moment().endOf('year');
     const [fromDate, setFromDate] = useState('');
@@ -469,6 +471,11 @@ const SheetComponent = ({ clientId, showSelection }) => {
                             range: range,
                         });
                     })
+
+                    setTimeout(() => {
+                        spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+                    }, 0);
+                    
                     setIsLoading(false);
                 }
             }
@@ -583,6 +590,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     selectElement.value = (args.cell?.value || '').trim();
 
                     selectElement.onchange = async (event) => {
+                        setCategoryLoader(true);
                         setTimeout(async () => {
                             const selectedValue = event.target.value;
                             const cellAddress = `${columnLetter}${rowNumber}`;
@@ -625,6 +633,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     }
                                 });
                             }
+                            setCategoryLoader(false);
                             handleDropdown(cellAddress, selectedValue);
                             formateSheet();
                         }, 0);
@@ -866,10 +875,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
         };
     }, []);
 
-    const lockSheet = () => {
-        spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
-    }
-
     return (
         <>
             <div className="special_flex d-flex justify-content-space-between">
@@ -965,6 +970,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     <Loader />) : (
                     <>
                         {dataLoaded && (<Loader />)}
+                        {categoryLoader && <LoaderOverlay />}
                         <div className={`account_sheet spreadsheet ${dataLoaded && 'invisible'} spreadsheet_height`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
@@ -983,7 +989,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     spreadsheetRef.current.selectRange('B1');
                                     applyCalculations();
                                     formateSheet();
-                                    lockSheet()
                                     setDataLoaded(false)
                                 }}
                             >
