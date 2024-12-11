@@ -471,11 +471,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
                             range: range,
                         });
                     })
-
-                    setTimeout(() => {
-                        spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
-                    }, 0);
-                    
                     setIsLoading(false);
                 }
             }
@@ -983,13 +978,14 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     mode: 'Multiple'
                                 }}
                                 created={() => {
-                                    // const sheet = spreadsheetRef.current.getActiveSheet();
+                                    // const sheet = spreadsheetRef.current.getActiveSheet()
                                     // const colCount = sheet.usedRange.colIndex + 1;
                                     // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
                                     spreadsheetRef.current.selectRange('B1');
                                     applyCalculations();
                                     formateSheet();
                                     setDataLoaded(false)
+                                    spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
                                 }}
                             >
                                 <SheetsDirective>
