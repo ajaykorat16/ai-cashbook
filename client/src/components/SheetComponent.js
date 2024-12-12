@@ -442,6 +442,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     const firstRowRange = `B1:${String.fromCharCode(64 + colCount)}1`;
                     spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
 
+                    const secondRange = 'B3:C3'
+                    spreadsheetRef.current.cellFormat({ backgroundColor: '#FFFF00' }, secondRange);
+
                     // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
 
                     // spreadsheetRef.current.lockCells(`A1:A${rowCount}`, true);

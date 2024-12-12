@@ -1428,7 +1428,7 @@ const createClientSpreadsheet = async (req, res) => {
         if (blankFilteredData[0][0] === "Bank Account") {
             blankFilteredData.shift();
             blankFilteredData.forEach(row => {
-                const [bankAccount, date, narrative, debitAmt, creditAmt, otherCat, serial, business] = row;
+                const [bankAccount, date, narrative, debitAmt, creditAmt, otherCat, serial] = row;
                 let amount = '';
                 if (creditAmt) {
                     amount = parseFloat(creditAmt.replace(/,/g, ''));
@@ -1436,11 +1436,11 @@ const createClientSpreadsheet = async (req, res) => {
                     amount = -parseFloat(debitAmt.replace(/,/g, ''));
                 }
 
-                const businessRate = parseInt(business.replace('%', ''));
+                const businessRate = 100
                 const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
 
                 if (date) {
-                    const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                    const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                     const financialYear = moment(formattedDate).year();
                     const month = moment(formattedDate).month() + 1;
 
@@ -1467,12 +1467,12 @@ const createClientSpreadsheet = async (req, res) => {
         } else {
             if (blankFilteredData[0].length === 4) {
                 blankFilteredData.forEach(row => {
-                    const [date, amount, narrative, business] = row;
-                    const businessRate = parseInt(business.replace('%', ''));
+                    const [date, amount, narrative] = row;
+                    const businessRate = 100;
                     const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
 
                     if (date) {
-                        const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                        const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                         const financialYear = moment(formattedDate).year();
                         const month = moment(formattedDate).month() + 1;
 
@@ -1501,13 +1501,13 @@ const createClientSpreadsheet = async (req, res) => {
                     blankFilteredData.splice(0, 2);
 
                     blankFilteredData.forEach(row => {
-                        const [date, narrative, amount, otherAmt, business] = row;
+                        const [date, narrative, amount] = row;
                         const cleanAmount = parseFloat(amount.replace(/[$,]/g, ''));
-                        const businessRate = parseInt(business.replace('%', ''));
+                        const businessRate = 100
                         const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
 
                         if (date) {
-                            const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                            const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                             const financialYear = moment(formattedDate).year();
                             const month = moment(formattedDate).month() + 1;
 
@@ -1533,13 +1533,13 @@ const createClientSpreadsheet = async (req, res) => {
                     });
                 } else {
                     blankFilteredData.forEach(row => {
-                        const [date, amount, narrative, otherAmt, business] = row;
+                        const [date, amount, narrative] = row;
 
-                        const businessRate = parseInt(business.replace('%', ''));
+                        const businessRate = 100
                         const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
 
                         if (date) {
-                            const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                            const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                             const financialYear = moment(formattedDate).year();
                             const month = moment(formattedDate).month() + 1;
 
@@ -1566,12 +1566,12 @@ const createClientSpreadsheet = async (req, res) => {
                 }
             } else if (blankFilteredData[0].length === 8) {
                 blankFilteredData.forEach(row => {
-                    const [date, amount, str1, str2, narrative1, narrative2, otherAmt, business] = row;
-                    const businessRate = parseInt(business.replace('%', ''));
+                    const [date, amount, str1, str2, narrative1, narrative2] = row;
+                    const businessRate = 100
                     const taxable_amt = ((amount * businessRate) / 100).toFixed(2);
 
                     if (date) {
-                        const formattedDate = moment(date, 'MM/DD/YYYY').format('YYYY-MM-DD');
+                        const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD');
                         const financialYear = moment(formattedDate).year();
                         const month = moment(formattedDate).month() + 1;
 
