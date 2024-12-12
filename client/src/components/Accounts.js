@@ -233,6 +233,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
     const handleActionComplete = async (args) => {
         const deletedCategory = []
+        const updatedCategory = []
         if ([
             'format',
             'cellSave',
@@ -247,15 +248,24 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             if (args.action === 'cellSave') {
                 const cellAddress = args.eventArgs.address;
                 const [col, row] = [cellAddress.split('!')[1][0], parseInt(cellAddress.slice(1), 10)];
+                const match = cellAddress.match(/\d+$/)
+                const rowNumber = match ? parseInt(match[0], 10) : null;
+                const currentRowData = convertCellsToValues(sheet.rows[rowNumber - 1]);
                 const cellValue = args.eventArgs.displayText;
+                const oldValue = args.eventArgs.oldValue
 
-                if ((!cellValue || cellValue.trim() === "") && col === 'A') {
-                    spreadsheetRef.current.updateCell(
-                        { value: args.eventArgs.oldValue },
-                        cellAddress.split('!')[1]
-                    );
-                    toast.current?.show({ severity: 'error', summary: 'Category', detail: 'Tax category is required.', life: 3000 })
+                if (!currentRowData[0] || currentRowData[0].trim() === ""
+                    || !currentRowData[2] || !currentRowData[2].trim() === ""
+                    || !currentRowData[3] || !currentRowData[3].trim() === ""
+                ) {
+                    const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
+                    const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
+                    renderDropdownsForColumns(rowNumber, ['C', 'D'], param1, param2);
                     return;
+                }
+
+                if (cellValue !== oldValue) {
+                    updatedCategory.push([oldValue, cellValue])
                 }
             }
 
@@ -286,10 +296,25 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                 `A${row}`
                             );
                             showToast = true
+                        } else if (currentRowData[2] === '' || !currentRowData[2]) {
+                            const value = csvData[row - 1][2]
+                            spreadsheetRef.current.updateCell(
+                                { value },
+                                `C${row}`
+                            );
+                            showToast = true
+                        } else if (currentRowData[3] === '' || !currentRowData[2]) {
+                            const value = csvData[row - 1][3]
+                            spreadsheetRef.current.updateCell(
+                                { value },
+                                `D${row}`
+                            );
+                            showToast = true
                         }
                     }
+
                     if (showToast) {
-                        toast.current?.show({ severity: 'error', summary: 'Category', detail: 'Tax category is required.', life: 3000 })
+                        toast.current?.show({ severity: 'error', summary: 'Category', detail: 'You cannot remove rquired data.', life: 3000 })
                     }
                 } else {
                     const cellAddressWithoutSheet = cellAddress.split('!')[1];
@@ -308,6 +333,10 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     const currentRowData = csvData[row];
                     if (currentRowData[0]) {
                         deletedCategory.push(currentRowData[0])
+                    } else if (currentRowData[2]) {
+                        deletedCategory.push(currentRowData[2])
+                    } else if (currentRowData[3]) {
+                        deletedCategory.push(currentRowData[3])
                     }
                 }
             } else {
@@ -327,12 +356,19 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
 
                     renderDropdownsForColumns(row, ['C', 'D'], param1, param2);
+
+                    if (row <= csvData.length) {
+                        const oldRowData = csvData[row - 1];
+                        if (currentRowData[0] !== oldRowData[0]) {
+                            updatedCategory.push([oldRowData[0], currentRowData[0]])
+                        }
+                    }
                 }
             }
         }
 
         const formattedData = await getSheetData();
-        await updateCsvData(clientId, formattedData, deletedCategory);
+        await updateCsvData(clientId, formattedData, deletedCategory, updatedCategory);
         formateSheet();
         fetchCsv()
     };

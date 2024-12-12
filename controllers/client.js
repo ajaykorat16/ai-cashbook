@@ -509,7 +509,7 @@ const deleteSpreadsheetFromCLient = async (user, id) => {
 const updateClientCategory = async (req, res) => {
     try {
         const { id } = req.params
-        let { data, deletedCategory } = req.body
+        let { data, deletedCategory, updatedCategory } = req.body
 
         const client = await getClient(id)
         if (!client) {
@@ -541,9 +541,9 @@ const updateClientCategory = async (req, res) => {
             { returnOriginal: false }
         );
 
-        if (deletedCategory.length > 0) {
-            const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
+        const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
 
+        if (deletedCategory.length > 0) {
             for (const category of deletedCategory) {
                 const spreadsheetCursor = await clientSpreadsheet
                     .find({ client_id: new ObjectId(id), category: category })
@@ -558,6 +558,30 @@ const updateClientCategory = async (req, res) => {
                             data[index] = "";
                         }
                     });
+                    await clientSpreadsheet.updateOne(
+                        { _id: spreadsheet._id },
+                        {
+                            $set: {
+                                data,
+                                category: data[4],
+                                updatedAt: new Date(),
+                            }
+                        }
+                    );
+                }
+            }
+        }
+
+        if (updatedCategory.length > 0) {
+            for (const category of updatedCategory) {
+                const spreadsheetCursor = await clientSpreadsheet
+                    .find({ client_id: new ObjectId(id), category: category[0] })
+                    .toArray();
+
+                for (const spreadsheet of spreadsheetCursor) {
+                    const data = [...spreadsheet.data];
+
+                    data[4] = category[1]
                     await clientSpreadsheet.updateOne(
                         { _id: spreadsheet._id },
                         {
