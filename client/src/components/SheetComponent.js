@@ -21,7 +21,7 @@ import LoaderOverlay from './LoaderOverlay';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
-    '2.5-Interest paid Australia', '2.5-Interest paid Overseas', '2.5-Rent', '5.1-Depreciation', '2.6-Lease payments Australia', '5.1-Depreciation', '5.2-MV Expenses',
+    '2.5-Interest paid Australia', '2.5-Interest paid Overseas', '2.5-Rent', '5.1-Depreciation', '2.6-Lease payments Australia', '2.6-Lease payments Overseas', '5.1-Depreciation', '5.2-MV Expenses',
     '5.3-Repair and Maintenance', '9.1-All Other Expenses', '9.3-Director Fees', '9.2-Non Deductible Expenses']
 
 const SheetComponent = ({ clientId, showSelection }) => {
@@ -444,13 +444,13 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
                     // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
 
-                    spreadsheetRef.current.lockCells(`A1:A${rowCount}`, true);
+                    // spreadsheetRef.current.lockCells(`A1:A${rowCount}`, true);
                     spreadsheetRef.current.hideColumn(0, 0);
 
                     sheet.columns[0].allowResizing = false;
 
-                    const rangeToProtect = `A1:A${rowCount}`;
-                    spreadsheetRef.current.lockCells(rangeToProtect, true);
+                    // const rangeToProtect = `A1:A${rowCount}`;
+                    // spreadsheetRef.current.lockCells(rangeToProtect, true);
 
                     const columnsToFormat = [
                         { range: `D2:D${rowCount}` },
