@@ -509,7 +509,7 @@ const deleteSpreadsheetFromCLient = async (user, id) => {
 const updateClientCategory = async (req, res) => {
     try {
         const { id } = req.params
-        let { data, deletedCategory, updatedCategory } = req.body
+        let { data, deletedCategory = [], updatedCategory = [] } = req.body
 
         const client = await getClient(id)
         if (!client) {

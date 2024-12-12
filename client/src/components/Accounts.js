@@ -234,6 +234,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     const handleActionComplete = async (args) => {
         const deletedCategory = []
         const updatedCategory = []
+        console.log(args.action);
         if ([
             'format',
             'cellSave',
@@ -244,7 +245,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             'autofill',
         ].includes(args.action)) {
             const sheet = spreadsheetRef.current.getActiveSheet();
-
+            console.log(args.action);
             if (args.action === 'cellSave') {
                 const cellAddress = args.eventArgs.address;
                 const [col, row] = [cellAddress.split('!')[1][0], parseInt(cellAddress.slice(1), 10)];
@@ -253,6 +254,8 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 const currentRowData = convertCellsToValues(sheet.rows[rowNumber - 1]);
                 const cellValue = args.eventArgs.displayText;
                 const oldValue = args.eventArgs.oldValue
+                console.log("sheet.rows--", sheet.rows.length)
+                console.log("csvData--", csvData.length)
 
                 if (!currentRowData[0] || currentRowData[0].trim() === ""
                     || !currentRowData[2] || !currentRowData[2].trim() === ""
@@ -261,6 +264,15 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
                     const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
                     renderDropdownsForColumns(rowNumber, ['C', 'D'], param1, param2);
+
+                    if (sheet.rows.length === csvData.length) {
+                        toast.current?.show({ severity: 'error', summary: 'Category', detail: 'You cannot remove rquired data.', life: 3000 })
+                        spreadsheetRef.current.updateCell(
+                            { value: args.eventArgs.oldValue },
+                            cellAddress.split('!')[1]
+                        );
+                    }
+
                     return;
                 }
 
@@ -472,9 +484,17 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
                 selectElement.onchange = async (event) => {
                     const selectedValue = event.target.value;
+                    const currentRowData = convertCellsToValues(sheet.rows[rowNumber - 1]);
                     const cellAddress = `${columnLetter}${rowNumber}`;
 
                     spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+                    if (!currentRowData[0] || currentRowData[0].trim() === ""
+                        || !currentRowData[2] || !currentRowData[2].trim() === ""
+                        || !selectedValue
+                    ) {
+                        return;
+                    }
+
                     const formattedData = await getSheetData();
                     await updateCsvData(clientId, formattedData);
                     formateSheet()
@@ -495,7 +515,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         const selectElement = document.createElement('select');
         selectElement.style.width = '100%';
         selectElement.style.height = '100%';
-
+        const sheet = spreadsheetRef.current.getActiveSheet();
         const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
 
         gstList.forEach(item => {
@@ -507,10 +527,19 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         selectElement.value = (args.cell?.value || '').trim();
 
         selectElement.onchange = async (event) => {
+            const currentRowData = convertCellsToValues(sheet.rows[rowNumber - 1]);
             const selectedValue = event.target.value;
             const cellAddress = `${columnLetter}${rowNumber}`;
 
             spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
+
+            if (!currentRowData[0] || currentRowData[0].trim() === ""
+                || !selectedValue
+                || !currentRowData[3] || !currentRowData[3].trim() === ""
+            ) {
+                return;
+            }
+
             const formattedData = await getSheetData();
             await updateCsvData(clientId, formattedData);
             formateSheet()
