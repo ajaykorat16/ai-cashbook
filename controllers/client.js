@@ -1905,8 +1905,7 @@ const updateClientSpreadsheet = async (req, res) => {
                         { _id: headerId },
                         {
                             $set: {
-                                data: item,
-                                category: item[5]
+                                data: item
                             }
                         }
                     );
