@@ -254,8 +254,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 const currentRowData = convertCellsToValues(sheet.rows[rowNumber - 1]);
                 const cellValue = args.eventArgs.displayText;
                 const oldValue = args.eventArgs.oldValue
-                console.log("sheet.rows--", sheet.rows.length)
-                console.log("csvData--", csvData.length)
 
                 if (!currentRowData[0] || currentRowData[0].trim() === ""
                     || !currentRowData[2] || !currentRowData[2].trim() === ""

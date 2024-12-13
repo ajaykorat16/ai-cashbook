@@ -97,7 +97,8 @@ const SheetComponent = ({ clientId, showSelection }) => {
             const csvDetail = await getSpreadsheet(clientId, moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD'), moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD'));
             const csv = csvDetail || [];
             const firstRow = csv[0]
-            const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
+            // const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
+            const headers = ["Id", "Bank Account", "Date", "Amt", "Narrative", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
             const convertedData = convertToCellFormat(csv);
             convertedData.shift();
             let backendData = []
