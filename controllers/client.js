@@ -1900,15 +1900,15 @@ const updateClientSpreadsheet = async (req, res) => {
         const updatePromises = data.map(async (item) => {
             if (item.length > 0) {
                 if (item[0] === "Id") {
-                    const headerId = spreadsheetCursor[0]._id
-                    await clientSpreadsheet.updateOne(
-                        { _id: headerId },
-                        {
-                            $set: {
-                                data: item
-                            }
-                        }
-                    );
+                    // const headerId = spreadsheetCursor[0]._id
+                    // await clientSpreadsheet.updateOne(
+                    //     { _id: headerId },
+                    //     {
+                    //         $set: {
+                    //             data: item
+                    //         }
+                    //     }
+                    // );
                 } else {
                     const id = item.shift();
                     if (id) {
