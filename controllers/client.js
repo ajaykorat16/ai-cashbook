@@ -2262,12 +2262,11 @@ const getItrReport = async (req, res) => {
         let grandTotalExcGst = 0;
 
         filteredData.forEach(record => {
-            const excGstAmt = record.data[6] ? parseFloat(record.data[6].replace(/,/g, '')) : 0;
+            const excGstAmt = record.data[9] ? parseFloat(record.data[9].replace(/,/g, '')) : 0;
             const category = record.data[4]
             const itrLabel = record.data[12]
 
             if (itrLabel && excGstAmt && category) {
-
                 grandTotalExcGst += excGstAmt;
 
                 if (!itrLabelObject[itrLabel]) {
