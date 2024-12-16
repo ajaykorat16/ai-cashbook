@@ -9,6 +9,7 @@ const ClientProvider = ({ children }) => {
     const { auth, toast } = useAuth()
     const [clientObject, setClientObject] = useState("")
     const [clientsAvalible, setClientsAvalible] = useState(true)
+    const [showInterBank, setShowInterBank] = useState(false)
 
     const headers = {
         Authorization: auth?.token,
@@ -344,7 +345,7 @@ const ClientProvider = ({ children }) => {
             createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, deleteSpreadsheet,
             getSpreadsheet, updateSpreadsheet, createSpreadsheet, autoCategorize, getSpreadsheetList, getSpreadsheetData,
             deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, clientsAvalible, setClientsAvalible,
-            multipleDeleteClient, getLastClientCode, getItrReport, getGstReport, importClient
+            multipleDeleteClient, getLastClientCode, getItrReport, getGstReport, importClient, showInterBank, setShowInterBank
         }}>
             {children}
         </ClientContext.Provider>

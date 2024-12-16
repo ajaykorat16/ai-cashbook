@@ -16,11 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import ClientSelection from './ClientSelection';
 import { useClient } from '../contexts/ClientContexts';
 import { useAuth } from '../contexts/AuthContext';
-
-const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
-    '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
-    '2.5-Interest paid Australia', '2.5-Interest paid Overseas', '2.5-Rent', '5.1-Depreciation', '2.6-Lease payments Australia', '2.6-Lease payments Overseas', '5.1-Depreciation', '5.2-MV Expenses',
-    '5.3-Repair and Maintenance', '9.1-All Other Expenses', '9.3-Director Fees', '9.2-Non Deductible Expenses']
+import { groupData } from './data';
 
 const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title }) => {
     const navigate = useNavigate();
@@ -193,19 +189,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
     }, [clientId]);
 
-
-    const renderDropdownsForColumns = (row, columnLetters, cValue, dValue) => {
-        columnLetters.forEach((columnLetter) => {
-            handleCellRender({
-                element: document.querySelector(`td[aria-label='${columnLetter === 'C' ? cValue : dValue}${columnLetter}${row}']`),
-                colIndex: columnLetter.charCodeAt(0) - 65,
-                rowIndex: row - 1,
-                cell: { value: columnLetter === 'C' ? cValue : dValue },
-                address: `${columnLetter}${row}`
-            });
-        });
-    };
-
     const convertCellsToValues = (data) => {
         if (!data || !Array.isArray(data.cells)) {
             return [];
@@ -234,7 +217,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     const handleActionComplete = async (args) => {
         const deletedCategory = []
         const updatedCategory = []
-        console.log(args.action);
+        handleDropdown();
         if ([
             'format',
             'cellSave',
@@ -244,8 +227,9 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             'insert',
             'autofill',
         ].includes(args.action)) {
+
             const sheet = spreadsheetRef.current.getActiveSheet();
-            console.log(args.action);
+
             if (args.action === 'cellSave') {
                 const cellAddress = args.eventArgs.address;
                 const [col, row] = [cellAddress.split('!')[1][0], parseInt(cellAddress.slice(1), 10)];
@@ -261,7 +245,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 ) {
                     const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
                     const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
-                    renderDropdownsForColumns(rowNumber, ['C', 'D'], param1, param2);
 
                     if (sheet.rows.length === csvData.length) {
                         toast.current?.show({ severity: 'error', summary: 'Category', detail: 'You cannot remove rquired data.', life: 3000 })
@@ -285,9 +268,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                 const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
                 const currentRowData = convertCellsToValues(sheet.rows[rowIndex - 1]);
-                const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
-                const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
-                renderDropdownsForColumns(rowIndex, ['C', 'D'], param1, param2);
             } else if (args?.eventArgs?.address) {
                 const cellAddress = args.eventArgs.address;
 
@@ -331,9 +311,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                     const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
                     const currentRowData = convertCellsToValues(sheet.rows[rowIndex - 1]);
-                    const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
-                    const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
-                    renderDropdownsForColumns(rowIndex, ['C', 'D'], param1, param2);
                 }
             } else if (args.action === 'delete') {
                 const startIndex = args.eventArgs.startIndex
@@ -362,10 +339,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
-                    const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
-                    const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
-
-                    renderDropdownsForColumns(row, ['C', 'D'], param1, param2);
 
                     if (row <= csvData.length) {
                         const oldRowData = csvData[row - 1];
@@ -429,23 +402,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
     };
 
-    // const applyGstDropdown = async () => {
-    //     if (spreadsheetRef.current) {
-    //         const sheet = spreadsheetRef.current.getActiveSheet();
-    //         const rowCount = sheet.usedRange.rowIndex + 1;
-    //         const dropdownRange = `C2:C${rowCount}`;
-    //         const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
-    //         const data = await gstList.join(',')
-
-    //         await spreadsheetRef.current.addDataValidation({
-    //             type: 'List',
-    //             operator: 'InBetween',
-    //             value1: data,
-    //             ignoreBlank: false
-    //         }, dropdownRange);
-    //     }
-    // };
-
     const numberToAlphabet = (num) => {
         let temp;
         let letter = '';
@@ -459,93 +415,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         return letter;
     };
 
-    const handleCellRender = (args) => {
-        try {
-            const columnLetter = numberToAlphabet(args.colIndex + 1);
-            const rowNumber = args.rowIndex + 1;
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const rowCount = sheet.usedRange.rowIndex + 1;
-
-            if (columnLetter === 'D' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-                const selectElement = document.createElement('select');
-                selectElement.style.width = '100%';
-                selectElement.style.height = '100%';
-
-                itrList.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item;
-                    option.textContent = item;
-                    selectElement.appendChild(option);
-                });
-
-                selectElement.value = (args.cell?.value || '').trim();
-
-                selectElement.onchange = async (event) => {
-                    const selectedValue = event.target.value;
-                    const currentRowData = convertCellsToValues(sheet.rows[rowNumber - 1]);
-                    const cellAddress = `${columnLetter}${rowNumber}`;
-
-                    spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
-                    if (!currentRowData[0] || currentRowData[0].trim() === ""
-                        || !currentRowData[2] || !currentRowData[2].trim() === ""
-                        || !selectedValue
-                    ) {
-                        return;
-                    }
-
-                    const formattedData = await getSheetData();
-                    await updateCsvData(clientId, formattedData);
-                    formateSheet()
-                };
-
-                args.element.innerHTML = '';
-                args.element.appendChild(selectElement);
-            } else if (columnLetter === 'C' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-                gstDropdown(args, columnLetter, rowNumber)
-            }
-        } catch (error) {
-            console.log("error", error)
-        }
-    };
-
-
-    const gstDropdown = (args, columnLetter, rowNumber) => {
-        const selectElement = document.createElement('select');
-        selectElement.style.width = '100%';
-        selectElement.style.height = '100%';
-        const sheet = spreadsheetRef.current.getActiveSheet();
-        const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
-
-        gstList.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item;
-            option.textContent = item;
-            selectElement.appendChild(option);
-        });
-        selectElement.value = (args.cell?.value || '').trim();
-
-        selectElement.onchange = async (event) => {
-            const currentRowData = convertCellsToValues(sheet.rows[rowNumber - 1]);
-            const selectedValue = event.target.value;
-            const cellAddress = `${columnLetter}${rowNumber}`;
-
-            spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
-
-            if (!currentRowData[0] || currentRowData[0].trim() === ""
-                || !selectedValue
-                || !currentRowData[3] || !currentRowData[3].trim() === ""
-            ) {
-                return;
-            }
-
-            const formattedData = await getSheetData();
-            await updateCsvData(clientId, formattedData);
-            formateSheet()
-        };
-
-        args.element.innerHTML = '';
-        args.element.appendChild(selectElement);
-    }
 
     const lockSheet = () => {
         spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
@@ -562,6 +431,35 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             window.removeEventListener('resize', handleResize);
         };
     }, []);
+
+
+    const handleDropdown = () => {
+        if (spreadsheetRef.current) {
+            const sheet = spreadsheetRef.current.getActiveSheet();
+            const rowCount = sheet.usedRange.rowIndex + 1;
+            const colCount = sheet.usedRange.colIndex + 1;
+
+            const rangeItrLabel = `D2:D${rowCount}`;
+            spreadsheetRef.current.addDataValidation(
+                {
+                    type: 'List',
+                    inCellDropDown: true,
+                    value1: '=ItrLabels!A2:A25',
+                },
+                rangeItrLabel
+            );
+
+            const rangeGst = `C2:C${rowCount}`;
+            spreadsheetRef.current.addDataValidation(
+                {
+                    type: 'List',
+                    inCellDropDown: true,
+                    value1: '=ItrLabels!B2:B6',
+                },
+                rangeGst
+            );
+        }
+    }
 
     return (
         <div>
@@ -584,22 +482,21 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 actionComplete={handleActionComplete}
-                                beforeCellRender={handleCellRender}
                                 showSheetTabs={false}
                                 allowSorting={true}
                                 allowFiltering={true}
                                 created={() => {
-                                    // const sheet = spreadsheetRef.current.getActiveSheet();
-                                    // const colCount = sheet.usedRange.colIndex + 1;
-                                    // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
-                                    formateSheet();
-                                    getSheetData();
-                                    lockSheet();
-                                    setDataLoaded(false)
+                                    if (spreadsheetRef.current) {
+                                        formateSheet();
+                                        handleDropdown()
+                                        getSheetData();
+                                        lockSheet();
+                                        setDataLoaded(false)
+                                    }
                                 }}
                             >
                                 <SheetsDirective>
-                                    <SheetDirective frozenRows={1}>
+                                    <SheetDirective frozenRows={1} name="Accounts">
                                         <RangesDirective>
                                             <RangeDirective dataSource={sheetData}></RangeDirective>
                                         </RangesDirective>
@@ -611,13 +508,18 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                             <ColumnDirective width={60} allowResizing={false} ></ColumnDirective>
                                         </ColumnsDirective>
                                     </SheetDirective>
+                                    <SheetDirective name="ItrLabels">
+                                        <RangesDirective>
+                                            <RangeDirective dataSource={groupData}></RangeDirective>
+                                        </RangesDirective>
+                                    </SheetDirective>
                                 </SheetsDirective>
                             </SpreadsheetComponent>
                         </div>
                     </>
                 )}
             </Layout>
-        </div>
+        </div >
     );
 };
 

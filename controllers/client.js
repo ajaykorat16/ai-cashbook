@@ -1132,7 +1132,7 @@ const getSpreadsheet = async (req, res) => {
         });
 
         const data = filteredData.map((row) => {
-            return [row._id, ...row.data];
+            return [row._id, ...row.data, row.inter_bank];
         });
 
         if (!spreadsheetCursor) {
@@ -1343,12 +1343,17 @@ function removeMatchedItems(newCsv, spreadsheetCursor, startDate, endDate) {
     return result;
 }
 
-const checkInterBank = async (spreadsheetCursor, classifiedData, client_id, spreadsheet, userSpreadsheet) => {
-    const startDate = moment().subtract(2, 'days');
+const transformObjectId = (item) => {
+    return item instanceof ObjectId ? item.toString() : item;
+};
+
+
+const checkInterBank = async (spreadsheetCursor, classifiedData, client_id, spreadsheet, userSpreadsheet, insertedDataId = [], interBankIds = []) => {
+    const startDate = moment(classifiedData[0][1] ?? 'now').subtract(2, 'days');
     const endDate = moment();
 
     const filteredData = spreadsheetCursor.filter((record) => {
-        if (record.data[4]) {
+        if (record.data[4] && record.inter_bank === false) {
             const dateInString = record.data[1];
             const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
@@ -1384,24 +1389,28 @@ const checkInterBank = async (spreadsheetCursor, classifiedData, client_id, spre
             if (formattedRow[0] !== newRow[0] && parseFloat(formattedRow[2]) + newRowAmount === 0) {
                 interBankData.push(newRow);
 
-                await userSpreadsheet.insertOne({
+                const insertedId = await userSpreadsheet.insertOne({
                     data: newRow,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     client_id: new ObjectId(client_id),
                     spreadsheet,
                     inter_bank: true,
+                    inter_bank_with: new ObjectId(formattedRow[formattedRow.length - 1]),
                     category: newRow[4]
                 });
+                insertedDataId.push(insertedId?.insertedId)
 
                 await userSpreadsheet.updateOne(
                     { _id: formattedRow[formattedRow.length - 1] },
                     {
                         $set: {
                             inter_bank: true,
+                            inter_bank_with: new ObjectId(insertedId?.insertedId)
                         }
                     }
                 );
+                interBankIds.push([transformObjectId(insertedId?.insertedId), transformObjectId(formattedRow[formattedRow.length - 1]), true])
                 break;
             }
         }
@@ -1418,6 +1427,87 @@ const checkInterBank = async (spreadsheetCursor, classifiedData, client_id, spre
 
     return newCsv
 }
+
+const interBankForUpdate = async (spreadsheetCursor, classifiedData, itemId, clientSpreadsheet, interBankIds) => {
+    const startDate = moment(classifiedData[0][1] ?? 'now').subtract(2, 'days');
+    const endDate = moment();
+
+    const filteredData = spreadsheetCursor.filter((record) => {
+        if (record.data[4] && record.inter_bank === false) {
+            const dateInString = record.data[1];
+            const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
+
+            if (dateInRecord.isValid()) {
+                return dateInRecord.isBetween(startDate, endDate, null, '[]');
+            }
+        }
+    });
+
+    const formattedData = filteredData.map((row) => {
+        const dateInString = row.data[1];
+        const formattedDate = moment(dateInString, 'YYYY-MM-DD').format('YYYY-MM-DD');
+
+        if (row?.data[0] && row?.data[1] && row?.data[2] && row.data[4] && moment(dateInString, 'YYYY-MM-DD').isValid()) {
+            return [row.data[0], formattedDate, ...row.data.slice(2), row._id];
+        }
+        return null;
+    }).filter(row => row !== null);
+
+    const newData = classifiedData.map((data) => {
+        if (data[0] && data[1] && data[2] && data[4]) {
+            return data;
+        }
+        return null;
+    }).filter(row => row !== null);
+
+    const interBankData = [];
+
+    for (const newRow of newData) {
+        const newRowAmount = parseFloat(newRow[2]);
+
+        for (const formattedRow of formattedData) {
+            if (formattedRow[0] !== newRow[0] && parseFloat(formattedRow[2]) + newRowAmount === 0) {
+                interBankData.push(newRow);
+
+                await clientSpreadsheet.updateOne(
+                    { _id: new ObjectId(itemId) },
+                    {
+                        $set: {
+                            inter_bank: true,
+                            data: newRow,
+                            category: newRow[4],
+                            updatedAt: new Date(),
+                            inter_bank_with: new ObjectId(formattedRow[formattedRow.length - 1]),
+                        }
+                    }
+                );
+
+                await clientSpreadsheet.updateOne(
+                    { _id: formattedRow[formattedRow.length - 1] },
+                    {
+                        $set: {
+                            inter_bank: true,
+                            inter_bank_with: new ObjectId(itemId)
+                        }
+                    }
+                );
+                interBankIds.push([transformObjectId(itemId), transformObjectId(formattedRow[formattedRow.length - 1]), true])
+                break;
+            }
+        }
+    }
+
+    const newCsv = classifiedData.filter(data => {
+        return !interBankData.some(interBank =>
+            data[0] === interBank[0] &&
+            data[1] === interBank[1] &&
+            data[2] === interBank[2] &&
+            data[4] === interBank[4]
+        );
+    });
+
+    return newCsv;
+};
 
 const createClientSpreadsheet = async (req, res) => {
     try {
@@ -1827,17 +1917,12 @@ const autoCategorize = async (req, res) => {
 }
 
 function checkIfItemMatched(item, spreadsheetCursor) {
-    const startDate = moment().startOf('year');
-    const endDate = moment().endOf('year');
-
     const oldCsv = spreadsheetCursor.filter((record) => {
         if (record.data[1]) {
             const dateInString = record.data[1];
             const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
-            if (dateInRecord.isValid()) {
-                return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
-            }
+            return dateInRecord.isValid();
         }
         return false;
     });
@@ -1868,6 +1953,7 @@ const updateClientSpreadsheet = async (req, res) => {
         const { id: clientId } = req.params;
         const { data } = req.body;
         const insertedDataId = []
+        const interBankIds = []
 
         const client = await getClient(clientId);
         if (!client) {
@@ -1924,16 +2010,34 @@ const updateClientSpreadsheet = async (req, res) => {
                                     item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
                                 }
 
-                                await clientSpreadsheet.updateOne(
-                                    { _id: new ObjectId(id) },
-                                    {
-                                        $set: {
-                                            data: item,
-                                            category: item[4],
-                                            updatedAt: new Date(),
-                                        }
+                                const newData = await interBankForUpdate(spreadsheetCursor, [item], id, clientSpreadsheet, interBankIds)
+                                if (newData.length > 0) {
+                                    const row = await clientSpreadsheet.findOneAndUpdate(
+                                        { _id: new ObjectId(id) },
+                                        {
+                                            $set: {
+                                                data: item,
+                                                category: item[4],
+                                                updatedAt: new Date(),
+                                                inter_bank: false,
+                                                inter_bank_with: ''
+                                            }
+                                        },
+                                        { returnOriginal: true }
+                                    );
+
+                                    if (row?.inter_bank_with) {
+                                        await clientSpreadsheet.updateOne(
+                                            { _id: row.inter_bank_with },
+                                            {
+                                                $set: {
+                                                    inter_bank: false,
+                                                    inter_bank_with: ''
+                                                }
+                                            });
+                                        interBankIds.push([transformObjectId(id), transformObjectId(row.inter_bank_with), false])
                                     }
-                                );
+                                }
                             }
                         }
                     } else {
@@ -1943,15 +2047,19 @@ const updateClientSpreadsheet = async (req, res) => {
 
                         const isMathed = checkIfItemMatched(item, spreadsheetCursor)
                         if (!isMathed) {
-                            const insertedId = await clientSpreadsheet.insertOne({
-                                data: item,
-                                createdAt: new Date(),
-                                updatedAt: new Date(),
-                                client_id: new ObjectId(clientId),
-                                spreadsheet: null,
-                                inter_bank: false
-                            });
-                            insertedDataId.push(insertedId?.insertedId)
+                            const newData = await checkInterBank(spreadsheetCursor, [item], clientId, null, clientSpreadsheet, insertedDataId, interBankIds)
+                            if (newData.length > 0) {
+                                const insertedId = await clientSpreadsheet.insertOne({
+                                    data: item,
+                                    category: item[4] ? item[4] : "",
+                                    createdAt: new Date(),
+                                    updatedAt: new Date(),
+                                    client_id: new ObjectId(clientId),
+                                    spreadsheet: null,
+                                    inter_bank: false
+                                });
+                                insertedDataId.push(insertedId?.insertedId)
+                            }
                         }
                     }
                 }
@@ -1963,7 +2071,8 @@ const updateClientSpreadsheet = async (req, res) => {
         return res.status(200).json({
             error: false,
             message: "Client category updated successfully.",
-            insertedDataId
+            insertedDataId,
+            interBankIds
         });
     } catch (error) {
         console.error(error.message);

@@ -17,7 +17,7 @@ import $ from 'jquery';
 import 'jquery-ui-dist/jquery-ui.css';
 import 'jquery-ui-dist/jquery-ui';
 import ClientSelection from './ClientSelection';
-import LoaderOverlay from './LoaderOverlay';
+import { groupData } from './data';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
@@ -25,21 +25,20 @@ const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '
     '5.3-Repair and Maintenance', '9.1-All Other Expenses', '9.3-Director Fees', '9.2-Non Deductible Expenses']
 
 const SheetComponent = ({ clientId, showSelection }) => {
-    const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject } = useClient();
+    const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject, showInterBank, setShowInterBank } = useClient();
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [categoryLoader, setCategoryLoader] = useState(false);
     const currentYearStart = moment().startOf('year');
     const currentYearEnd = moment().endOf('year');
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [categortList, setCategoryList] = useState([])
     const [categoryData, setCategoryData] = useState({});
-    const [categoryHeaders, setCategoryHeaders] = useState({});
     const [sheetData, setSheetData] = useState([])
     const [showMenu, setShowMenu] = useState(false)
+    const [interBankData, setInterBankData] = useState([])
 
     useEffect(() => {
         const storedFromDate = localStorage.getItem(`fromDate_${clientObject?.value}`);
@@ -87,14 +86,18 @@ const SheetComponent = ({ clientId, showSelection }) => {
         return convertedData;
     };
 
-    const delay = (ms) => {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    };
-
     const fetchCsvLoaded = async () => {
         setIsLoading(true);
         try {
             const csvDetail = await getSpreadsheet(clientId, moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD'), moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD'));
+            const interBankIndex = []
+            csvDetail.forEach((csv) => {
+                if (csv[csv.length - 1] === true) {
+                    interBankIndex.push(csv[0]);
+                }
+            });
+
+            setInterBankData(interBankIndex)
             const csv = csvDetail || [];
             const firstRow = csv[0]
             // const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
@@ -250,136 +253,99 @@ const SheetComponent = ({ clientId, showSelection }) => {
         return `${month}/${day}/${year}`;
     };
 
-    const renderDropdownsForColumns = (row, columnLetters, values) => {
-        columnLetters.forEach((columnLetter, index) => {
-            const value = values[index] || "";
-            handleCellRender({
-                element: document.querySelector(`td[aria-label='${value}${columnLetter}${row}']`),
-                colIndex: columnLetter.charCodeAt(0) - 65,
-                rowIndex: row - 1,
-                cell: { value },
-                address: `${columnLetter}${row}`
-            });
+    const updateInterBankData = (response, currentData) => {
+        const removedIds = [];
+
+        response.forEach(([id1, id2, status]) => {
+            if (status === false) {
+                if (currentData.includes(id1)) removedIds.push(id1);
+                if (currentData.includes(id2)) removedIds.push(id2);
+
+                currentData = currentData.filter(id => id !== id1 && id !== id2);
+            } else if (status === true) {
+                if (!currentData.includes(id1)) currentData.push(id1);
+                if (!currentData.includes(id2)) currentData.push(id2);
+            }
         });
-    }
+        return { updatedData: currentData, removedIds };
+    };
 
     const handleActionComplete = async (args) => {
+        handleDropdown()
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
             args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert' || args.action === 'autofill') {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const editedData = []
 
-            if (args.action === 'autofill') {
-                const cellAddress = args.eventArgs.fillRange
-                const cellAddressWithoutSheet = cellAddress.split('!')[1];
-                const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
-                const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-                const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
-                while (editedRow.length <= 13) {
-                    editedRow.push("");
-                }
+            if (args?.eventArgs?.selectedRange) {
+                const cellAddress = args.eventArgs.selectedRange
+                const { firstRowNumber, lastRowNumber } = getSelectedRowsRange(cellAddress);
 
-                if (!editedRow[6]) {
-                    editedRow[6] = 100;
-                }
-                editedData.push(editedRow)
-                const fValue = editedRow[5] ? `${editedRow[5]} ` : "";
-                const iValue = editedRow[8] ? `${editedRow[8]} ` : "";
-                const nValue = editedRow[13] ? `${editedRow[13]} ` : "";
-
-                renderDropdownsForColumns(rowIndex, ['F', 'I', 'N'], [fValue, iValue, nValue]);
-
-            } else if (args?.eventArgs?.address) {
-                const cellAddress = args.eventArgs.address
-                if (args.action === 'cellDelete') {
-                    const [firstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
-                    const firstRowNumber = parseInt(firstAddress.match(/\d+/)[0], 10);
-                    const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
-
-                    for (let row = firstRowNumber; row <= secondRowNumber; row++) {
-                        const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
-                        editedData.push(currentRowData);
-                    }
-                } else {
-                    const cellAddressWithoutSheet = cellAddress.split('!')[1];
-
-                    const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
-                    const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-                    const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
-                    while (editedRow.length <= 13) {
-                        editedRow.push("");
-                    }
-
-                    if (!editedRow[6]) {
-                        editedRow[6] = 100;
-                    }
-                    editedData.push(editedRow)
-                    const fValue = editedRow[5] ? `${editedRow[5]} ` : "";
-                    const iValue = editedRow[8] ? `${editedRow[8]} ` : "";
-                    const nValue = editedRow[13] ? `${editedRow[13]} ` : "";
-
-                    renderDropdownsForColumns(rowIndex, ['F', 'I', 'N'], [fValue, iValue, nValue]);
-                }
-            } else if (args?.eventArgs?.modelType === 'Row') {
-                if (args?.action === 'insert') {
-                    editedData.push([])
-                } else {
-                    const sheetArgs = args?.eventArgs
-                    const deletedRowId = sheetArgs.deletedModel[0].cells[0].value
-                    editedData.push([deletedRowId])
-                }
-            } else if (args?.eventArgs?.modelType === 'Column') {
-                for (let row = 0; row <= sheet.rows.length; row++) {
-                    const currentRowData = convertCellsToValues(sheet.rows[row]);
-                    editedData.push(currentRowData);
-                }
-            } else {
-                let cellAddress
-                if (args?.eventArgs?.pastedRange) {
-                    cellAddress = args.eventArgs.pastedRange
-                } else {
-                    cellAddress = args.eventArgs.range
-                }
-                const [firtstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
-                const firstRowNumber = parseInt(firtstAddress.match(/\d+/)[0], 10);
-                const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
-
-                for (let row = firstRowNumber; row <= secondRowNumber; row++) {
+                for (let row = firstRowNumber; row <= lastRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
-                    while (currentRowData.length <= 13) {
+
+                    while (currentRowData.length <= 6) {
                         currentRowData.push("");
                     }
 
                     if (!currentRowData[6]) {
-                        currentRowData[6] = 100;
+                        spreadsheetRef.current.updateCell({ value: 100 }, `G${row}`);
                     }
-                    const fValue = currentRowData[5] ? `${currentRowData[5]} ` : "";
-                    const iValue = currentRowData[8] ? `${currentRowData[8]} ` : "";
-                    const nValue = currentRowData[13] ? `${currentRowData[13]} ` : "";
 
                     editedData.push(currentRowData);
-                    renderDropdownsForColumns(row, ['F', 'I', 'N'], [fValue, iValue, nValue]);
+                    calculationOnRow(row, currentRowData)
                 }
+            } else if (args.eventArgs.address) {
+                const cellAddress = args.eventArgs.address;
+
+                if (args.action === 'cellDelete') {
+                    const { firstRowNumber, lastRowNumber } = getSelectedRowsRange(cellAddress.split('!')[1]);
+
+                    for (let row = firstRowNumber; row <= lastRowNumber; row++) {
+                        const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
+                        editedData.push(currentRowData);
+                    }
+                } else {
+                    const { firstRowNumber, lastRowNumber } = getSelectedRowsRange(cellAddress.split('!')[1], true);
+                    for (let row = firstRowNumber; row <= lastRowNumber; row++) {
+                        const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
+
+                        while (currentRowData.length <= 6) {
+                            currentRowData.push("");
+                        }
+
+                        if (!currentRowData[6]) {
+                            spreadsheetRef.current.updateCell({ value: 100 }, `G${row}`);
+                        }
+
+                        editedData.push(currentRowData);
+                        calculationOnRow(row, currentRowData)
+                    }
+                }
+            } else if (args.action === 'delete') {
+                const currentRowData = convertCellsToValues(args.eventArgs.deletedModel[0]);
+                editedData.push([currentRowData[0]]);
             }
+
             if (editedData?.length > 0) {
                 const data = await updateSpreadsheet(clientId, editedData);
-                applyCalculations()
 
                 if (data?.insertedDataId.length > 0) {
                     if (args.action === 'autofill') {
-                        const cellAddress = args.eventArgs.fillRange
-                        const cellAddressWithoutSheet = cellAddress.split('!')[1];
-                        const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
-                        const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+                        const cellAddress = args.eventArgs.selectedRange
+                        const { firstRowNumber, lastRowNumber } = getSelectedRowsRange(cellAddress);
 
-                        spreadsheetRef.current.updateCell({ value: 100 }, `G${rowIndex}`);
-                        spreadsheetRef.current.updateCell({ value: data.insertedDataId[0] }, `A${rowIndex}`);
-                    } else if (args?.eventArgs?.address && args.action !== 'cellDelete') {
+                        for (let row = firstRowNumber; row <= lastRowNumber; row++) {
+                            spreadsheetRef.current.updateCell({ value: 100 }, `G${row}`);
+                            spreadsheetRef.current.updateCell({ value: data.insertedDataId[0] }, `A${row}`);
+                        }
+                    } else if (args?.eventArgs?.address && args.action === 'cellSave') {
                         const cellAddress = args.eventArgs.address
                         const cellAddressWithoutSheet = cellAddress.split('!')[1];
 
                         const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                         const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+                        spreadsheetRef.current.updateCell({ value: 100 }, `G${rowIndex}`);
                         spreadsheetRef.current.updateCell({ value: data.insertedDataId[0] }, `A${rowIndex}`);
                     } else if (args?.eventArgs?.requestType === 'paste') {
                         const cellAddress = args?.eventArgs?.selectedRange
@@ -399,10 +365,85 @@ const SheetComponent = ({ clientId, showSelection }) => {
                         }
                     }
                 }
+
+                if (data?.interBankIds.length > 0) {
+                    const { updatedData, removedIds } = updateInterBankData(data?.interBankIds, interBankData);
+                    setInterBankData(updatedData);
+                    setTimeout(() => {
+                        highlightMatchingRows(removedIds)
+                    }, 2000);
+                }
             }
             formateSheet();
         }
     };
+
+    const highlightMatchingRows = (removedIds = []) => {
+        try {
+            if (spreadsheetRef.current) {
+                const spreadsheet = spreadsheetRef.current;
+                const sheet = spreadsheet.getActiveSheet();
+                const rowCount = sheet.usedRange.rowIndex + 1;
+
+                for (let row = 1; row < rowCount; row++) {
+                    const hiddenColumnValue = spreadsheetRef.current.getRowData(row);
+                    const { Id } = hiddenColumnValue[0]
+                    const firstColValue = Id
+                    const firstRowRange = `B${row + 1}:O${row + 1}`;
+
+                    if (removedIds.includes(firstColValue)) {
+                        spreadsheetRef.current.cellFormat({ backgroundColor: 'white' }, firstRowRange);
+                    } else if (interBankData.includes(firstColValue)) {
+                        spreadsheetRef.current.cellFormat({ backgroundColor: showInterBank ? 'yellow' : 'white' }, firstRowRange);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error while highlighting rows:', error);
+        }
+    };
+
+
+    const removeHighlights = (data) => {
+        try {
+            if (spreadsheetRef.current) {
+                const spreadsheet = spreadsheetRef.current;
+                const sheet = spreadsheet.getActiveSheet();
+                const rowCount = sheet.usedRange.rowIndex + 1;
+
+                for (let row = 1; row < rowCount; row++) {
+                    const hiddenColumnValue = spreadsheetRef.current.getRowData(row);
+                    const { Id } = hiddenColumnValue[0]
+                    const firstColValue = Id
+                    const firstRowRange = `B${row + 1}:O${row + 1}`;
+                    if (data.includes(firstColValue)) {
+                        spreadsheetRef.current.cellFormat({ backgroundColor: 'white' }, firstRowRange);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error while highlighting rows:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (!isLoading) {
+            highlightMatchingRows()
+        }
+    }, [showInterBank, isLoading])
+
+    const getSelectedRowsRange = (range, isSingleAddress) => {
+        if (!isSingleAddress) {
+            const [firtstAddress, lastAddress] = range.split(':');
+            const firstRowNumber = parseInt(firtstAddress.match(/\d+/)[0], 10);
+            const lastRowNumber = parseInt(lastAddress.match(/\d+/)[0], 10);
+            return { firstRowNumber, lastRowNumber };
+        } else {
+            const rowNumberMatch = range.match(/\d+/);
+            const firstRowNumber = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+            return { firstRowNumber, lastRowNumber: firstRowNumber };
+        }
+    }
 
     const applyCalculations = () => {
         try {
@@ -430,6 +471,30 @@ const SheetComponent = ({ clientId, showSelection }) => {
         }
     };
 
+    const calculationOnRow = (row, currentRowData) => {
+        try {
+            if (spreadsheetRef.current && row !== 1) {
+                const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`;
+                spreadsheetRef.current.updateCell({ formula }, `H${row}`);
+
+                const gstFormula = `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`;
+                spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
+
+                const excGstFormula = `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`;
+                spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
+
+                const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
+                spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
+
+                if (currentRowData[5]) {
+                    applyItrAndGst(currentRowData, row);
+                }
+            }
+        } catch (error) {
+            console.log("error--", error);
+        }
+    };
+
 
     const formateSheet = () => {
         try {
@@ -444,13 +509,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
                     // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
 
-                    // spreadsheetRef.current.lockCells(`A1:A${rowCount}`, true);
                     spreadsheetRef.current.hideColumn(0, 0);
 
                     sheet.columns[0].allowResizing = false;
-
-                    // const rangeToProtect = `A1:A${rowCount}`;
-                    // spreadsheetRef.current.lockCells(rangeToProtect, true);
 
                     const columnsToFormat = [
                         { range: `D2:D${rowCount}` },
@@ -482,28 +543,15 @@ const SheetComponent = ({ clientId, showSelection }) => {
     const fetchClientCategory = async () => {
         try {
             const { data } = await getClientCategory(clientId);
-            const headers = data.shift();
-            headers.splice(0, 1)
-            const removeHtmlTags = (text) => {
-                return text.replace(/<[^>]*>/g, '');
-            };
-
-            const cleanedHeaders = headers.map(removeHtmlTags);
-            setCategoryHeaders(cleanedHeaders);
-
-            const newArray = data.map(subArray => {
-                if (!subArray[0] || !subArray[2] || !subArray[3]) {
-                    return null;
+            const categories = data.map((d) => {
+                return {
+                    category: d[0]
                 }
+            })
 
-                const cleanedFirstElement = subArray[0]
-                    .replace(/<\/?b>/g, '')
-                    .replace(/<\/?i>/g, '')
-                    .replace(/<\/?u>/g, '');
+            setCategoryList(categories)
+            const headers = data.shift();
 
-                return cleanedFirstElement;
-            }).filter(Boolean);
-            setCategoryList(newArray)
 
             const categoryMap = Object.fromEntries(
                 data.map(subArray => {
@@ -516,13 +564,22 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     .filter(Boolean)
             );
 
-            setCategoryList(Object.keys(categoryMap));
             setCategoryData(categoryMap);
         } catch (error) {
             console.log("error", error)
         }
-
     };
+
+    const applyItrAndGst = (currentRowData, rowIndex) => {
+        const correspondingData = categoryData[currentRowData[5]];
+        if (!currentRowData[8]) {
+            spreadsheetRef.current.updateCell({ value: correspondingData[1] }, `I${rowIndex}`);
+        }
+
+        if (!currentRowData[13]) {
+            spreadsheetRef.current.updateCell({ value: correspondingData[2] }, `N${rowIndex}`);
+        }
+    }
 
 
     const numberToAlphabet = (num) => {
@@ -537,166 +594,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
         return letter;
     };
-
-    const handleDropdown = async (cellAddress, value) => {
-        try {
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const rowNumberMatch = cellAddress.match(/\d+/);
-            const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-            const editedRow = convertCellsToValues(sheet.rows[rowIndex - 1])
-            if (editedRow && editedRow.length >= 5) {
-                editedRow[5] = value;
-            }
-            await updateSpreadsheet(clientId, [editedRow]);
-        } catch (error) {
-            console.log("error--", error)
-        }
-    }
-
-    const handleCellRender = (args) => {
-        try {
-            if (sheetData.length > 0 && sheetData[0].Id !== '') {
-                const columnLetter = numberToAlphabet(args.colIndex + 1);
-                const rowNumber = args.rowIndex + 1;
-                const sheet = spreadsheetRef.current.getActiveSheet();
-                const rowCount = sheet.usedRange.rowIndex + 1;
-
-                if (columnLetter === 'N' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-                    itrDropdown(args, columnLetter, rowNumber)
-                }
-
-
-                if (columnLetter === 'I' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-                    gstDropdown(args, columnLetter, rowNumber)
-                }
-
-                if (columnLetter === 'F' && args.rowIndex > 0 && args.rowIndex < rowCount) {
-                    const selectElement = document.createElement('select');
-                    selectElement.style.width = '100%';
-                    selectElement.style.height = '100%';
-
-                    categortList.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item;
-                        option.textContent = item;
-                        selectElement.appendChild(option);
-                    });
-
-                    selectElement.value = (args.cell?.value || '').trim();
-
-                    selectElement.onchange = async (event) => {
-                        setCategoryLoader(true);
-                        setTimeout(async () => {
-                            const selectedValue = event.target.value;
-                            const cellAddress = `${columnLetter}${rowNumber}`;
-                            spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
-
-                            const headings = convertCellsToValues(sheet.rows[0]);
-                            const removeHtmlTags = (text) => text.replace(/<[^>]*>/g, '');
-                            const headers = headings.map(removeHtmlTags);
-
-                            const matchingValues = headers.filter(header =>
-                                categoryHeaders.includes(header)
-                            );
-                            const correspondingData = categoryData[selectedValue];
-
-                            if (matchingValues.length > 0 && correspondingData) {
-                                const rowIndexMatch = cellAddress.match(/\d+/);
-                                const rowIndex = rowIndexMatch ? parseInt(rowIndexMatch[0], 10) : null;
-
-                                matchingValues.forEach(value => {
-                                    const index = headers.indexOf(value);
-                                    const address = `${numberToAlphabet(index + 1)}${rowIndex}`;
-
-                                    const categoryHeaderIndex = categoryHeaders.indexOf(value);
-                                    const headerValue = correspondingData[categoryHeaderIndex];
-
-                                    if (headerValue && spreadsheetRef.current) {
-                                        try {
-                                            spreadsheetRef.current.updateCell({ value: headerValue }, address);
-                                            const itrDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${14}"] select`);
-                                            const gstDropdownElement = args.element.closest('tr').querySelector(`td[aria-colindex="${9}"] select`);
-                                            if (itrDropdownElement && categoryHeaderIndex === 2) {
-                                                itrDropdownElement.value = headerValue;
-                                            } else if (gstDropdownElement && categoryHeaderIndex === 1) {
-                                                gstDropdownElement.value = headerValue;
-                                            }
-                                            applyCalculations();
-                                        } catch (error) {
-                                            console.error(`Error updating cell ${address}:`, error);
-                                        }
-                                    }
-                                });
-                            }
-                            setCategoryLoader(false);
-                            handleDropdown(cellAddress, selectedValue);
-                            formateSheet();
-                        }, 0);
-                    };
-
-                    args.element.innerHTML = '';
-                    args.element.appendChild(selectElement);
-                }
-            }
-
-        } catch (error) {
-            console.log("error--", error)
-        }
-    };
-
-    const itrDropdown = (args, columnLetter, rowNumber) => {
-        const selectElement = document.createElement('select');
-        selectElement.style.width = '100%';
-        selectElement.style.height = '100%';
-
-        itrList.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item;
-            option.textContent = item;
-            selectElement.appendChild(option);
-        });
-
-        selectElement.value = (args.cell?.value || '').trim();
-
-        selectElement.onchange = async (event) => {
-            const selectedValue = event.target.value;
-            const cellAddress = `${columnLetter}${rowNumber}`;
-
-            spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
-            handleDropdown(cellAddress, selectedValue);
-        };
-
-        args.element.innerHTML = '';
-        args.element.appendChild(selectElement);
-    }
-
-    const gstDropdown = (args, columnLetter, rowNumber) => {
-        const selectElement = document.createElement('select');
-        selectElement.style.width = '100%';
-        selectElement.style.height = '100%';
-
-        const gstList = ['BAS Excluded', 'GST Free Expenses', 'GST Free Income', 'GST on Expenses', 'GST on Income']
-
-        gstList.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item;
-            option.textContent = item;
-            selectElement.appendChild(option);
-        });
-
-        selectElement.value = (args.cell?.value || '').trim();
-
-        selectElement.onchange = async (event) => {
-            const selectedValue = event.target.value;
-            const cellAddress = `${columnLetter}${rowNumber}`;
-
-            spreadsheetRef.current.updateCell({ value: selectedValue }, cellAddress);
-            handleDropdown(cellAddress, selectedValue);
-        };
-
-        args.element.innerHTML = '';
-        args.element.appendChild(selectElement);
-    }
 
     useEffect(() => {
         $('#datepicker').datepicker({
@@ -870,6 +767,45 @@ const SheetComponent = ({ clientId, showSelection }) => {
         };
     }, []);
 
+    const handleDropdown = () => {
+        if (spreadsheetRef.current) {
+            const sheet = spreadsheetRef.current.getActiveSheet();
+            const rowCount = sheet.usedRange.rowIndex + 1;
+
+            const rangeCategoryLabel = `F2:F${rowCount}`;
+            spreadsheetRef.current.addDataValidation(
+                {
+                    type: 'List',
+                    inCellDropDown: true,
+                    value1: `=Categories!A3:A${categortList.length}`,
+                },
+                rangeCategoryLabel
+            );
+
+            const rangeItrLabel = `N2:N${rowCount}`;
+            spreadsheetRef.current.addDataValidation(
+                {
+                    type: 'List',
+                    inCellDropDown: true,
+                    value1: '=ItrLabels!A2:A25',
+                    ignoreBlank: false,
+                },
+                rangeItrLabel
+            );
+
+            const rangeGst = `I2:I${rowCount}`;
+            spreadsheetRef.current.addDataValidation(
+                {
+                    type: 'List',
+                    inCellDropDown: true,
+                    value1: '=ItrLabels!B2:B6',
+                    ignoreBlank: false,
+                },
+                rangeGst
+            );
+        }
+    }
+
     return (
         <>
             <div className="special_flex d-flex justify-content-space-between">
@@ -965,12 +901,10 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     <Loader />) : (
                     <>
                         {dataLoaded && (<Loader />)}
-                        {categoryLoader && <LoaderOverlay />}
                         <div className={`account_sheet spreadsheet ${dataLoaded && 'invisible'} spreadsheet_height`}>
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 actionComplete={handleActionComplete}
-                                beforeCellRender={handleCellRender}
                                 showSheetTabs={false}
                                 allowSorting={true}
                                 allowFiltering={true}
@@ -978,20 +912,20 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     mode: 'Multiple'
                                 }}
                                 created={() => {
-                                    // const sheet = spreadsheetRef.current.getActiveSheet()
-                                    // const colCount = sheet.usedRange.colIndex + 1;
-                                    // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
-                                    spreadsheetRef.current.selectRange('B1');
-                                    applyCalculations();
-                                    formateSheet();
-                                    setDataLoaded(false)
-                                    setTimeout(() => {
-                                        spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
-                                    }, 1000);
+                                    if (spreadsheetRef.current) {
+                                        handleDropdown()
+                                        spreadsheetRef.current.selectRange('B1');
+                                        applyCalculations();
+                                        formateSheet();
+                                        setDataLoaded(false)
+                                        setTimeout(() => {
+                                            spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+                                        }, 1000);
+                                    }
                                 }}
                             >
                                 <SheetsDirective>
-                                    <SheetDirective frozenRows={1}>
+                                    <SheetDirective frozenRows={1} name='Spreadsheet'>
                                         <RangesDirective>
                                             <RangeDirective dataSource={sheetData}></RangeDirective>
                                         </RangesDirective>
@@ -1012,6 +946,16 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                             <ColumnDirective width={200} allowResizing={false}></ColumnDirective>
                                             <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
                                         </ColumnsDirective>
+                                    </SheetDirective>
+                                    <SheetDirective name="Categories">
+                                        <RangesDirective>
+                                            <RangeDirective dataSource={categortList}></RangeDirective>
+                                        </RangesDirective>
+                                    </SheetDirective>
+                                    <SheetDirective name="ItrLabels">
+                                        <RangesDirective>
+                                            <RangeDirective dataSource={groupData}></RangeDirective>
+                                        </RangesDirective>
                                     </SheetDirective>
                                 </SheetsDirective>
                             </SpreadsheetComponent>

@@ -8,7 +8,7 @@ import { Toast } from 'primereact/toast';
 
 const Layout = ({ children }) => {
     const { toast, logout, auth } = useAuth()
-    const { getAllClients, clientsAvalible, setClientsAvalible } = useClient()
+    const { getAllClients, clientsAvalible, setClientsAvalible, setShowInterBank, showInterBank } = useClient()
     const navigate = useNavigate();
     const location = useLocation();
     const sidebarRef = useRef(null);
@@ -158,7 +158,13 @@ const Layout = ({ children }) => {
                                                             <Icon icon="uil:chart-growth" className='btn_icon' />Auto Categorize
                                                         </Link>
                                                     </li>
-                                                    <li><Link>
+                                                    <li><Link
+                                                        onClick={() => {
+                                                            if (location.pathname.match("/user/spreadsheet")) {
+                                                                setShowInterBank(!showInterBank);
+                                                            }
+                                                        }}
+                                                    >
                                                         <Icon icon="mdi:bank" className='btn_icon' />Inter Bank Transfer
                                                     </Link></li>
                                                     <li className='report_dropdown'>
