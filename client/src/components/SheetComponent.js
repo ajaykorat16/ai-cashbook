@@ -285,7 +285,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                 for (let row = firstRowNumber; row <= lastRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
 
-                    while (currentRowData.length <= 6) {
+                    while (currentRowData.length <= 14) {
                         currentRowData.push("");
                     }
 
@@ -293,8 +293,15 @@ const SheetComponent = ({ clientId, showSelection }) => {
                         spreadsheetRef.current.updateCell({ value: 100 }, `G${row}`);
                     }
 
-                    editedData.push(currentRowData);
-                    calculationOnRow(row, currentRowData)
+                    const labels = calculationOnRow(row, currentRowData)
+                    if (labels?.gstCode) {
+                        currentRowData[8] = labels?.gstCode
+                    }
+
+                    if (labels?.itrLabel) {
+                        currentRowData[13] = labels?.itrLabel
+                    }
+                    editedData.push(currentRowData)
                 }
             } else if (args.eventArgs.address) {
                 const cellAddress = args.eventArgs.address;
@@ -311,7 +318,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     for (let row = firstRowNumber; row <= lastRowNumber; row++) {
                         const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
 
-                        while (currentRowData.length <= 6) {
+                        while (currentRowData.length <= 14) {
                             currentRowData.push("");
                         }
 
@@ -319,8 +326,15 @@ const SheetComponent = ({ clientId, showSelection }) => {
                             spreadsheetRef.current.updateCell({ value: 100 }, `G${row}`);
                         }
 
+                        const labels = calculationOnRow(row, currentRowData)
+                        if (labels?.gstCode) {
+                            currentRowData[8] = labels?.gstCode
+                        }
+
+                        if (labels?.itrLabel) {
+                            currentRowData[13] = labels?.itrLabel
+                        }
                         editedData.push(currentRowData);
-                        calculationOnRow(row, currentRowData)
                     }
                 }
             } else if (args.action === 'delete') {
@@ -404,29 +418,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
         }
     };
 
-
-    const removeHighlights = (data) => {
-        try {
-            if (spreadsheetRef.current) {
-                const spreadsheet = spreadsheetRef.current;
-                const sheet = spreadsheet.getActiveSheet();
-                const rowCount = sheet.usedRange.rowIndex + 1;
-
-                for (let row = 1; row < rowCount; row++) {
-                    const hiddenColumnValue = spreadsheetRef.current.getRowData(row);
-                    const { Id } = hiddenColumnValue[0]
-                    const firstColValue = Id
-                    const firstRowRange = `B${row + 1}:O${row + 1}`;
-                    if (data.includes(firstColValue)) {
-                        spreadsheetRef.current.cellFormat({ backgroundColor: 'white' }, firstRowRange);
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error while highlighting rows:', error);
-        }
-    };
-
     useEffect(() => {
         if (!isLoading) {
             highlightMatchingRows()
@@ -488,7 +479,8 @@ const SheetComponent = ({ clientId, showSelection }) => {
                 spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
 
                 if (currentRowData[5]) {
-                    applyItrAndGst(currentRowData, row);
+                    const { gstCode, itrLabel } = applyItrAndGst(currentRowData, row);
+                    return { gstCode, itrLabel }
                 }
             }
         } catch (error) {
@@ -573,12 +565,21 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
     const applyItrAndGst = (currentRowData, rowIndex) => {
         const correspondingData = categoryData[currentRowData[5]];
+        let gstCode = '';
+        let itrLabel = '';
         if (!currentRowData[8]) {
             spreadsheetRef.current.updateCell({ value: correspondingData[1] }, `I${rowIndex}`);
+            gstCode = correspondingData[1]
         }
 
         if (!currentRowData[13]) {
             spreadsheetRef.current.updateCell({ value: correspondingData[2] }, `N${rowIndex}`);
+            itrLabel = correspondingData[2]
+        }
+
+        return {
+            gstCode,
+            itrLabel
         }
     }
 
