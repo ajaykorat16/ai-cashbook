@@ -165,7 +165,7 @@ const ClientProvider = ({ children }) => {
                 return data?.clientCategory
             }
         } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+            // toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
         }
     }
 
@@ -206,7 +206,7 @@ const ClientProvider = ({ children }) => {
                     toast.current?.show({ severity: 'error', summary: 'Client Category', detail: errors[0].msg, life: 3000 })
                 }
             } else {
-                toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+                // toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
             }
         }
     }
@@ -325,7 +325,7 @@ const ClientProvider = ({ children }) => {
                 return data.data
             }
         } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+            toast.current?.show({ severity: 'error', summary: 'Gst Report', detail: 'An error occurred. Please try again later.', life: 3000 })
         }
     }
 
@@ -336,7 +336,7 @@ const ClientProvider = ({ children }) => {
                 return data.data
             }
         } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Client Category', detail: 'An error occurred. Please try again later.', life: 3000 })
+            toast.current?.show({ severity: 'error', summary: 'Itr Report', detail: 'An error occurred. Please try again later.', life: 3000 })
         }
     }
 
