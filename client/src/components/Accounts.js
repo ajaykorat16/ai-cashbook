@@ -28,6 +28,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
     const [isLoading, setIsLoading] = useState(true);
     const [sheetData, setSheetData] = useState([])
     const [csvData, setCsvData] = useState([])
+    const [readStatus, setReadStatus] = useState(false)
 
     const getSheetData = async () => {
         if (spreadsheetRef.current) {
@@ -227,7 +228,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             'insert',
             'autofill',
         ].includes(args.action)) {
-
             const sheet = spreadsheetRef.current.getActiveSheet();
 
             if (args.action === 'cellSave') {
@@ -348,12 +348,11 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     }
                 }
             }
+            const formattedData = await getSheetData();
+            await updateCsvData(clientId, formattedData, deletedCategory, updatedCategory);
+            formateSheet();
+            fetchCsv()
         }
-
-        const formattedData = await getSheetData();
-        await updateCsvData(clientId, formattedData, deletedCategory, updatedCategory);
-        formateSheet();
-        fetchCsv()
     };
 
 
@@ -384,41 +383,9 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
     };
 
-    const applyFilterOnColumn = (columnLetter) => {
-        if (spreadsheetRef.current) {
-            const sheet = spreadsheetRef.current.getActiveSheet();
-            const colCount = sheet.usedRange.colIndex + 1;
-            const rowCount = sheet.usedRange.rowIndex + 1;
-            const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
-
-            spreadsheetRef.current.applyFilter(
-                [{
-                    field: columnLetter,
-                    operator: 'notEqual',
-                    value: ''
-                }],
-                range
-            );
-        }
-    };
-
-    const numberToAlphabet = (num) => {
-        let temp;
-        let letter = '';
-
-        while (num > 0) {
-            temp = (num - 1) % 26;
-            letter = String.fromCharCode(temp + 65) + letter;
-            num = Math.floor((num - temp) / 26);
-        }
-
-        return letter;
-    };
-
-
-    const lockSheet = () => {
-        spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
-    }
+    // const lockSheet = () => {
+    //     spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+    // }
 
     useEffect(() => {
         const handleResize = () => {
@@ -434,7 +401,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
 
     const handleDropdown = () => {
-        if (spreadsheetRef.current) {
+        if (spreadsheetRef?.current?.isRendered === false) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
             const colCount = sheet.usedRange.colIndex + 1;
@@ -461,6 +428,13 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         }
     }
 
+    useEffect(() => {
+        if (readStatus) {
+            spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+            setReadStatus(false)
+        }
+    }, [readStatus])
+
     return (
         <div>
             <Layout>
@@ -486,12 +460,13 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                                 allowSorting={true}
                                 allowFiltering={true}
                                 created={() => {
-                                    if (spreadsheetRef.current) {
+                                    if (spreadsheetRef?.current?.isRendered === false) {
                                         formateSheet();
                                         handleDropdown()
                                         getSheetData();
-                                        lockSheet();
                                         setDataLoaded(false)
+                                        // lockSheet();
+                                        setReadStatus(true)
                                     }
                                 }}
                             >

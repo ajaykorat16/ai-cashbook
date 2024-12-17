@@ -39,6 +39,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
     const [sheetData, setSheetData] = useState([])
     const [showMenu, setShowMenu] = useState(false)
     const [interBankData, setInterBankData] = useState([])
+    const [readStatus, setReadStatus] = useState(false)
 
     useEffect(() => {
         const storedFromDate = localStorage.getItem(`fromDate_${clientObject?.value}`);
@@ -768,7 +769,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
     }, []);
 
     const handleDropdown = () => {
-        if (spreadsheetRef.current) {
+        if (spreadsheetRef?.current?.isRendered === false) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
 
@@ -805,6 +806,13 @@ const SheetComponent = ({ clientId, showSelection }) => {
             );
         }
     }
+
+    useEffect(() => {
+        if (readStatus) {
+            spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+            setReadStatus(false)
+        }
+    }, [readStatus])
 
     return (
         <>
@@ -912,15 +920,16 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                     mode: 'Multiple'
                                 }}
                                 created={() => {
-                                    if (spreadsheetRef.current) {
+                                    if (spreadsheetRef?.current?.isRendered === false) {
                                         handleDropdown()
                                         spreadsheetRef.current.selectRange('B1');
-                                        applyCalculations();
                                         formateSheet();
+                                        applyCalculations();
                                         setDataLoaded(false)
-                                        setTimeout(() => {
-                                            spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
-                                        }, 1000);
+                                        setReadStatus(true)
+                                        // setTimeout(() => {
+                                        //     spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+                                        // }, 2000);
                                     }
                                 }}
                             >
