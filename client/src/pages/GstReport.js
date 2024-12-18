@@ -16,7 +16,7 @@ const quarterMapping = {
 };
 
 const GstReport = () => {
-    const { getAllClients, clientObject, setClientObject, getGstReport } = useClient()
+    const { getAllClients, clientObject, setClientObject, getGstReport, showDateRange, calculateDateRange } = useClient()
 
     const [showMenu, setShowMenu] = useState(false)
     const currentYearStart = moment().startOf('year');
@@ -94,137 +94,13 @@ const GstReport = () => {
     }, []);
 
 
-    const calculateDateRange = (option) => {
-        let startDate, endDate;
-
-        switch (option) {
-            case 'thisMonth':
-                startDate = moment().startOf('month');
-                endDate = moment().endOf('month');
-                break;
-
-            case 'lastMonth':
-                startDate = moment().subtract(1, 'months').startOf('month');
-                endDate = moment().subtract(1, 'months').endOf('month');
-                break;
-
-            case 'thisQuarter':
-                startDate = moment().startOf('quarter');
-                endDate = moment().endOf('quarter');
-                break;
-
-            case 'lastQuarter':
-                startDate = moment().subtract(1, 'quarters').startOf('quarter');
-                endDate = moment().subtract(1, 'quarters').endOf('quarter');
-                break;
-
-            case 'thisYear':
-                startDate = moment().startOf('year');
-                endDate = moment().endOf('year');
-                break;
-
-            case 'lastYear':
-                startDate = moment().subtract(1, 'years').startOf('year');
-                endDate = moment().subtract(1, 'years').endOf('year');
-                break;
-
-            case 'currentMonthToDate':
-                startDate = moment().startOf('month');
-                endDate = moment();
-                break;
-
-            case 'currentQuarterToDate':
-                startDate = moment().startOf('quarter');
-                endDate = moment();
-                break;
-
-            case 'currentYearToDate':
-                startDate = moment().startOf('year');
-                endDate = moment();
-                break;
-
-            default:
-                startDate = null;
-                endDate = null;
-                break;
-        }
-        startDate = startDate ? startDate.format('MM/DD/YYYY') : ''
-        endDate = endDate ? endDate.format('MM/DD/YYYY') : ''
+    const setDateRange = (option) => {
+        const { startDate, endDate } = calculateDateRange(option)
         setFromDate(startDate)
-        localStorage.setItem(`fromDate_${clientObject?.value}`, startDate);
         setToDate(endDate)
-        localStorage.setItem(`toDate_${clientObject?.value}`, endDate);
         setShowMenu(false)
-    };
-
-    const showDateRange = (option) => {
-        let startDate, endDate, rangeText;
-
-        switch (option) {
-            case 'thisMonth':
-                startDate = moment().startOf('month');
-                endDate = moment().endOf('month');
-                rangeText = `${startDate.format('MMM YYYY')}`;
-                break;
-
-            case 'lastMonth':
-                startDate = moment().subtract(1, 'months').startOf('month');
-                endDate = moment().subtract(1, 'months').endOf('month');
-                rangeText = `${startDate.format('MMM YYYY')}`;
-                break;
-
-            case 'thisQuarter':
-                startDate = moment().startOf('quarter');
-                endDate = moment().endOf('quarter');
-                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
-                break;
-
-            case 'lastQuarter':
-                startDate = moment().subtract(1, 'quarters').startOf('quarter');
-                endDate = moment().subtract(1, 'quarters').endOf('quarter');
-                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
-                break;
-
-            case 'thisYear':
-                startDate = moment().startOf('year');
-                endDate = moment().endOf('year');
-                rangeText = `1 Jan - 31 Dec ${endDate.format('YYYY')}`;
-                break;
-
-            case 'lastYear':
-                startDate = moment().subtract(1, 'years').startOf('year');
-                endDate = moment().subtract(1, 'years').endOf('year');
-                rangeText = `1 Jan - 31 Dec ${startDate.format('YYYY')}`;
-                break;
-
-            case 'currentMonthToDate':
-                startDate = moment().startOf('month');
-                endDate = moment();
-                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
-                break;
-
-            case 'currentQuarterToDate':
-                startDate = moment().startOf('quarter');
-                endDate = moment();
-                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
-                break;
-
-            case 'currentYearToDate':
-                startDate = moment().startOf('year');
-                endDate = moment();
-                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
-                break;
-
-            default:
-                startDate = null;
-                endDate = null;
-                rangeText = '';
-                break;
-        }
-
-        return rangeText
-    };
-
+    }
+    
     const getReportData = async () => {
         setIsLoading(true)
         const formattedFromDate = moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD');
@@ -288,43 +164,43 @@ const GstReport = () => {
                         <div className="box_brd_down" onClick={() => setShowMenu(!showMenu)}></div>
                         <div className={`open_box_down_icon  ${showMenu ? 'd-block' : 'd-none'}`}>
                             <div className="date_main_box">
-                                <div onClick={() => calculateDateRange('thisMonth')}>
+                                <div onClick={() => setDateRange('thisMonth')}>
                                     <div className="dateleft_data">This Month</div>
                                     <div className="dateright_data">{showDateRange('thisMonth')}</div>
                                 </div>
-                                <div onClick={() => calculateDateRange('thisQuarter')}>
+                                <div onClick={() => setDateRange('thisQuarter')}>
                                     <div className="dateleft_data">This Quarter</div>
                                     <div className="dateright_data">{showDateRange('thisQuarter')}</div>
                                 </div>
-                                <div onClick={() => calculateDateRange('thisYear')}>
+                                <div onClick={() => setDateRange('thisYear')}>
                                     <div className="dateleft_data">This Financial Year</div>
                                     <div className="dateright_data">{showDateRange('thisYear')}</div>
                                 </div>
                             </div>
                             <div className="date_main_box">
-                                <div onClick={() => calculateDateRange('lastMonth')}>
+                                <div onClick={() => setDateRange('lastMonth')}>
                                     <div className="dateleft_data">Last Month</div>
                                     <div className="dateright_data">{showDateRange('lastMonth')}</div>
                                 </div>
-                                <div onClick={() => calculateDateRange('lastQuarter')}>
+                                <div onClick={() => setDateRange('lastQuarter')}>
                                     <div className="dateleft_data">Last Quarter</div>
                                     <div className="dateright_data">{showDateRange('lastQuarter')}</div>
                                 </div>
-                                <div onClick={() => calculateDateRange('lastYear')}>
+                                <div onClick={() => setDateRange('lastYear')}>
                                     <div className="dateleft_data">Last Financial Year</div>
                                     <div className="dateright_data">{showDateRange('lastYear')}</div>
                                 </div>
                             </div>
                             <div className="date_main_box">
-                                <div onClick={() => calculateDateRange('currentMonthToDate')}>
+                                <div onClick={() => setDateRange('currentMonthToDate')}>
                                     <div className="dateleft_data">Month To Date</div>
                                     <div className="dateright_data">{showDateRange('currentMonthToDate')}</div>
                                 </div>
-                                <div onClick={() => calculateDateRange('currentQuarterToDate')}>
+                                <div onClick={() => setDateRange('currentQuarterToDate')}>
                                     <div className="dateleft_data">Quarter To Date</div>
                                     <div className="dateright_data">{showDateRange('currentQuarterToDate')}</div>
                                 </div>
-                                <div onClick={() => calculateDateRange('currentYearToDate')}>
+                                <div onClick={() => setDateRange('currentYearToDate')}>
                                     <div className="dateleft_data">Year To Date</div>
                                     <div className="dateright_data">{showDateRange('currentYearToDate')}</div>
                                 </div>

@@ -1,6 +1,7 @@
 import { useContext, createContext, useState } from "react";
 import { baseURL } from "../lib";
 import axios from 'axios'
+import moment from 'moment';
 import { useAuth } from "./AuthContext";
 
 const ClientContext = createContext()
@@ -340,12 +341,143 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+
+    const showDateRange = (option) => {
+        let startDate, endDate, rangeText;
+
+        switch (option) {
+            case 'thisMonth':
+                startDate = moment().startOf('month');
+                endDate = moment().endOf('month');
+                rangeText = `${startDate.format('MMM YYYY')}`;
+                break;
+
+            case 'lastMonth':
+                startDate = moment().subtract(1, 'months').startOf('month');
+                endDate = moment().subtract(1, 'months').endOf('month');
+                rangeText = `${startDate.format('MMM YYYY')}`;
+                break;
+
+            case 'thisQuarter':
+                startDate = moment().startOf('quarter');
+                endDate = moment().endOf('quarter');
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            case 'lastQuarter':
+                startDate = moment().subtract(1, 'quarters').startOf('quarter');
+                endDate = moment().subtract(1, 'quarters').endOf('quarter');
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            case 'thisYear':
+                startDate = moment().startOf('year');
+                endDate = moment().endOf('year');
+                rangeText = `1 Jan - 31 Dec ${endDate.format('YYYY')}`;
+                break;
+
+            case 'lastYear':
+                startDate = moment().subtract(1, 'years').startOf('year');
+                endDate = moment().subtract(1, 'years').endOf('year');
+                rangeText = `1 Jan - 31 Dec ${startDate.format('YYYY')}`;
+                break;
+
+            case 'currentMonthToDate':
+                startDate = moment().startOf('month');
+                endDate = moment();
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            case 'currentQuarterToDate':
+                startDate = moment().startOf('quarter');
+                endDate = moment();
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            case 'currentYearToDate':
+                startDate = moment().startOf('year');
+                endDate = moment();
+                rangeText = `${startDate.format('D MMM')} - ${endDate.format('D MMM YYYY')}`;
+                break;
+
+            default:
+                startDate = null;
+                endDate = null;
+                rangeText = '';
+                break;
+        }
+        return rangeText
+    };
+
+    const calculateDateRange = (option) => {
+        let startDate, endDate;
+
+        switch (option) {
+            case 'thisMonth':
+                startDate = moment().startOf('month');
+                endDate = moment().endOf('month');
+                break;
+
+            case 'lastMonth':
+                startDate = moment().subtract(1, 'months').startOf('month');
+                endDate = moment().subtract(1, 'months').endOf('month');
+                break;
+
+            case 'thisQuarter':
+                startDate = moment().startOf('quarter');
+                endDate = moment().endOf('quarter');
+                break;
+
+            case 'lastQuarter':
+                startDate = moment().subtract(1, 'quarters').startOf('quarter');
+                endDate = moment().subtract(1, 'quarters').endOf('quarter');
+                break;
+
+            case 'thisYear':
+                startDate = moment().startOf('year');
+                endDate = moment().endOf('year');
+                break;
+
+            case 'lastYear':
+                startDate = moment().subtract(1, 'years').startOf('year');
+                endDate = moment().subtract(1, 'years').endOf('year');
+                break;
+
+            case 'currentMonthToDate':
+                startDate = moment().startOf('month');
+                endDate = moment();
+                break;
+
+            case 'currentQuarterToDate':
+                startDate = moment().startOf('quarter');
+                endDate = moment();
+                break;
+
+            case 'currentYearToDate':
+                startDate = moment().startOf('year');
+                endDate = moment();
+                break;
+
+            default:
+                startDate = null;
+                endDate = null;
+                break;
+        }
+        startDate = startDate ? startDate.format('MM/DD/YYYY') : ''
+        endDate = endDate ? endDate.format('MM/DD/YYYY') : ''
+        localStorage.setItem(`fromDate_${clientObject?.value}`, startDate);
+        localStorage.setItem(`toDate_${clientObject?.value}`, endDate);
+        return {
+            startDate, endDate
+        }
+    };
+
     return (
         <ClientContext.Provider value={{
             createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, deleteSpreadsheet,
-            getSpreadsheet, updateSpreadsheet, createSpreadsheet, autoCategorize, getSpreadsheetList, getSpreadsheetData,
+            getSpreadsheet, updateSpreadsheet, createSpreadsheet, autoCategorize, getSpreadsheetList, getSpreadsheetData, calculateDateRange,
             deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, clientsAvalible, setClientsAvalible,
-            multipleDeleteClient, getLastClientCode, getItrReport, getGstReport, importClient, showInterBank, setShowInterBank
+            multipleDeleteClient, getLastClientCode, getItrReport, getGstReport, importClient, showInterBank, setShowInterBank, showDateRange
         }}>
             {children}
         </ClientContext.Provider>
