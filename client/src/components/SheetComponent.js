@@ -346,7 +346,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
                         const { firstRowNumber, lastRowNumber } = getSelectedRowsRange(cellAddress);
 
                         for (let row = firstRowNumber; row <= lastRowNumber; row++) {
-                            spreadsheetRef.current.updateCell({ value: 100 }, `G${row}`);
                             spreadsheetRef.current.updateCell({ value: data.insertedDataId[0] }, `A${row}`);
                         }
                     } else if (args?.eventArgs?.address && args.action === 'cellSave') {
@@ -355,7 +354,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
                         const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
                         const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-                        spreadsheetRef.current.updateCell({ value: 100 }, `G${rowIndex}`);
                         spreadsheetRef.current.updateCell({ value: data.insertedDataId[0] }, `A${rowIndex}`);
                     } else if (args?.eventArgs?.requestType === 'paste') {
                         const cellAddress = args?.eventArgs?.selectedRange
@@ -367,7 +365,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
                         for (let rowIndex = firstRowNumber; rowIndex <= secondRowNumber; rowIndex++) {
                             if (dataIndex < data.insertedDataId.length) {
                                 spreadsheetRef.current.updateCell({ value: data.insertedDataId[dataIndex] }, `A${rowIndex}`);
-                                spreadsheetRef.current.updateCell({ value: 100 }, `G${rowIndex}`);
                                 dataIndex++;
                             } else {
                                 break;
@@ -773,7 +770,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                         formateSheet();
                                         applyCalculations();
                                         setDataLoaded(false)
-                                        setReadStatus(true)
+                                        setTimeout(() => {
+                                            setReadStatus(true)
+                                        }, 2000);
                                         // setTimeout(() => {
                                         //     spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
                                         // }, 2000);

@@ -232,7 +232,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
             if (args.action === 'cellSave') {
                 const cellAddress = args.eventArgs.address;
-                const [col, row] = [cellAddress.split('!')[1][0], parseInt(cellAddress.slice(1), 10)];
                 const match = cellAddress.match(/\d+$/)
                 const rowNumber = match ? parseInt(match[0], 10) : null;
                 const currentRowData = convertCellsToValues(sheet.rows[rowNumber - 1]);
@@ -243,9 +242,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                     || !currentRowData[2] || !currentRowData[2].trim() === ""
                     || !currentRowData[3] || !currentRowData[3].trim() === ""
                 ) {
-                    const param1 = currentRowData[2] ? `${currentRowData[2]} ` : "";
-                    const param2 = currentRowData[3] ? `${currentRowData[3]} ` : "";
-
                     if (sheet.rows.length === csvData.length) {
                         toast.current?.show({ severity: 'error', summary: 'Category', detail: 'You cannot remove rquired data.', life: 3000 })
                         spreadsheetRef.current.updateCell(
@@ -253,64 +249,50 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                             cellAddress.split('!')[1]
                         );
                     }
-
                     return;
                 }
 
                 if (cellValue !== oldValue) {
                     updatedCategory.push([oldValue, cellValue])
                 }
-            }
-
-            if (args.action === 'autofill') {
-                const cellAddress = args.eventArgs.fillRange;
-                const cellAddressWithoutSheet = cellAddress.split('!')[1];
-                const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
-                const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-                const currentRowData = convertCellsToValues(sheet.rows[rowIndex - 1]);
-            } else if (args?.eventArgs?.address) {
+            } else if (args?.eventArgs?.address && args.action == 'cellDelete') {
                 const cellAddress = args.eventArgs.address;
 
-                if (args.action == 'cellDelete') {
-                    const [firstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
-                    const firstRowNumber = parseInt(firstAddress.match(/\d+/)[0], 10);
-                    const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
-                    let showToast = false
+                const [firstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
+                const firstRowNumber = parseInt(firstAddress.match(/\d+/)[0], 10);
+                const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
+                let showToast = false
 
-                    for (let row = firstRowNumber; row <= secondRowNumber; row++) {
-                        const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
-                        if (currentRowData[0] === '' || !currentRowData[0]) {
-                            const value = csvData[row - 1][0]
-                            spreadsheetRef.current.updateCell(
-                                { value },
-                                `A${row}`
-                            );
-                            showToast = true
-                        } else if (currentRowData[2] === '' || !currentRowData[2]) {
-                            const value = csvData[row - 1][2]
-                            spreadsheetRef.current.updateCell(
-                                { value },
-                                `C${row}`
-                            );
-                            showToast = true
-                        } else if (currentRowData[3] === '' || !currentRowData[2]) {
-                            const value = csvData[row - 1][3]
-                            spreadsheetRef.current.updateCell(
-                                { value },
-                                `D${row}`
-                            );
-                            showToast = true
-                        }
+                for (let row = firstRowNumber; row <= secondRowNumber; row++) {
+                    const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
+                    if (currentRowData[0] === '' || !currentRowData[0]) {
+                        const value = csvData[row - 1][0]
+                        spreadsheetRef.current.updateCell(
+                            { value },
+                            `A${row}`
+                        );
+                        showToast = true
                     }
+                    if (currentRowData[2] === '' || !currentRowData[2]) {
+                        const value = csvData[row - 1][2]
+                        spreadsheetRef.current.updateCell(
+                            { value },
+                            `C${row}`
+                        );
+                        showToast = true
+                    }
+                    if (currentRowData[3] === '' || !currentRowData[2]) {
+                        const value = csvData[row - 1][3]
+                        spreadsheetRef.current.updateCell(
+                            { value },
+                            `D${row}`
+                        );
+                        showToast = true
+                    }
+                }
 
-                    if (showToast) {
-                        toast.current?.show({ severity: 'error', summary: 'Category', detail: 'You cannot remove rquired data.', life: 3000 })
-                    }
-                } else {
-                    const cellAddressWithoutSheet = cellAddress.split('!')[1];
-                    const rowNumberMatch = cellAddressWithoutSheet.match(/\d+/);
-                    const rowIndex = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
-                    const currentRowData = convertCellsToValues(sheet.rows[rowIndex - 1]);
+                if (showToast) {
+                    toast.current?.show({ severity: 'error', summary: 'Category', detail: 'You cannot remove rquired data.', life: 3000 })
                 }
             } else if (args.action === 'delete') {
                 const startIndex = args.eventArgs.startIndex
@@ -339,6 +321,13 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
                 for (let row = firstRowNumber; row <= secondRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
+
+                    if (!currentRowData[0] || currentRowData[0].trim() === ""
+                        || !currentRowData[2] || !currentRowData[2].trim() === ""
+                        || !currentRowData[3] || !currentRowData[3].trim() === ""
+                    ) {
+                        return;
+                    }
 
                     if (row <= csvData.length) {
                         const oldRowData = csvData[row - 1];
