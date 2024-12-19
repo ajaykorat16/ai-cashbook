@@ -36,7 +36,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 const sheet = spreadsheetRef.current.getActiveSheet();
                 const rowCount = sheet.usedRange.rowIndex + 1;
                 const colCount = sheet.usedRange.colIndex + 1;
-                const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
+                const range = `A1:E${rowCount}`;
 
                 const data = await spreadsheetRef.current.getData(`${sheet.name}!${range}`);
                 const formattedData = convertData(data);
@@ -53,20 +53,34 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         const cols = new Set();
 
         data.forEach((value, key) => {
-            const col = key.charAt(0);
-            const row = parseInt(key.substring(1), 10) - 1;
+            const match = key.match(/^([A-Z]+)(\d+)$/);
+            if (!match) {
+                throw new Error(`Invalid key format: ${key}`);
+            }
+
+            const col = match[1];
+            const row = parseInt(match[2], 10) - 1;
             rows.add(row);
             cols.add(col);
         });
 
         const sortedRows = Array.from(rows).sort((a, b) => a - b);
-        const sortedCols = Array.from(cols).sort();
+        const sortedCols = Array.from(cols).sort((a, b) => {
+            return a.localeCompare(b);
+        });
 
         sortedRows.forEach(() => result.push([]));
+
         data.forEach((value, key) => {
-            const col = key.charAt(0);
-            const row = parseInt(key.substring(1), 10) - 1;
+            const match = key.match(/^([A-Z]+)(\d+)$/);
+            if (!match) {
+                throw new Error(`Invalid key format: ${key}`);
+            }
+
+            const col = match[1];
+            const row = parseInt(match[2], 10) - 1;
             const colIndex = sortedCols.indexOf(col);
+
             let cellValue = value?.value || '';
 
             const style = value?.style || {};
@@ -308,20 +322,12 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                         deletedCategory.push(currentRowData[3])
                     }
                 }
-            } else {
-                let cellAddress;
-                if (args?.eventArgs?.pastedRange) {
-                    cellAddress = args.eventArgs.pastedRange;
-                } else {
-                    cellAddress = args.eventArgs.range;
-                }
-                const [firstAddress, secondAddress] = cellAddress.split('!')[1].split(":");
-                const firstRowNumber = parseInt(firstAddress.match(/\d+/)[0], 10);
-                const secondRowNumber = parseInt(secondAddress.match(/\d+/)[0], 10);
+            } else if (args?.eventArgs?.selectedRange) {
+                const cellAddress = args.eventArgs.selectedRange
+                const { firstRowNumber, lastRowNumber } = getSelectedRowsRange(cellAddress);
 
-                for (let row = firstRowNumber; row <= secondRowNumber; row++) {
+                for (let row = firstRowNumber; row <= lastRowNumber; row++) {
                     const currentRowData = convertCellsToValues(sheet.rows[row - 1]);
-
                     if (!currentRowData[0] || currentRowData[0].trim() === ""
                         || !currentRowData[2] || !currentRowData[2].trim() === ""
                         || !currentRowData[3] || !currentRowData[3].trim() === ""
@@ -338,12 +344,26 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
                 }
             }
             const formattedData = await getSheetData();
-            await updateCsvData(clientId, formattedData, deletedCategory, updatedCategory);
+            if (formattedData && formattedData.length > 0) {
+                await updateCsvData(clientId, formattedData, deletedCategory, updatedCategory);
+            }
             formateSheet();
             fetchCsv()
         }
     };
 
+    const getSelectedRowsRange = (range, isSingleAddress) => {
+        if (!isSingleAddress) {
+            const [firtstAddress, lastAddress] = range.split(':');
+            const firstRowNumber = parseInt(firtstAddress.match(/\d+/)[0], 10);
+            const lastRowNumber = parseInt(lastAddress.match(/\d+/)[0], 10);
+            return { firstRowNumber, lastRowNumber };
+        } else {
+            const rowNumberMatch = range.match(/\d+/);
+            const firstRowNumber = rowNumberMatch ? parseInt(rowNumberMatch[0], 10) : null;
+            return { firstRowNumber, lastRowNumber: firstRowNumber };
+        }
+    }
 
     const formateSheet = () => {
         try {
