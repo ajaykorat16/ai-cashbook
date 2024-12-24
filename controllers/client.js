@@ -1303,14 +1303,13 @@ const classify = async (newData, id, database, email) => {
 }
 
 function removeMatchedItems(newCsv, spreadsheetCursor, startDate, endDate) {
+
     const oldCsv = spreadsheetCursor.filter((record) => {
         if (record.data[1]) {
             const dateInString = record.data[1];
             const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
-            if (dateInRecord.isValid()) {
-                return dateInRecord.isBetween(startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), null, '[]');
-            }
+            return dateInRecord.isValid();
         }
     });
 
@@ -1749,7 +1748,7 @@ const createClientSpreadsheet = async (req, res) => {
         const oldData = [["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn'], ...formattedData]
         const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
 
-        const filteredNewCsv = removeMatchedItems(trimmedNewCsv, spreadsheetCursor, startDate, endDate)
+        const filteredNewCsv = removeMatchedItems(trimmedNewCsv, spreadsheetCursor)
 
         let spreadsheetId;
         if (filteredNewCsv.length > 0) {
@@ -1852,6 +1851,13 @@ const autoCategorize = async (req, res) => {
             const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
             return [row.data[0], formattedDate, ...row.data.slice(2), row?._id];
         });
+
+        if (formattedData && formattedData?.length === 0) {
+            return res.status(200).json({
+                error: true,
+                message: "Please select at least one category to proceed.",
+            });
+        }
 
         const newData = spreadsheetCursor.filter((record) => {
             if (!record.data[4]) {

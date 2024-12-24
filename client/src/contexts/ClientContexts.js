@@ -238,11 +238,13 @@ const ClientProvider = ({ children }) => {
             const { data } = await axios.post(`${baseURL}/client/auto-categorize/${id}`, { fromDate, toDate }, { headers });
             if (data.error === false) {
                 setTimeout(function () {
-                    toast.current?.show({ severity: 'success', summary: 'Client', detail: data.message, life: 3000 })
-                }, 500);
+                    toast.current?.show({ severity: 'success', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+                }, 1000);
                 return data;
             } else {
-                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+                setTimeout(function () {
+                    toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+                }, 1000);
             }
         } catch (error) {
             if (error.response) {
