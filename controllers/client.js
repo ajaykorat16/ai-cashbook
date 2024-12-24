@@ -1579,7 +1579,7 @@ const createClientSpreadsheet = async (req, res) => {
                 }
             })
         } else {
-            if (blankFilteredData[0].length === 4) {
+            if (blankFilteredData[0].length === 3) {
                 blankFilteredData.forEach(row => {
                     const [date, amount, narrative] = row;
                     const businessRate = 100;
@@ -1609,7 +1609,7 @@ const createClientSpreadsheet = async (req, res) => {
                         newCsv.push(["", formattedDate, amount, narrative, '', businessRate, taxable_amt, '', '', '', financialYear, quarterRange, '', '']);
                     }
                 });
-            } else if (blankFilteredData[0].length === 5) {
+            } else if (blankFilteredData[0].length === 4) {
                 if (blankFilteredData[0][0] === "Account History for Account:") {
                     const accountNumber = blankFilteredData[0][1].split("-")[1].trim();
                     blankFilteredData.splice(0, 2);
@@ -1678,7 +1678,7 @@ const createClientSpreadsheet = async (req, res) => {
                         }
                     });
                 }
-            } else if (blankFilteredData[0].length === 8) {
+            } else if (blankFilteredData[0].length === 7) {
                 blankFilteredData.forEach(row => {
                     const [date, amount, str1, str2, narrative1, narrative2] = row;
                     const businessRate = 100
