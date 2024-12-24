@@ -1432,7 +1432,7 @@ const interBankForUpdate = async (spreadsheetCursor, classifiedData, itemId, cli
     const endDate = moment();
 
     const filteredData = spreadsheetCursor.filter((record) => {
-        if (record.data[4] && record.inter_bank === false) {
+        if (record.data[4]) {
             const dateInString = record.data[1];
             const dateInRecord = moment(dateInString, 'YYYY-MM-DD');
 
