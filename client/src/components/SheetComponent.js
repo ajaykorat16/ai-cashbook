@@ -18,6 +18,7 @@ import 'jquery-ui-dist/jquery-ui.css';
 import 'jquery-ui-dist/jquery-ui';
 import ClientSelection from './ClientSelection';
 import { groupData } from './data';
+import { useAuth } from '../contexts/AuthContext';
 
 const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '1.1-Gross Income', '1.1-Gross Interest', '1.1-Total Dividends',
     '1.9-Gov Subsidies', '2.1 - Opening Stock', '2.2-Cost of Sales', '2.3 - Closing Stock', '2.4-40-880 Deduction', '2.4-Contractor fees', '2.4-Superannuation expense',
@@ -26,6 +27,7 @@ const itrList = ['1.1-FBT Contribution', '1.1-Gross distribution from trusts', '
 
 const SheetComponent = ({ clientId, showSelection }) => {
     const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject, showInterBank, showDateRange, calculateDateRange } = useClient();
+    const { toast } = useAuth()
     const spreadsheetRef = useRef(null);
 
     const [dataLoaded, setDataLoaded] = useState(false);
@@ -333,8 +335,12 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     }
                 }
             } else if (args.action === 'delete') {
-                const currentRowData = convertCellsToValues(args.eventArgs.deletedModel[0]);
-                editedData.push([currentRowData[0]]);
+                const deletedModels = args.eventArgs.deletedModel ?? [];
+                deletedModels.forEach(deletedModel => {
+                    const currentRowData = convertCellsToValues(deletedModel);
+                    editedData.push([currentRowData[0]]);
+                });
+
             }
 
             if (editedData?.length > 0) {

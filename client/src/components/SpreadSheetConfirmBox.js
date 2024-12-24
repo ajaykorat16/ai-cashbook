@@ -41,7 +41,6 @@ const SpreadSheetConfirmBox = ({ fetchSpreadsheets, spreadsheetLength, currentPa
     const handleDelete = async () => {
         try {
             if (spreadsheetDelId && clientId) {
-                console.log("clientId--",clientId)
                 await deleteSpreadsheet(clientId, spreadsheetDelId);
                 handleClose()
                 fetchSpreadsheets();
