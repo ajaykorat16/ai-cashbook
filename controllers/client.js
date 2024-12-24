@@ -1302,7 +1302,7 @@ const classify = async (newData, id, database, email) => {
     return fromattedData
 }
 
-function removeMatchedItems(newCsv, spreadsheetCursor, startDate, endDate) {
+function removeMatchedItems(newCsv, spreadsheetCursor) {
 
     const oldCsv = spreadsheetCursor.filter((record) => {
         if (record.data[1]) {
