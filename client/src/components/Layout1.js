@@ -32,8 +32,8 @@ const Layout1 = ({ children }) => {
                                                 <li>
                                                     <Link
                                                         id="spreadsheetLink"
-                                                        to={`/${params?.id}`}
-                                                        className={location.pathname.match(`/${params?.id}`) && `selected`}
+                                                        to={`/collabrative-sheet/${params?.id}`}
+                                                        className={location.pathname.match(`/collabrative-sheet/${params?.id}`) && `selected`}
                                                     >
                                                         <Icon icon="file-icons:microsoft-excel" className='btn_icon' />Spreadsheet
                                                     </Link>

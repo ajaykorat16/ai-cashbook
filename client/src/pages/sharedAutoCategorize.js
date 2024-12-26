@@ -8,7 +8,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 const SharedAutoCategorize = () => {
     const params = useParams();
     const { clientObject, setClientObject, autoCategorize, getSharedClient } = useClient();
-    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     const currentYearStart = moment().startOf('year');
@@ -37,10 +36,13 @@ const SharedAutoCategorize = () => {
     const hasCategorized = React.useRef(false);
 
     const categorize = async (id) => {
-        const data = await autoCategorize(id, fromDate, toDate);
-        if (!data?.error) {
-            setIsLoading(false);
+        if (id) {
+            const data = await autoCategorize(id, fromDate, toDate);
+            if (!data?.error) {
+            }
             navigate(`/collabrative-sheet/${params?.id}`);
+        } else {
+            setShowPage(false)
         }
     };
 
@@ -53,18 +55,14 @@ const SharedAutoCategorize = () => {
                     value: data.client._id,
                 });
                 if (!hasCategorized.current && fromDate && toDate) {
-                    setIsLoading(true);
                     categorize(data?.client?._id);
                     hasCategorized.current = true;
                 }
                 setShowPage(true)
             } else {
-                setShowPage(false)
             }
         } catch (error) {
             console.error('Error fetching single client:', error);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -80,9 +78,7 @@ const SharedAutoCategorize = () => {
                 <p>404 Not Found</p>
             ) : (
                 <Layout1>
-                    {isLoading && (
-                        <Loader />
-                    )}
+                    <Loader />
                 </Layout1>
             )}
         </>

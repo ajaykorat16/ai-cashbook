@@ -395,63 +395,30 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
         }
     }
 
-    const applyCalculations = (startRow, endRow, chunkSize) => {
-        if (!spreadsheetRef.current) {
-            return;
-        }
-
-        let currentRow = startRow;
-        let isCancelled = false;
-
+    const applyCalculations = () => {
         try {
-            const processChunk = () => {
-                if (isCancelled || !spreadsheetRef.current) return;
+            if (spreadsheetRef.current) {
+                const sheet = spreadsheetRef.current.getActiveSheet();
+                const rowCount = sheet.usedRange.rowIndex + 1;
+                const totalCount = rowCount + 1000
 
-                const nextRow = Math.min(currentRow + chunkSize, endRow);
-                for (let row = currentRow; row < nextRow; row++) {
-                    spreadsheetRef.current.updateCell(
-                        {
-                            formula: `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`,
-                        },
-                        `H${row}`
-                    );
-                    spreadsheetRef.current.updateCell(
-                        {
-                            formula: `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`,
-                        },
-                        `J${row}`
-                    );
-                    spreadsheetRef.current.updateCell(
-                        {
-                            formula: `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`,
-                        },
-                        `K${row}`
-                    );
-                    spreadsheetRef.current.updateCell(
-                        {
-                            formula: `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`,
-                        },
-                        `O${row}`
-                    );
+                for (let row = 2; row <= totalCount; row++) {
+                    const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`;
+                    spreadsheetRef.current.updateCell({ formula }, `H${row}`);
+
+                    const gstFormula = `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`;
+                    spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
+
+                    const excGstFormula = `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`;
+                    spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
+
+                    const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
+                    spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
+
                 }
-
-                currentRow = nextRow;
-
-                if (currentRow < endRow) {
-                    setTimeout(processChunk, 10);
-                } else {
-                    handleDropdown()
-                }
-            };
-
-            processChunk();
-
-            return () => {
-                isCancelled = true;
-            };
-
+            }
         } catch (error) {
-
+            console.log("error--", error);
         }
     };
 
@@ -797,17 +764,12 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                                     if (spreadsheetRef?.current?.isRendered === false) {
                                         spreadsheetRef.current.selectRange('B1');
                                         formateSheet();
-                                        const cancelUpdates = applyCalculations(2, numOfRows, 200);
+                                        applyCalculations()
+                                        handleDropdown()
                                         setDataLoaded(false)
                                         setTimeout(() => {
                                             setReadStatus(true)
                                         }, 2000);
-
-                                        return () => {
-                                            if (typeof cancelUpdates === 'function') {
-                                                cancelUpdates();
-                                            }
-                                        };
                                     }
                                 }}
                             >
