@@ -2018,8 +2018,7 @@ const updateClientSpreadsheet = async (req, res) => {
         const updatePromises = data.map(async (item) => {
             if (item.length > 0) {
                 if (item[0] === "Id") {
-                    console.log("item--", item)
-                    const headers = ["Id", "Bank Account", "Date", "Amt", "Narrative", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
+                    const headers = ["Id", "Bank_Account", "Date", "Amt", "Narrative", "Categories", 'Business', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl_GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
                     if (item.length > headers.length) {
                         const extraItems = item.slice(15);
                         const cleanedExtraItems = extraItems.map((el) =>

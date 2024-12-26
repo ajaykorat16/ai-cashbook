@@ -102,7 +102,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
             setInterBankData(interBankIndex)
             const csv = csvDetail.spreadsheet || [];
             const firstRow = csv[0]
-            const headers = ["Id", "Bank Account", "Date", "Amt", "Narrative", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
+            const headers = ["Id", "Bank_Account", "Date", "Amt", "Narrative", "Categories", 'Business', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl_GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
 
             if (firstRow.length > headers.length) {
                 headers.push(...firstRow.slice(headers.length));
@@ -126,16 +126,47 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                 backendData = convertedData
             }
 
-            const formattedData = backendData.map((c) => {
+            const formattedData = backendData.map((c, index) => {
                 const data = {};
+
                 for (let i = 0; i < headers.length; i++) {
-                    data[headers[i]] = headers[i] && c.cells[i]?.value ? c.cells[i].value : ""
+                    data[headers[i]] = headers[i] && c.cells[i]?.value ? c.cells[i].value : "";
                 }
+
+                const row = index + 2;
+
+                data.TaxableAmt = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`;
+                data.Excl_GST_Amt = `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`;
+                data.GST_Amt = `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`;
+                data.BAS_LabN = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
 
                 return data;
             });
 
-            setSheetData(formattedData);
+            const additionalDataCount = 1000;
+            const newData = Array.from({ length: additionalDataCount }, (_, i) => {
+                const row = backendData.length + i + 2;
+
+                return {
+                    Id: "",
+                    Bank_Account: "",
+                    Date: "",
+                    Amt: "",
+                    Narrative: "",
+                    Categories: "",
+                    Business: "",
+                    TaxableAmt: `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`,
+                    GST_Code: "",
+                    GST_Amt: `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`,
+                    Excl_GST_Amt: `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`,
+                    FY: "",
+                    QTR: "",
+                    ITR_Label: "",
+                    BAS_LabN: `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`
+                };
+            });
+
+            setSheetData([...formattedData, ...newData]);
             setDataLoaded(true)
         } catch (error) {
             console.error("Failed to load CSV data", error);
@@ -764,7 +795,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                                     if (spreadsheetRef?.current?.isRendered === false) {
                                         spreadsheetRef.current.selectRange('B1');
                                         formateSheet();
-                                        applyCalculations()
+                                        // applyCalculations()
                                         handleDropdown()
                                         setDataLoaded(false)
                                         setTimeout(() => {
