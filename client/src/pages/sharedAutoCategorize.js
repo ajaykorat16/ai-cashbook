@@ -4,6 +4,7 @@ import Layout1 from '../components/Layout1';
 import Loader from '../components/Loader';
 import moment from 'moment';
 import { useNavigate, useParams } from 'react-router-dom';
+import NotFoundPage from './NotFoundPage';
 
 const SharedAutoCategorize = () => {
     const params = useParams();
@@ -75,7 +76,7 @@ const SharedAutoCategorize = () => {
     return (
         <>
             {!showPage ? (
-                <p>404 Not Found</p>
+                <NotFoundPage />
             ) : (
                 <Layout1>
                     <Loader />

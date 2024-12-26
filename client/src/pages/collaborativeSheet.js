@@ -4,6 +4,7 @@ import SheetComponent from '../components/SheetComponent';
 import { useParams } from 'react-router-dom';
 import Loader from '../components/Loader';
 import Layout1 from '../components/Layout1';
+import NotFoundPage from './NotFoundPage';
 
 const CollaborativeSheet = () => {
   const params = useParams();
@@ -45,7 +46,7 @@ const CollaborativeSheet = () => {
   return (
     <>
       {!showPage ? (
-        <p>404 Not Found</p>
+        <NotFoundPage />
       ) : (
         <Layout1>
           {isLoading && !params?.id ? (
@@ -59,4 +60,4 @@ const CollaborativeSheet = () => {
   );
 };
 
-          export default CollaborativeSheet;
+export default CollaborativeSheet;

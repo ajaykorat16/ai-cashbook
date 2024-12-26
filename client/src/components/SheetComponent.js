@@ -20,6 +20,7 @@ import ClientSelection from './ClientSelection';
 import { groupData } from './data';
 import { useAuth } from '../contexts/AuthContext';
 import { InputSwitch } from 'primereact/inputswitch';
+import copy from 'copy-to-clipboard';
 
 const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject, showInterBank,
@@ -659,7 +660,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
 
     const handleCopyLink = async () => {
         try {
-            await navigator.clipboard.writeText(link);
+            copy(link);
 
             setButtonText("Copied!");
 
