@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AsyncPaginate } from 'react-select-async-paginate';
 import { useClient } from '../contexts/ClientContexts';
 
-const ClientSelection = ({ className, labelClassName, multiSelect = false, required = false, error = false, menuPlacement = 'bottom' }) => {
+const ClientSelection = ({ className, labelClassName, multiSelect = false, required = false, error = false, menuPlacement = 'bottom', disabled = false }) => {
     const requiredIcon = required ? <span className="text-danger">*</span> : null;
     const { getAllClients, clientObject, setClientObject } = useClient()
 
@@ -105,6 +105,7 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
                     menuShouldScrollIntoView={false}
                     menuPortalTarget={document.querySelector('body')}
                     styles={customStyles}
+                    isDisabled={disabled}
                 />
                 {(error && required) && <span className="text-danger error_message">{multiSelect ? `Please select one or more client(s)` : 'Please select any one client.'}</span>}
             </div>

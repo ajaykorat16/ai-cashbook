@@ -54,6 +54,15 @@ const ClientProvider = ({ children }) => {
         }
     }
 
+    const getSharedClient = async (id) => {
+        try {
+            let { data } = await axios.get(`${baseURL}/client/shared-client/${id}`, { headers })
+            return data
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Client', detail: 'An error occurred. Please try again later.', life: 3000 })
+        }
+    }
+
     const getLastClientCode = async (id) => {
         try {
             let { data } = await axios.get(`${baseURL}/client/lastclient-code`, { headers })
@@ -174,7 +183,7 @@ const ClientProvider = ({ children }) => {
         try {
             let { data } = await axios.get(`${baseURL}/client/spreadsheet/${id}?fromDate=${fromDate}&&toDate=${toDate}`, { headers })
             if (data.error === false) {
-                return data?.spreadsheet
+                return data
             }
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
@@ -474,12 +483,53 @@ const ClientProvider = ({ children }) => {
         }
     };
 
+
+    const changeSheetName = async (id, name) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/client/change-sheetname/${id}`, { sheet_name: name }, { headers });
+            if (data.error === false) {
+                return data;
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: errors[0].msg, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
+    const shareSheet = async (id, is_shared) => {
+        try {
+            const { data } = await axios.post(`${baseURL}/client/share-spreadsheet/${id}`, { is_shared }, { headers });
+            if (data.error === false) {
+                return data.url;
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: data.message, life: 3000 })
+            }
+        } catch (error) {
+            if (error.response) {
+                const errors = error.response.data.errors;
+                if (errors && Array.isArray(errors) && errors.length > 0) {
+                    toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: errors[0].msg, life: 3000 })
+                }
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Spreadsheet', detail: 'An error occurred. Please try again later.', life: 3000 })
+            }
+        }
+    }
+
     return (
         <ClientContext.Provider value={{
-            createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, deleteSpreadsheet,
+            createClient, getSingleClient, getAllClients, clientsWithoutPagination, updateClient, deleteSpreadsheet, getSharedClient,
             getSpreadsheet, updateSpreadsheet, createSpreadsheet, autoCategorize, getSpreadsheetList, getSpreadsheetData, calculateDateRange,
-            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, clientsAvalible, setClientsAvalible,
-            multipleDeleteClient, getLastClientCode, getItrReport, getGstReport, importClient, showInterBank, setShowInterBank, showDateRange
+            deleteClient, getClientCategory, updateClientCatrgory, clientObject, setClientObject, clientsAvalible, setClientsAvalible, shareSheet,
+            multipleDeleteClient, getLastClientCode, getItrReport, getGstReport, importClient, showInterBank, setShowInterBank, showDateRange, changeSheetName
         }}>
             {children}
         </ClientContext.Provider>

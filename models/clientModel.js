@@ -42,6 +42,15 @@ const clientSchema = new mongoose.Schema({
     },
     address: {
         type: String
+    },
+    sheet_name: {
+        type: String
+    },
+    token: {
+        type: String
+    },
+    is_shared: {
+        type: Boolean
     }
 }, {
     timestamps: true,

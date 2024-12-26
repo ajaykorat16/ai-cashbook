@@ -22,6 +22,8 @@ import UserList from './pages/UserList';
 import GstReport from './pages/GstReport';
 import ItrReport from './pages/ItrReport';
 import AutoCategorize from './pages/AutoCategorize';
+import CollaborativeSheet from './pages/collaborativeSheet';
+import SharedAutoCategorize from './pages/sharedAutoCategorize';
 
 const App = () => {
   return (
@@ -32,6 +34,8 @@ const App = () => {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/forgot-password/" element={<ForgotPassword />} />
         <Route path="/thanks" element={<ThanksPage />} />
+        <Route path="/collabrative-sheet/:id" element={<CollaborativeSheet />} />
+        <Route path="/auto-categorize/:id" element={<SharedAutoCategorize />} />
         <Route path="/user/*" element={<UserRoutes />}>
           <Route path="chart-of-accounts" element={<ClientsAccounts />} />
           <Route path="chart-of-accounts/:id" element={<ChartOfAccounts />} />

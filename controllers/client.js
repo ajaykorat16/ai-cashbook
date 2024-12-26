@@ -10,7 +10,7 @@ const moment = require('moment');
 const csv = require('csv-parser');
 const { createObjectCsvWriter } = require('csv-writer');
 const { spawn } = require("child_process");
-
+const crypto = require('crypto');
 
 const createClient = async (req, res) => {
     const errors = validationResult(req);
@@ -86,7 +86,8 @@ const createClient = async (req, res) => {
             phone, email,
             client_code,
             user_defined,
-            address
+            address,
+            sheet_name: "Spreadsheet"
         }
 
         if (entity_name) {
@@ -299,6 +300,30 @@ const getSingleClient = async (req, res) => {
         const { id } = req.params
 
         const client = await getClient(id)
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client is not existing."
+            })
+        }
+
+        return res.status(200).json({
+            error: false,
+            message: "Client is fetched successfully.",
+            client
+        })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).send('Server error');
+    }
+}
+
+const getSharedClient = async (req, res) => {
+    try {
+        const { token } = req.params
+
+        const client = await Clients.findOne({ token, is_shared: true });
+
         if (!client) {
             return res.status(400).json({
                 error: true,
@@ -1145,7 +1170,10 @@ const getSpreadsheet = async (req, res) => {
         return res.status(200).json({
             error: false,
             message: "Spreadsheet is fetched successfully.",
-            spreadsheet: [spreadsheetCursor[0].data, ...data]
+            spreadsheet: [spreadsheetCursor[0].data, ...data],
+            sheet_name: client?.sheet_name,
+            link: client?.token ? `${process.env.CLIENT_SIDE_URL}/collabrative-sheet/${client?.token}` : '',
+            isShared: client?.is_shared ? client?.is_shared : false
         });
     } catch (error) {
         console.log(error.message);
@@ -1990,15 +2018,25 @@ const updateClientSpreadsheet = async (req, res) => {
         const updatePromises = data.map(async (item) => {
             if (item.length > 0) {
                 if (item[0] === "Id") {
-                    // const headerId = spreadsheetCursor[0]._id
-                    // await clientSpreadsheet.updateOne(
-                    //     { _id: headerId },
-                    //     {
-                    //         $set: {
-                    //             data: item
-                    //         }
-                    //     }
-                    // );
+                    console.log("item--", item)
+                    const headers = ["Id", "Bank Account", "Date", "Amt", "Narrative", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
+                    if (item.length > headers.length) {
+                        const extraItems = item.slice(15);
+                        const cleanedExtraItems = extraItems.map((el) =>
+                            el.replace(/<\/?b>/g, "")
+                        );
+                        headers.push(...cleanedExtraItems);
+                    }
+
+                    const headerId = spreadsheetCursor[0]._id
+                    await clientSpreadsheet.updateOne(
+                        { _id: headerId },
+                        {
+                            $set: {
+                                data: headers
+                            }
+                        }
+                    );
                 } else {
                     const id = item.shift();
                     if (id) {
@@ -2430,11 +2468,92 @@ const getItrReport = async (req, res) => {
     }
 };
 
+const changeSheetName = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { sheet_name } = req.body
+
+        const client = await getClient(id);
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client is not existing."
+            });
+        }
+
+        await Clients.updateOne(
+            { _id: new ObjectId(id) },
+            {
+                $set: {
+                    sheet_name,
+                }
+            }
+        );
+
+        return res.status(200).json({
+            error: false,
+            message: "Sheet name changed successfully."
+        });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send('Server error');
+    }
+}
+
+const generateRandomToken = () => {
+    return crypto.randomBytes(15).toString('hex');
+};
+
+const shareSpreadsheet = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { is_shared } = req.body
+
+
+        const client = await getClient(id);
+        if (!client) {
+            return res.status(400).json({
+                error: true,
+                message: "Client is not existing."
+            });
+        }
+
+        const user = await Users.findById(client?.user_id);
+        if (!user) {
+            return res.status(400).json({
+                error: true,
+                message: "User associated with client does not exist.",
+            });
+        }
+
+        const token = generateRandomToken()
+
+        await Clients.updateOne(
+            { _id: new ObjectId(id) },
+            {
+                $set: {
+                    is_shared: is_shared ? true : false,
+                    token: is_shared ? token : ""
+                }
+            }
+        );
+
+        return res.status(200).json({
+            error: false,
+            message: `Sheet sharing is ${is_shared ? 'enabled' : 'disabled'}.`,
+            url: is_shared ? `${process.env.CLIENT_SIDE_URL}/collabrative-sheet/${token}` : ''
+        });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send('Server error');
+    }
+}
+
 module.exports = {
     createClient, getSingleClient, getClientCategory, getAllClients,
     exportClient, createClientSpreadsheet, getSpreadsheet,
     autoCategorize, getClientSpreadsheets, getSpreadsheetData,
     updateClient, updateClientCategory, deleteClient, clientImport,
     bulkClientDelete, updateClientSpreadsheet, getLastClient, getGstReport,
-    getItrReport, deleteSpreadSheetData
+    getItrReport, deleteSpreadSheetData, changeSheetName, shareSpreadsheet, getSharedClient
 }

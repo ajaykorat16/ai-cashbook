@@ -57,7 +57,7 @@ const Spreadsheet = () => {
       {isLoading ? (
         <Loader />
       ) : (
-        <SheetComponent clientId={clientObject?.value} showSelection={true} />
+        <SheetComponent clientId={clientObject?.value} showSelection={true} disableSelction={false} />
       )}
     </Layout>
   );

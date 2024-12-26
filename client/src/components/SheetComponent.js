@@ -19,9 +19,11 @@ import 'jquery-ui-dist/jquery-ui';
 import ClientSelection from './ClientSelection';
 import { groupData } from './data';
 import { useAuth } from '../contexts/AuthContext';
+import { InputSwitch } from 'primereact/inputswitch';
 
-const SheetComponent = ({ clientId, showSelection }) => {
-    const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject, showInterBank, showDateRange, calculateDateRange, setShowInterBank } = useClient();
+const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
+    const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject, showInterBank,
+        showDateRange, calculateDateRange, setShowInterBank, changeSheetName, shareSheet } = useClient();
     const { toast } = useAuth()
     const spreadsheetRef = useRef(null);
 
@@ -37,23 +39,19 @@ const SheetComponent = ({ clientId, showSelection }) => {
     const [showMenu, setShowMenu] = useState(false)
     const [interBankData, setInterBankData] = useState([])
     const [readStatus, setReadStatus] = useState(false)
+    const [numOfRows, setNumOfRows] = useState(0)
+    const [sheetName, setSheetName] = useState("")
+    const [isShared, setIsShared] = useState(false)
+    const [link, setLink] = useState("")
+    const [buttonText, setButtonText] = useState("Copy Link");
 
     useEffect(() => {
-        const storedFromDate = localStorage.getItem(`fromDate_${clientObject?.value}`);
-        const storedToDate = localStorage.getItem(`toDate_${clientObject?.value}`);
+        const storedFromDate = localStorage.getItem(`fromDate_${clientId}`) ?? currentYearStart.format('MM/DD/YYYY');
+        const storedToDate = localStorage.getItem(`toDate_${clientId}`) ?? currentYearEnd.format('MM/DD/YYYY');
 
-        if (storedFromDate) {
-            setFromDate(storedFromDate);
-        } else {
-            setFromDate(currentYearStart.format('MM/DD/YYYY'))
-        }
-
-        if (storedToDate) {
-            setToDate(storedToDate);
-        } else {
-            setToDate(currentYearEnd.format('MM/DD/YYYY'));
-        }
-    }, [clientObject?.value]);
+        setFromDate(storedFromDate);
+        setToDate(storedToDate);
+    }, [clientId]);
 
     const convertToCellFormat = (data) => {
         const convertedData = data?.map(row => ({
@@ -81,6 +79,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                 return { value, style };
             })
         }));
+
         return convertedData;
     };
 
@@ -89,86 +88,40 @@ const SheetComponent = ({ clientId, showSelection }) => {
         try {
             const csvDetail = await getSpreadsheet(clientId, moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD'), moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD'));
             const interBankIndex = []
-            csvDetail.forEach((csv) => {
+            setLink(csvDetail?.link)
+            setIsShared(csvDetail?.isShared)
+            csvDetail.spreadsheet.forEach((csv) => {
                 if (csv[csv.length - 1] === true) {
                     interBankIndex.push(csv[0]);
                 }
             });
 
+            const sheet = csvDetail.sheet_name ? csvDetail.sheet_name : 'Spreadsheet'
+            setSheetName(sheet)
+
             setInterBankData(interBankIndex)
-            const csv = csvDetail || [];
+            const csv = csvDetail.spreadsheet || [];
             const firstRow = csv[0]
-            // const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
             const headers = ["Id", "Bank Account", "Date", "Amt", "Narrative", "Categories", 'Business%', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl.GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
+
+            if (firstRow.length > headers.length) {
+                headers.push(...firstRow.slice(headers.length));
+            }
+
             const convertedData = convertToCellFormat(csv);
             convertedData.shift();
+            setNumOfRows(convertedData.length + 1000)
             let backendData = []
 
             if (convertedData.length === 0) {
-                backendData = [{
-                    "cells": [
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        }
-                    ]
-                }]
+                backendData = [
+                    {
+                        cells: Array.from({ length: 15 }, () => ({
+                            value: "",
+                            style: {}
+                        }))
+                    }
+                ];
             } else {
                 backendData = convertedData
             }
@@ -176,14 +129,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
             const formattedData = backendData.map((c) => {
                 const data = {};
                 for (let i = 0; i < headers.length; i++) {
-                    if (headers[i]) {
-                        if (c.cells[i]?.value) {
-                            data[headers[i]] = c.cells[i].value;
-                        } else {
-                            data[headers[i]] = ""
-                        }
-                    }
+                    data[headers[i]] = headers[i] && c.cells[i]?.value ? c.cells[i].value : ""
                 }
+
                 return data;
             });
 
@@ -197,16 +145,14 @@ const SheetComponent = ({ clientId, showSelection }) => {
     };
 
     useEffect(() => {
-        if (clientId && fromDate && toDate) {
-            fetchCsvLoaded();
-        }
-    }, [clientId, fromDate, toDate]);
-
-    useEffect(() => {
         if (clientId) {
             fetchClientCategory()
+
+            if (fromDate && toDate) {
+                fetchCsvLoaded();
+            }
         }
-    }, [clientId]);
+    }, [clientId, fromDate, toDate]);
 
     const convertCellsToValues = (data) => {
         if (!data || !Array.isArray(data.cells)) {
@@ -269,9 +215,17 @@ const SheetComponent = ({ clientId, showSelection }) => {
     };
 
     const handleActionComplete = async (args) => {
-        handleDropdown()
+        if (args.action === 'renameSheet') {
+            const name = args?.eventArgs?.value
+            if (name) {
+                setSheetName(name)
+                await changeSheetName(clientId, name)
+            }
+        }
+
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
             args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert' || args.action === 'autofill') {
+            handleDropdown()
             const sheet = spreadsheetRef.current.getActiveSheet();
             const editedData = []
 
@@ -441,30 +395,63 @@ const SheetComponent = ({ clientId, showSelection }) => {
         }
     }
 
-    const applyCalculations = () => {
+    const applyCalculations = (startRow, endRow, chunkSize) => {
+        if (!spreadsheetRef.current) {
+            return;
+        }
+
+        let currentRow = startRow;
+        let isCancelled = false;
+
         try {
-            if (spreadsheetRef.current) {
-                const sheet = spreadsheetRef.current.getActiveSheet();
-                const rowCount = sheet.usedRange.rowIndex + 1;
-                const totalCount = rowCount + 1000
+            const processChunk = () => {
+                if (isCancelled || !spreadsheetRef.current) return;
 
-                for (let row = 2; row <= totalCount; row++) {
-                    const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula }, `H${row}`);
-
-                    const gstFormula = `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
-
-                    const excGstFormula = `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
-
-                    const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
-                    spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
-
+                const nextRow = Math.min(currentRow + chunkSize, endRow);
+                for (let row = currentRow; row < nextRow; row++) {
+                    spreadsheetRef.current.updateCell(
+                        {
+                            formula: `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`,
+                        },
+                        `H${row}`
+                    );
+                    spreadsheetRef.current.updateCell(
+                        {
+                            formula: `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`,
+                        },
+                        `J${row}`
+                    );
+                    spreadsheetRef.current.updateCell(
+                        {
+                            formula: `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`,
+                        },
+                        `K${row}`
+                    );
+                    spreadsheetRef.current.updateCell(
+                        {
+                            formula: `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`,
+                        },
+                        `O${row}`
+                    );
                 }
-            }
+
+                currentRow = nextRow;
+
+                if (currentRow < endRow) {
+                    setTimeout(processChunk, 10);
+                } else {
+                    handleDropdown()
+                }
+            };
+
+            processChunk();
+
+            return () => {
+                isCancelled = true;
+            };
+
         } catch (error) {
-            console.log("error--", error);
+
         }
     };
 
@@ -504,10 +491,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
 
                     const firstRowRange = `B1:${String.fromCharCode(64 + colCount)}1`;
                     spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
-                    // spreadsheetRef.current.autoFit(`B:${String.fromCharCode(64 + colCount)}`);
-
                     spreadsheetRef.current.hideColumn(0, 0);
-
                     sheet.columns[0].allowResizing = false;
 
                     const columnsToFormat = [
@@ -547,9 +531,6 @@ const SheetComponent = ({ clientId, showSelection }) => {
             })
 
             setCategoryList(categories)
-            const headers = data.shift();
-
-
             const categoryMap = Object.fromEntries(
                 data.map(subArray => {
                     const cleanedCategory = subArray[0].replace(/<\/?b>/g, '').replace(/<\/?i>/g, '').replace(/<\/?u>/g, '');
@@ -580,40 +561,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
     };
 
     useEffect(() => {
-        $('#datepicker').datepicker({
-            uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy',
-            changeMonth: true,
-            changeYear: true,
-            yearRange: "1900:2100",
-        }).on('change', function () {
-            const selectedDate = $(this).val();
-            setFromDate(selectedDate);
-            localStorage.setItem(`fromDate_${clientObject?.value}`, selectedDate);
-        });
+        initiateDatePicker('#datepicker', 'fromDate');
+        initiateDatePicker('#datepicker1', 'toDate');
 
-        $('#datepicker1').datepicker({
-            uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy',
-            changeMonth: true,
-            changeYear: true,
-            yearRange: "1900:2100",
-        }).on('change', function () {
-            const selectedDate = $(this).val();
-            setToDate(selectedDate);
-            localStorage.setItem(`toDate_${clientObject?.value}`, selectedDate);
-        });
-    }, []);
-
-
-    const setDateRange = (option) => {
-        const { startDate, endDate } = calculateDateRange(option)
-        setFromDate(startDate)
-        setToDate(endDate)
-        setShowMenu(false)
-    }
-
-    useEffect(() => {
         const handleResize = () => {
             spreadsheetRef.current.refresh();
         };
@@ -623,24 +573,56 @@ const SheetComponent = ({ clientId, showSelection }) => {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
+
     }, []);
+
+    const initiateDatePicker = (selector, id) => {
+        $(selector).datepicker({
+            uiLibrary: 'bootstrap5',
+            dateFormat: 'mm/dd/yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "1900:2100",
+        }).on('change', function () {
+            const selectedDate = $(this).val();
+            selector === '#datepicker' ? setFromDate(selectedDate) : setToDate(selectedDate);
+            localStorage.setItem(`${id}_${clientObject?.value}`, selectedDate);
+        });
+    }
+
+    const setDateRange = (option) => {
+        const { startDate, endDate } = calculateDateRange(option)
+        setFromDate(startDate)
+        setToDate(endDate)
+        setShowMenu(false)
+    }
+
+    // useEffect(() => {
+    //     const handleResize = () => {
+    //         spreadsheetRef.current.refresh();
+    //     };
+
+    //     window.addEventListener('resize', handleResize);
+
+    //     return () => {
+    //         window.removeEventListener('resize', handleResize);
+    //     };
+    // }, []);
 
     const handleDropdown = () => {
         if (spreadsheetRef?.current?.isRendered === false) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
 
-            const rangeCategoryLabel = `F2:F${rowCount}`;
             spreadsheetRef.current.addDataValidation(
                 {
                     type: 'List',
                     inCellDropDown: true,
                     value1: `=Categories!A3:A${categortList.length}`,
                 },
-                rangeCategoryLabel
+                `F2:F${rowCount}`
             );
 
-            const rangeItrLabel = `N2:N${rowCount}`;
             spreadsheetRef.current.addDataValidation(
                 {
                     type: 'List',
@@ -648,10 +630,9 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     value1: '=ItrLabels!A2:A25',
                     ignoreBlank: false,
                 },
-                rangeItrLabel
+                `N2:N${rowCount}`
             );
 
-            const rangeGst = `I2:I${rowCount}`;
             spreadsheetRef.current.addDataValidation(
                 {
                     type: 'List',
@@ -659,25 +640,61 @@ const SheetComponent = ({ clientId, showSelection }) => {
                     value1: '=ItrLabels!B2:B6',
                     ignoreBlank: false,
                 },
-                rangeGst
+                `I2:I${rowCount}`
             );
         }
     }
 
     useEffect(() => {
         if (readStatus) {
-            spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+            spreadsheetRef.current.setRangeReadOnly(true, 'A1:O1');
             setReadStatus(false)
         }
     }, [readStatus])
 
+    const handleShare = async (e) => {
+        const value = e.value
+        setIsShared(value)
+        const link = await shareSheet(clientId, value)
+        setLink(link)
+    }
+
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(link);
+
+            setButtonText("Copied!");
+
+            setTimeout(() => {
+                setButtonText("Copy Link");
+            }, 2000);
+        } catch (err) {
+            console.error("Failed to copy the link: ", err);
+        }
+    };
+
     return (
         <>
             <div className="special_flex d-flex justify-content-space-between">
-                <h1 className="main_title client_name mb-0">{clientObject?.label}</h1>
-                {showSelection && (
-                    <ClientSelection className="head_select align-self-end" />
-                )}
+                <h1 className="main_title client_name mb-0">{sheetName}</h1>
+                <div className='d-flex align-items-center switch_container'>
+                    {!disableSelection && (
+                        <div className='d-flex align-items-center'>
+                            {link && (
+                                <button className="common_btn copy_link_btn ms-4" onClick={() => handleCopyLink()}>
+                                    {buttonText}
+                                </button>
+                            )}
+                            <div className="d-flex align-items-center share_switch">
+                                <InputSwitch checked={isShared} onChange={(e) => handleShare(e)} />
+                                <label className="form-check-label share_switch_label" htmlFor="flexSwitchCheckChecked">Share</label>
+                            </div>
+                        </div>
+                    )}
+                    {showSelection && (
+                        <ClientSelection className="head_select" disabled={disableSelection} />
+                    )}
+                </div>
             </div>
             <div className="input_form_box date_container">
                 <div className="row">
@@ -770,7 +787,7 @@ const SheetComponent = ({ clientId, showSelection }) => {
                             <SpreadsheetComponent
                                 ref={spreadsheetRef}
                                 actionComplete={handleActionComplete}
-                                showSheetTabs={false}
+                                // showSheetTabs={false}
                                 allowSorting={true}
                                 allowFiltering={true}
                                 selectionSettings={{
@@ -778,22 +795,24 @@ const SheetComponent = ({ clientId, showSelection }) => {
                                 }}
                                 created={() => {
                                     if (spreadsheetRef?.current?.isRendered === false) {
-                                        handleDropdown()
                                         spreadsheetRef.current.selectRange('B1');
                                         formateSheet();
-                                        applyCalculations();
+                                        const cancelUpdates = applyCalculations(2, numOfRows, 200);
                                         setDataLoaded(false)
                                         setTimeout(() => {
                                             setReadStatus(true)
                                         }, 2000);
-                                        // setTimeout(() => {
-                                        //     spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
-                                        // }, 2000);
+
+                                        return () => {
+                                            if (typeof cancelUpdates === 'function') {
+                                                cancelUpdates();
+                                            }
+                                        };
                                     }
                                 }}
                             >
                                 <SheetsDirective>
-                                    <SheetDirective frozenRows={1} name='Spreadsheet'>
+                                    <SheetDirective frozenRows={1} name={sheetName}>
                                         <RangesDirective>
                                             <RangeDirective dataSource={sheetData}></RangeDirective>
                                         </RangesDirective>

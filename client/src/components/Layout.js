@@ -86,7 +86,7 @@ const Layout = ({ children }) => {
                                             <Link to={"/"} className='header_logo px-2 d-flex justify-content-center mb-3'>
                                                 <img src="/images/accoutn_logo_3.png" alt="" />
                                             </Link>
-                                            {auth.user.role === 'user' ? (
+                                            {auth?.user?.role === 'user' ? (
                                                 <>
                                                     <li className='mt-2'>
                                                         <Link to={'/user/category'} className={location.pathname.match("/user/category") && `selected`}>
