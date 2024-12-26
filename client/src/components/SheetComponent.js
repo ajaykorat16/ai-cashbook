@@ -457,17 +457,17 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     const calculationOnRow = (row, currentRowData) => {
         try {
             if (spreadsheetRef.current && row !== 1) {
-                // const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`;
-                // spreadsheetRef.current.updateCell({ formula }, `H${row}`);
+                const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`;
+                spreadsheetRef.current.updateCell({ formula }, `H${row}`);
 
-                // const gstFormula = `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`;
-                // spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
+                const gstFormula = `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`;
+                spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
 
-                // const excGstFormula = `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`;
-                // spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
+                const excGstFormula = `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`;
+                spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
 
-                // const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
-                // spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
+                const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
+                spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
 
                 if (currentRowData[5]) {
                     applyItrAndGst(currentRowData, row);
