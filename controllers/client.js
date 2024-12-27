@@ -1157,7 +1157,13 @@ const getSpreadsheet = async (req, res) => {
         });
 
         const data = filteredData.map((row) => {
-            return [row._id, ...row.data, row.inter_bank];
+            const rowData = [...row.data];
+
+            while (rowData.length < spreadsheetCursor[0].data.length - 1) {
+                rowData.push("");
+            }
+
+            return [row._id, ...rowData, row.inter_bank];
         });
 
         if (!spreadsheetCursor) {

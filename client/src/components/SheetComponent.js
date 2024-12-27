@@ -40,7 +40,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     const [showMenu, setShowMenu] = useState(false)
     const [interBankData, setInterBankData] = useState([])
     const [readStatus, setReadStatus] = useState(false)
-    const [numOfRows, setNumOfRows] = useState(0)
     const [sheetName, setSheetName] = useState("")
     const [isShared, setIsShared] = useState(false)
     const [link, setLink] = useState("")
@@ -111,7 +110,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
 
             const convertedData = convertToCellFormat(csv);
             convertedData.shift();
-            setNumOfRows(convertedData.length + 1000)
             let backendData = []
 
             if (convertedData.length === 0) {
@@ -257,7 +255,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
 
         if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
             args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert' || args.action === 'autofill') {
-            handleDropdown()
+            // handleDropdown()
             const sheet = spreadsheetRef.current.getActiveSheet();
             const editedData = []
 
