@@ -1975,7 +1975,7 @@ function checkIfItemMatched(item, spreadsheetCursor) {
     for (let j = 0; j < formattedData.length; j++) {
         if (
             formattedData[j][1] === item[1] &&
-            formattedData[j][2] === item[2] &&
+            parseFloat(formattedData[j][2]) === parseFloat(item[2]) &&
             formattedData[j][3] === item[3]
         ) {
             isMatched = true;
