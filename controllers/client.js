@@ -2092,8 +2092,8 @@ const updateClientSpreadsheet = async (req, res) => {
                             item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
                         }
 
-                        const isMathed = checkIfItemMatched(item, spreadsheetCursor)
-                        if (!isMathed) {
+                        const isMatched = checkIfItemMatched(item, spreadsheetCursor)
+                        if (!isMatched && item[1]) {
                             const newData = await checkInterBank(spreadsheetCursor, [item], clientId, null, clientSpreadsheet, insertedDataId, interBankIds)
                             if (newData.length > 0) {
                                 const insertedId = await clientSpreadsheet.insertOne({
