@@ -1657,6 +1657,10 @@ div[data-id="tabitem_2"] {
   z-index: 10000 !important;
 }
 
+li[aria-label = "File"] {
+  display: none !important;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);

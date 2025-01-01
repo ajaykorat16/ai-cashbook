@@ -236,9 +236,6 @@ const ClientList = () => {
                                     <Link to={`/user/spreadsheet/${rowData._id}`} className="green_btn" data-toggle="tooltip" title="Spreadsheet">
                                         <img src="/images/chart.svg" alt="Chart" />
                                     </Link>
-                                    {/* <Link className="green_btn">
-                                        <img src="/images/chart.svg" alt="Chart" />
-                                    </Link> */}
                                     <Link to={`/user/chart-of-accounts/${rowData._id}`} className="green_btn" data-toggle="tooltip" title="Category">
                                         <img src="/images/file.svg" alt="File" />
                                     </Link>

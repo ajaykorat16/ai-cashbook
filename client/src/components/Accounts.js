@@ -17,6 +17,7 @@ import ClientSelection from './ClientSelection';
 import { useClient } from '../contexts/ClientContexts';
 import { useAuth } from '../contexts/AuthContext';
 import { groupData } from './data';
+import { convertToCellFormat } from '../helper/helper';
 
 const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title }) => {
     const navigate = useNavigate();
@@ -35,7 +36,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             try {
                 const sheet = spreadsheetRef.current.getActiveSheet();
                 const rowCount = sheet.usedRange.rowIndex + 1;
-                const colCount = sheet.usedRange.colIndex + 1;
                 const range = `A1:E${rowCount}`;
 
                 const data = await spreadsheetRef.current.getData(`${sheet.name}!${range}`);
@@ -101,36 +101,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         return result;
     };
 
-    const convertToCellFormat = (data) => {
-        const convertedData = data?.map(row => ({
-            cells: row.map(cell => {
-                let value = cell || '';
-                const style = {};
-
-                if (typeof value !== 'string') {
-                    value = String(value);
-                }
-
-                if (value.includes('<b>')) {
-                    style.fontWeight = 'bold';
-                    value = value.replace(/<\/?b>/g, '');
-                }
-                if (value.includes('<i>')) {
-                    style.fontStyle = 'italic';
-                    value = value.replace(/<\/?i>/g, '');
-                }
-                if (value.includes('<u>')) {
-                    style.textDecoration = 'underline';
-                    value = value.replace(/<\/?u>/g, '');
-                }
-
-                return { value, style };
-            })
-        }));
-
-        return convertedData;
-    };
-
     const fetchCsv = async () => {
         const csvDetail = await getCsvData(clientId);
         const csv = csvDetail?.data || [];
@@ -151,41 +121,25 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             let backendData = []
 
             if (convertedData.length === 0) {
-                backendData = [{
-                    "cells": [
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        },
-                        {
-                            "value": "",
-                            "style": {}
-                        }
-                    ]
-                }]
+                backendData = [
+                    {
+                        cells: Array.from({ length: 5 }, () => ({
+                            value: "",
+                            style: {}
+                        }))
+                    }
+                ];
             } else {
                 backendData = convertedData
             }
 
             const formattedData = backendData.map((c) => {
                 const data = {};
-                for (let i = 0; i < c.cells.length; i++) {
-                    if (headers[i]) {
-                        data[headers[i]] = c.cells[i].value;
-                    }
+
+                for (let i = 0; i < headers.length; i++) {
+                    data[headers[i]] = headers[i] && c.cells[i]?.value ? c.cells[i].value : "";
                 }
+
                 return data;
             });
 
@@ -370,21 +324,9 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             if (spreadsheetRef.current) {
                 const sheet = spreadsheetRef.current.getActiveSheet();
                 const colCount = sheet.usedRange.colIndex + 1;
-                const rowCount = sheet.usedRange.rowIndex + 1;
 
                 const firstRowRange = `A1:${String.fromCharCode(64 + colCount)}1`;
                 spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
-
-                // spreadsheetRef.current.autoFit(`A:${String.fromCharCode(64 + colCount)}`);
-
-                // const range = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
-                // spreadsheetRef.current.cellFormat({ border: 'none', borderBottom: '1px solid #FFFFFF' }, range);
-
-                // const outerBorderRange = `A1:${String.fromCharCode(64 + colCount)}${rowCount}`;
-                // spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, outerBorderRange, 'Outer');
-
-                // const horizontalBorderRange = `A2:${String.fromCharCode(64 + colCount)}${rowCount}`;
-                // spreadsheetRef.current.setBorder({ border: '1px solid #e0e0e0' }, horizontalBorderRange, 'Horizontal');
                 setIsLoading(false);
             }
         } catch (error) {
@@ -409,7 +351,6 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
         if (spreadsheetRef?.current?.isRendered === false) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const rowCount = sheet.usedRange.rowIndex + 1;
-            const colCount = sheet.usedRange.colIndex + 1;
 
             const rangeItrLabel = `D2:D${rowCount}`;
             spreadsheetRef.current.addDataValidation(

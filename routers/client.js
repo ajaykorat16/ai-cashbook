@@ -2,10 +2,31 @@ const express = require('express');
 const router = express.Router();
 const { auth } = require("../middleware/auth")
 
-const { createClient, getSingleClient, getClientCategory, getAllClients, exportClient, deleteSpreadSheetData,
-    updateClient, updateClientCategory, getSpreadsheet, getLastClient, getClientSpreadsheets, getSpreadsheetData,
-    deleteClient, clientImport, bulkClientDelete, createClientSpreadsheet, updateClientSpreadsheet, getSharedClient,
-    getGstReport, getItrReport, autoCategorize, changeSheetName, shareSpreadsheet } = require("../controllers/client")
+const {
+    createClient,
+    getSingleClient,
+    getClientCategory,
+    getAllClients,
+    exportClient,
+    deleteSpreadSheetData,
+    updateClient,
+    updateClientCategory,
+    getSpreadsheet,
+    getLastClient,
+    getClientSpreadsheets,
+    getSpreadsheetData,
+    deleteClient,
+    clientImport,
+    bulkClientDelete,
+    createClientSpreadsheet,
+    updateClientSpreadsheet,
+    getSharedClient,
+    getGstReport,
+    getItrReport,
+    autoCategorize,
+    changeSheetName,
+    shareSpreadsheet
+} = require("../controllers/client")
 
 router.get("/", auth, getAllClients)
 

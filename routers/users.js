@@ -3,7 +3,18 @@ const { check } = require('express-validator');
 const { auth, isAdmin } = require("../middleware/auth")
 const router = express.Router()
 
-const { createUser, verifyUser, forgotPassword, loginUser, loginUserByGoogle, signUpUserByGoogle, getUserCategory, updateUserCategory, getAllUsers, updateUserStatus } = require('../controllers/users')
+const {
+    createUser,
+    verifyUser,
+    forgotPassword,
+    loginUser,
+    loginUserByGoogle,
+    signUpUserByGoogle,
+    getUserCategory,
+    updateUserCategory,
+    getAllUsers,
+    updateUserStatus
+} = require('../controllers/users')
 
 router.get("/", auth, isAdmin, getAllUsers)
 

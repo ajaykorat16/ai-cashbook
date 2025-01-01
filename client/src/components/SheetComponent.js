@@ -13,31 +13,29 @@ import { SheetsDirective, SheetDirective, RangesDirective, RangeDirective, Sprea
 import Loader from '../components/Loader';
 import { useClient } from '../contexts/ClientContexts';
 import moment from 'moment';
-import $ from 'jquery';
-import 'jquery-ui-dist/jquery-ui.css';
-import 'jquery-ui-dist/jquery-ui';
 import ClientSelection from './ClientSelection';
 import { groupData } from './data';
 import { useAuth } from '../contexts/AuthContext';
 import { InputSwitch } from 'primereact/inputswitch';
 import copy from 'copy-to-clipboard';
+import DateRange from './DateRange';
+import { convertToCellFormat } from '../helper/helper';
 
 const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
-    const { getSpreadsheet, updateSpreadsheet, getClientCategory, clientObject, showInterBank,
-        showDateRange, calculateDateRange, setShowInterBank, changeSheetName, shareSheet } = useClient();
+    const { getSpreadsheet, updateSpreadsheet, getClientCategory, showInterBank,
+        setShowInterBank, changeSheetName, shareSheet } = useClient();
     const { toast } = useAuth()
     const spreadsheetRef = useRef(null);
 
-    const [dataLoaded, setDataLoaded] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const currentYearStart = moment().startOf('year');
     const currentYearEnd = moment().endOf('year');
+    const [dataLoaded, setDataLoaded] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [categortList, setCategoryList] = useState([])
     const [categoryData, setCategoryData] = useState({});
     const [sheetData, setSheetData] = useState([])
-    const [showMenu, setShowMenu] = useState(false)
     const [interBankData, setInterBankData] = useState([])
     const [readStatus, setReadStatus] = useState(false)
     const [sheetName, setSheetName] = useState("")
@@ -51,37 +49,11 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
 
         setFromDate(storedFromDate);
         setToDate(storedToDate);
+
+        if (clientId) {
+            fetchClientCategory()
+        }
     }, [clientId]);
-
-    const convertToCellFormat = (data) => {
-        const convertedData = data?.map(row => ({
-            cells: row.map(cell => {
-                let value = cell || '';
-                const style = {};
-
-                if (typeof value !== 'string') {
-                    value = String(value);
-                }
-
-                if (value.includes('<b>')) {
-                    style.fontWeight = 'bold';
-                    value = value.replace(/<\/?b>/g, '');
-                }
-                if (value.includes('<i>')) {
-                    style.fontStyle = 'italic';
-                    value = value.replace(/<\/?i>/g, '');
-                }
-                if (value.includes('<u>')) {
-                    style.textDecoration = 'underline';
-                    value = value.replace(/<\/?u>/g, '');
-                }
-
-                return { value, style };
-            })
-        }));
-
-        return convertedData;
-    };
 
     const fetchCsvLoaded = async () => {
         setIsLoading(true);
@@ -175,12 +147,8 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     };
 
     useEffect(() => {
-        if (clientId) {
-            fetchClientCategory()
-
-            if (fromDate && toDate) {
-                fetchCsvLoaded();
-            }
+        if (fromDate && toDate && clientId) {
+            fetchCsvLoaded();
         }
     }, [clientId, fromDate, toDate]);
 
@@ -253,9 +221,8 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
             }
         }
 
-        if (args.action === 'format' || args.action === 'cellSave' || args.action === 'clipboard' ||
-            args.action === 'cellDelete' || args.action === 'delete' || args.action === 'insert' || args.action === 'autofill') {
-            // handleDropdown()
+        const validActions = ['format', 'cellSave', 'clipboard', 'cellDelete', 'delete', 'insert', 'autofill'];
+        if (validActions.includes(args.action)) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const editedData = []
 
@@ -425,33 +392,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
         }
     }
 
-    const applyCalculations = () => {
-        try {
-            if (spreadsheetRef.current) {
-                const sheet = spreadsheetRef.current.getActiveSheet();
-                const rowCount = sheet.usedRange.rowIndex + 1;
-                const totalCount = rowCount + 1000
-
-                for (let row = 2; row <= totalCount; row++) {
-                    const formula = `=IF(AND(ISNUMBER(D${row}), ISNUMBER(G${row})), ROUND((D${row}*G${row})/100, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula }, `H${row}`);
-
-                    const gstFormula = `=IF(AND(ISNUMBER(H${row}), I${row}<>""), ROUND(H${row}/11, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula: gstFormula }, `J${row}`);
-
-                    const excGstFormula = `=IF(AND(ISNUMBER(H${row}), ISNUMBER(J${row})), ROUND(H${row}-J${row}, 2), "")`;
-                    spreadsheetRef.current.updateCell({ formula: excGstFormula }, `K${row}`);
-
-                    const baslabnFormula = `=IF(ISNUMBER(J${row}), IF(J${row} > 0, "1A", "1B"), "")`;
-                    spreadsheetRef.current.updateCell({ formula: baslabnFormula }, `O${row}`);
-
-                }
-            }
-        } catch (error) {
-            console.log("error--", error);
-        }
-    };
-
     const calculationOnRow = (row, currentRowData) => {
         try {
             if (spreadsheetRef.current && row !== 1) {
@@ -514,7 +454,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                 }
             }
         } catch (error) {
-            console.log("error--", error)
+            console.log("error", error)
         }
     };
 
@@ -558,9 +498,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     };
 
     useEffect(() => {
-        initiateDatePicker('#datepicker', 'fromDate');
-        initiateDatePicker('#datepicker1', 'toDate');
-
         const handleResize = () => {
             spreadsheetRef.current.refresh();
         };
@@ -572,39 +509,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
         };
 
     }, []);
-
-    const initiateDatePicker = (selector, id) => {
-        $(selector).datepicker({
-            uiLibrary: 'bootstrap5',
-            dateFormat: 'mm/dd/yy',
-            changeMonth: true,
-            changeYear: true,
-            yearRange: "1900:2100",
-        }).on('change', function () {
-            const selectedDate = $(this).val();
-            selector === '#datepicker' ? setFromDate(selectedDate) : setToDate(selectedDate);
-            localStorage.setItem(`${id}_${clientObject?.value}`, selectedDate);
-        });
-    }
-
-    const setDateRange = (option) => {
-        const { startDate, endDate } = calculateDateRange(option)
-        setFromDate(startDate)
-        setToDate(endDate)
-        setShowMenu(false)
-    }
-
-    // useEffect(() => {
-    //     const handleResize = () => {
-    //         spreadsheetRef.current.refresh();
-    //     };
-
-    //     window.addEventListener('resize', handleResize);
-
-    //     return () => {
-    //         window.removeEventListener('resize', handleResize);
-    //     };
-    // }, []);
 
     const handleDropdown = () => {
         if (spreadsheetRef?.current?.isRendered === false) {
@@ -693,88 +597,13 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                     )}
                 </div>
             </div>
-            <div className="input_form_box date_container">
-                <div className="row">
-                    <div className="col-md-12"><label htmlFor="datepicker" className="mb-2">Date Range</label></div>
-                    <div className="col-md-4">
-                        <div className="form-floating">
-                            <input
-                                type="text"
-                                value={fromDate}
-                                className="form-control date_icn py-0"
-                                id="datepicker"
-                                placeholder="From"
-                                readOnly
-                            />
-                            <label htmlFor="datepicker" className="floating-label">
-                                From
-                            </label>
-                        </div>
-                    </div>
-                    <div className="col-md-4">
-                        <div className="form-floating">
-                            <input
-                                type="text"
-                                value={toDate}
-                                className="form-control date_icn py-0"
-                                id="datepicker1"
-                                placeholder="To"
-                                readOnly
-                            />
-                            <label htmlFor="datepicker1" className="floating-label">
-                                To
-                            </label>
-                        </div>
-                    </div>
-                    <div className="col-md-1 pos_rel">
-                        <div className="box_brd_down" onClick={() => setShowMenu(!showMenu)}></div>
-                        <div className={`open_box_down_icon  ${showMenu ? 'd-block' : 'd-none'}`}>
-                            <div className="date_main_box">
-                                <div onClick={() => setDateRange('thisMonth')}>
-                                    <div className="dateleft_data">This Month</div>
-                                    <div className="dateright_data">{showDateRange('thisMonth')}</div>
-                                </div>
-                                <div onClick={() => setDateRange('thisQuarter')}>
-                                    <div className="dateleft_data">This Quarter</div>
-                                    <div className="dateright_data">{showDateRange('thisQuarter')}</div>
-                                </div>
-                                <div onClick={() => setDateRange('thisYear')}>
-                                    <div className="dateleft_data">This Financial Year</div>
-                                    <div className="dateright_data">{showDateRange('thisYear')}</div>
-                                </div>
-                            </div>
-                            <div className="date_main_box">
-                                <div onClick={() => setDateRange('lastMonth')}>
-                                    <div className="dateleft_data">Last Month</div>
-                                    <div className="dateright_data">{showDateRange('lastMonth')}</div>
-                                </div>
-                                <div onClick={() => setDateRange('lastQuarter')}>
-                                    <div className="dateleft_data">Last Quarter</div>
-                                    <div className="dateright_data">{showDateRange('lastQuarter')}</div>
-                                </div>
-                                <div onClick={() => setDateRange('lastYear')}>
-                                    <div className="dateleft_data">Last Financial Year</div>
-                                    <div className="dateright_data">{showDateRange('lastYear')}</div>
-                                </div>
-                            </div>
-                            <div className="date_main_box">
-                                <div onClick={() => setDateRange('currentMonthToDate')}>
-                                    <div className="dateleft_data">Month To Date</div>
-                                    <div className="dateright_data">{showDateRange('currentMonthToDate')}</div>
-                                </div>
-                                <div onClick={() => setDateRange('currentQuarterToDate')}>
-                                    <div className="dateleft_data">Quarter To Date</div>
-                                    <div className="dateright_data">{showDateRange('currentQuarterToDate')}</div>
-                                </div>
-                                <div onClick={() => setDateRange('currentYearToDate')}>
-                                    <div className="dateleft_data">Year To Date</div>
-                                    <div className="dateright_data">{showDateRange('currentYearToDate')}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DateRange
+                fromDate={fromDate}
+                setFromDate={setFromDate}
+                setToDate={setToDate}
+                toDate={toDate}
+                isSheet={true}
+            />
             <>
                 {isLoading ? (
                     <Loader />) : (
@@ -794,7 +623,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                                     if (spreadsheetRef?.current?.isRendered === false) {
                                         spreadsheetRef.current.selectRange('B1');
                                         formateSheet();
-                                        // applyCalculations()
                                         handleDropdown()
                                         setDataLoaded(false)
                                         setTimeout(() => {
