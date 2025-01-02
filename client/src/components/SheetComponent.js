@@ -21,6 +21,23 @@ import copy from 'copy-to-clipboard';
 import DateRange from './DateRange';
 import { convertToCellFormat } from '../helper/helper';
 
+
+function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
+
 const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     const { getSpreadsheet, updateSpreadsheet, getClientCategory, showInterBank,
         setShowInterBank, changeSheetName, shareSheet } = useClient();
@@ -42,6 +59,8 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     const [isShared, setIsShared] = useState(false)
     const [link, setLink] = useState("")
     const [buttonText, setButtonText] = useState("Copy Link");
+    const debouncedClientId = useDebounce(clientId, 100);
+
 
     useEffect(() => {
         const storedFromDate = localStorage.getItem(`fromDate_${clientId}`) ?? currentYearStart.format('MM/DD/YYYY');
@@ -56,7 +75,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     }, [clientId]);
 
     const fetchCsvLoaded = async () => {
-        setIsLoading(true);
         try {
             const csvDetail = await getSpreadsheet(clientId, moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD'), moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD'));
             const interBankIndex = []
@@ -147,10 +165,10 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     };
 
     useEffect(() => {
-        if (fromDate && toDate) {
+        if (debouncedClientId && fromDate && toDate) {
             fetchCsvLoaded();
         }
-    }, [fromDate, toDate]);
+    }, [debouncedClientId, fromDate, toDate]);
 
     const convertCellsToValues = (data) => {
         if (!data || !Array.isArray(data.cells)) {
@@ -460,6 +478,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
 
     const fetchClientCategory = async () => {
         try {
+            setIsLoading(true);
             const { data } = await getClientCategory(clientId);
             const categories = data.map((d) => {
                 return {
