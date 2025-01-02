@@ -30,8 +30,8 @@ const DateRange = ({ fromDate, setFromDate, setToDate, toDate, isSheet = false }
     }, [clientObject?.value]);
 
     useEffect(() => {
-        initiateDatePicker('#datepicker', 'fromDate');
-        initiateDatePicker('#datepicker1', 'toDate');
+        initiateDatePicker('#datepicker');
+        initiateDatePicker('#datepicker1');
     }, []);
 
     useEffect(() => {
@@ -39,7 +39,7 @@ const DateRange = ({ fromDate, setFromDate, setToDate, toDate, isSheet = false }
         if (toDate) localStorage.setItem(`toDate_${clientObject.value}`, toDate);
     }, [fromDate, toDate]);
 
-    const initiateDatePicker = (selector, id) => {
+    const initiateDatePicker = (selector) => {
         $(selector).datepicker({
             uiLibrary: 'bootstrap5',
             dateFormat: 'mm/dd/yy',

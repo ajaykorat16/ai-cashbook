@@ -77,6 +77,10 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
             ...provided,
             color: '#4dd0a6',
         }),
+        menuPortal: (provided) => ({
+            ...provided,
+            zIndex: 9999
+        }),
     };
 
     return (
@@ -101,7 +105,7 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
                         removeSelected: false,
                     }}
                     menuPlacement={menuPlacement}
-                    // defaultMenuIsOpen={true}
+                    defaultMenuIsOpen={true}
                     menuShouldScrollIntoView={false}
                     menuPortalTarget={document.querySelector('body')}
                     styles={customStyles}
