@@ -105,7 +105,7 @@ const ClientSelection = ({ className, labelClassName, multiSelect = false, requi
                         removeSelected: false,
                     }}
                     menuPlacement={menuPlacement}
-                    defaultMenuIsOpen={true}
+                    // defaultMenuIsOpen={true}
                     menuShouldScrollIntoView={false}
                     menuPortalTarget={document.querySelector('body')}
                     styles={customStyles}

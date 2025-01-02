@@ -147,10 +147,10 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     };
 
     useEffect(() => {
-        if (fromDate && toDate && clientId) {
+        if (fromDate && toDate) {
             fetchCsvLoaded();
         }
-    }, [clientId, fromDate, toDate]);
+    }, [fromDate, toDate]);
 
     const convertCellsToValues = (data) => {
         if (!data || !Array.isArray(data.cells)) {
