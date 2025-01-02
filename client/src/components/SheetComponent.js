@@ -76,6 +76,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
 
     const fetchCsvLoaded = async () => {
         try {
+            setIsLoading(true);
             const csvDetail = await getSpreadsheet(clientId, moment(fromDate, 'MM/DD/YYYY').format('YYYY-MM-DD'), moment(toDate, 'MM/DD/YYYY').format('YYYY-MM-DD'));
             const interBankIndex = []
             setLink(csvDetail?.link)
@@ -478,7 +479,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
 
     const fetchClientCategory = async () => {
         try {
-            setIsLoading(true);
             const { data } = await getClientCategory(clientId);
             const categories = data.map((d) => {
                 return {
