@@ -1657,6 +1657,10 @@ li[aria-label = "File"] {
   display: none !important;
 }
 
+.e-main-panel .e-sheet-content div[class='e-autofill e-hide'] {
+  display: block !important;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);

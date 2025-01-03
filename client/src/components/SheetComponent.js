@@ -21,7 +21,6 @@ import copy from 'copy-to-clipboard';
 import DateRange from './DateRange';
 import { convertToCellFormat } from '../helper/helper';
 
-
 function useDebounce(value, delay) {
     const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -54,7 +53,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
     const [categoryData, setCategoryData] = useState({});
     const [sheetData, setSheetData] = useState([])
     const [interBankData, setInterBankData] = useState([])
-    const [readStatus, setReadStatus] = useState(false)
     const [sheetName, setSheetName] = useState("")
     const [isShared, setIsShared] = useState(false)
     const [link, setLink] = useState("")
@@ -447,8 +445,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
 
                     const firstRowRange = `B1:${String.fromCharCode(64 + colCount)}1`;
                     spreadsheetRef.current.cellFormat({ fontWeight: 'bold', backgroundColor: '#4b5366', color: '#FFFFFF' }, firstRowRange);
-                    spreadsheetRef.current.hideColumn(0, 0);
-                    sheet.columns[0].allowResizing = false;
 
                     const columnsToFormat = [
                         { range: `D2:D${rowCount}` },
@@ -565,13 +561,6 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
         }
     }
 
-    useEffect(() => {
-        if (readStatus) {
-            spreadsheetRef.current.setRangeReadOnly(true, 'A1:O1');
-            setReadStatus(false)
-        }
-    }, [readStatus])
-
     const handleShare = async (e) => {
         const value = e.value
         setIsShared(value)
@@ -640,13 +629,11 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                                 }}
                                 created={() => {
                                     if (spreadsheetRef?.current?.isRendered === false) {
+                                        // spreadsheetRef.current.hideColumn(0, 0);
                                         spreadsheetRef.current.selectRange('B1');
                                         formateSheet();
                                         handleDropdown()
                                         setDataLoaded(false)
-                                        setTimeout(() => {
-                                            setReadStatus(true)
-                                        }, 2000);
                                     }
                                 }}
                             >
@@ -656,21 +643,21 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                                             <RangeDirective dataSource={sheetData}></RangeDirective>
                                         </RangesDirective>
                                         <ColumnsDirective>
-                                            <ColumnDirective width={0} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={130} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={650} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={200} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={170} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={80} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={200} allowResizing={false}></ColumnDirective>
-                                            <ColumnDirective width={100} allowResizing={false}></ColumnDirective>
+                                            <ColumnDirective width={0} hidden={true}></ColumnDirective>
+                                            <ColumnDirective width={130}></ColumnDirective>
+                                            <ColumnDirective width={100}></ColumnDirective>
+                                            <ColumnDirective width={100}></ColumnDirective>
+                                            <ColumnDirective width={650}></ColumnDirective>
+                                            <ColumnDirective width={200}></ColumnDirective>
+                                            <ColumnDirective width={100}></ColumnDirective>
+                                            <ColumnDirective width={100}></ColumnDirective>
+                                            <ColumnDirective width={170}></ColumnDirective>
+                                            <ColumnDirective width={100}></ColumnDirective>
+                                            <ColumnDirective width={100}></ColumnDirective>
+                                            <ColumnDirective width={80}></ColumnDirective>
+                                            <ColumnDirective width={100}></ColumnDirective>
+                                            <ColumnDirective width={200}></ColumnDirective>
+                                            <ColumnDirective width={100}></ColumnDirective>
                                         </ColumnsDirective>
                                     </SheetDirective>
                                     <SheetDirective name="Categories">
