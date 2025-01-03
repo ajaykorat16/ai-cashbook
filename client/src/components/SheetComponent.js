@@ -634,6 +634,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                                         formateSheet();
                                         handleDropdown()
                                         setDataLoaded(false)
+                                        spreadsheetRef.current.setRangeReadOnly(true, 'B1:O1');
                                     }
                                 }}
                             >
