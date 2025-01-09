@@ -36,7 +36,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             try {
                 const sheet = spreadsheetRef.current.getActiveSheet();
                 const rowCount = sheet.usedRange.rowIndex + 1;
-                const range = `A1:E${rowCount}`;
+                const range = `A1:Z${rowCount}`;
 
                 const data = await spreadsheetRef.current.getData(`${sheet.name}!${range}`);
                 const formattedData = convertData(data);
@@ -114,7 +114,12 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
             const csv = csvDetail?.data || [];
             setCsvData(csv)
             const firstRow = csv[0]
-            const headers = firstRow.map(item => item.replace(/<\/?[^>]+(>|$)/g, ""));
+            const headers = ["Tax_Category", "Account_Number", "GST_Code", "ITR_Label", "Order"]
+            const newHeaders = firstRow.map(item => item.replace(/<\/?(b|i|u)>/g, "")).filter(item => item.trim() !== "");
+
+            if (newHeaders.length > headers.length) {
+                headers.push(...newHeaders.slice(headers.length));
+            }
             const convertedData = convertToCellFormat(csv);
 
             convertedData.shift();
@@ -376,7 +381,7 @@ const Accounts = ({ clientId, showSelection, getCsvData, updateCsvData, title })
 
     useEffect(() => {
         if (readStatus) {
-            spreadsheetRef.current.setRangeReadOnly(true, 'A1:Z1');
+            spreadsheetRef.current.setRangeReadOnly(true, 'A1:E1');
             setReadStatus(false)
         }
     }, [readStatus])
