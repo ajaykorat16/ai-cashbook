@@ -1259,7 +1259,7 @@ const train = async (oldData, id) => {
 };
 
 
-const classify = async (newData, id, database, email) => {
+const classify = async (newData, id, database, email, additionalHeaders = []) => {
     const parentDirectory = path.join(__dirname, '..');
     const folderPath = path.join(parentDirectory, 'spreadsheet');
 
@@ -1315,8 +1315,9 @@ const classify = async (newData, id, database, email) => {
             row.qtr,
             itr_label,
             bs_labn,
+            ...additionalHeaders.map(header => row[header]),
             row.id
-        ]
+        ];
     });
 
     // Delete the CSV file after the Python script has run
@@ -1777,8 +1778,25 @@ const createClientSpreadsheet = async (req, res) => {
             return [row.data[0], formattedDate, ...row.data.slice(2)];
         });
 
-        const oldData = [["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn'], ...formattedData]
-        const trimmedNewCsv = newCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
+
+        const firstRow = spreadsheetCursor[0]?.data
+        const headers = ["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn']
+        const additionalHeaders = []
+
+        if (firstRow.length > headers.length) {
+            const extraHeaders = firstRow.slice(headers.length + 1);
+            headers.push(...extraHeaders);
+            additionalHeaders.push(...extraHeaders);
+        }
+
+        const normalizedCsv = newCsv.map(row => {
+            const missingLength = headers.length - row.length;
+            return missingLength > 0 ? [...row, ...Array(missingLength).fill("")] : row;
+        });
+
+
+        const oldData = [headers, ...formattedData]
+        const trimmedNewCsv = normalizedCsv.slice(1).filter(row => row.some(cell => cell.trim() !== ''));
 
         const filteredNewCsv = removeMatchedItems(trimmedNewCsv, spreadsheetCursor)
 
@@ -1790,7 +1808,7 @@ const createClientSpreadsheet = async (req, res) => {
 
         if (oldData.length > 1 && filteredNewCsv.length > 0) {
             await train(oldData, id)
-            const classifiedData = await classify([oldData[0], ...filteredNewCsv], id, database, user?.email)
+            const classifiedData = await classify([headers, ...filteredNewCsv], id, database, user?.email)
             const newClassifiedData = await checkInterBank(spreadsheetCursor, classifiedData, id, spreadsheetId, userSpreadsheet)
 
             const newData = newClassifiedData.map((data) => {
@@ -1906,7 +1924,7 @@ const autoCategorize = async (req, res) => {
             const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
             const newRow = [row.data[0], formattedDate];
             if (row.data.length >= 2) {
-                for (let i = 2; i < 14; i++) {
+                for (let i = 2; i < row?.data?.length; i++) {
                     if (row.data[i]) {
                         newRow.push(row.data[i])
                     } else {
@@ -1918,12 +1936,22 @@ const autoCategorize = async (req, res) => {
             return newRow;
         });
 
+        const firstRow = spreadsheetCursor[0]?.data
+        const headers = ["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn']
+        const additionalHeaders = []
 
-        const oldData = [["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn', 'id'], ...formattedData]
+        if (firstRow.length > headers.length) {
+            const extraHeaders = firstRow.slice(headers.length + 1);
+            headers.push(...extraHeaders);
+            additionalHeaders.push(...extraHeaders);
+        }
+        headers.push('id')
+
+        const oldData = [headers, ...formattedData]
 
         if (oldData.length > 0 && newCsv.length > 0) {
             await train(oldData, id)
-            const classifiedData = await classify([oldData[0], ...newCsv], id, database, user?.email)
+            const classifiedData = await classify([headers, ...newCsv], id, database, user?.email, additionalHeaders)
             const newData = classifiedData.map((data) => {
                 const _id = data[data.length - 1];
                 const updatedData = data.slice(0, -1);
