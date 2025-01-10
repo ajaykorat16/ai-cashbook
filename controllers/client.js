@@ -1361,7 +1361,7 @@ function removeMatchedItems(newCsv, spreadsheetCursor) {
         for (let j = 0; j < formattedData.length; j++) {
             if (
                 newCsv[i][1] === formattedData[j][1] &&
-                newCsv[i][2] === formattedData[j][2] &&
+                parseFloat(newCsv[i][2]) === parseFloat(formattedData[j][2]) &&
                 newCsv[i][3] === formattedData[j][3]
             ) {
                 isMatched = true;
@@ -1373,7 +1373,6 @@ function removeMatchedItems(newCsv, spreadsheetCursor) {
             result.push(newCsv[i]);
         }
     }
-
     return result;
 }
 
