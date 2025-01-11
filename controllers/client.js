@@ -1919,22 +1919,6 @@ const autoCategorize = async (req, res) => {
             }
         });
 
-        const newCsv = newData.map((row) => {
-            const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
-            const newRow = [row.data[0], formattedDate];
-            if (row.data.length >= 2) {
-                for (let i = 2; i < row?.data?.length; i++) {
-                    if (row.data[i]) {
-                        newRow.push(row.data[i])
-                    } else {
-                        newRow.push("")
-                    }
-                }
-            }
-            newRow.push(row?._id)
-            return newRow;
-        });
-
         const firstRow = spreadsheetCursor[0]?.data
         const headers = ["account", "date", "amount", "narrative", "category", 'business', 'taxableAmt', 'gst_code', 'gst_amt', 'excl_gst_amt', 'fy', 'qtr', 'itr_label', 'bas_labn']
         const additionalHeaders = []
@@ -1944,9 +1928,26 @@ const autoCategorize = async (req, res) => {
             headers.push(...extraHeaders);
             additionalHeaders.push(...extraHeaders);
         }
+        const newCsv = newData.map((row) => {
+            const formattedDate = moment(row.data[1], 'YYYY-MM-DD').format('YYYY-MM-DD');
+            const newRow = [row.data[0], formattedDate];
+
+            for (let i = 2; i < row?.data?.length; i++) {
+                newRow.push(row.data[i] || "");
+            }
+
+            while (newRow.length < headers.length) {
+                newRow.push("");
+            }
+
+            newRow.push(row?._id || "");
+            return newRow;
+        });
+
         headers.push('id')
 
         const oldData = [headers, ...formattedData]
+
 
         if (oldData.length > 0 && newCsv.length > 0) {
             await train(oldData, id)
@@ -2016,7 +2017,7 @@ function checkIfItemMatched(item, spreadsheetCursor) {
 const updateClientSpreadsheet = async (req, res) => {
     try {
         const { id: clientId } = req.params;
-        const { data } = req.body;
+        const { data, heading } = req.body;
         const insertedDataId = []
         const interBankIds = []
 
@@ -2048,106 +2049,140 @@ const updateClientSpreadsheet = async (req, res) => {
         const clientSpreadsheet = database.collection(`${user?.email.split("@")[0]}_client_spreadsheet`);
         const spreadsheetCursor = await clientSpreadsheet.find({ client_id: new ObjectId(clientId) }).toArray();
 
-        const updatePromises = data.map(async (item) => {
-            if (item.length > 0) {
-                if (item[0] === "Id") {
-                    const headers = ["Id", "Bank_Account", "Date", "Amt", "Narrative", "Categories", 'Business', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl_GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
-                    if (item.length > headers.length) {
-                        const extraItems = item.slice(15);
-                        const cleanedExtraItems = extraItems.map((el) =>
-                            el.replace(/<\/?b>/g, "")
-                        );
-                        headers.push(...cleanedExtraItems);
-                    }
+        if (heading?.length > 0) {
+            const existingRecord = await clientSpreadsheet.findOne({ _id: new ObjectId(spreadsheetCursor[0]._id) });
+            const headers = existingRecord.data
 
-                    const headerId = spreadsheetCursor[0]._id
-                    await clientSpreadsheet.updateOne(
-                        { _id: headerId },
-                        {
-                            $set: {
-                                data: headers
-                            }
-                        }
-                    );
+            const removedHeader = headers.indexOf(heading[0]);
+
+            if (removedHeader !== -1) {
+                headers.splice(removedHeader, 1);
+            }
+            const transformedArray = spreadsheetCursor.map(({ _id, data }, index) => {
+                if (index === 0) {
+                    data.splice(removedHeader, 1);
                 } else {
-                    const id = item.shift();
-                    if (id) {
-                        const existingRecord = await clientSpreadsheet.findOne({ _id: new ObjectId(id) });
+                    data.splice(removedHeader - 1, 1);
+                }
 
-                        if (existingRecord) {
-                            const isItemBlank = Object.values(item).every(value => value === '' || value === null || value === undefined);
+                return {
+                    updateOne: {
+                        filter: { _id },
+                        update: { $set: { data } },
+                    },
+                };
+            });
 
-                            if (isItemBlank) {
-                                await clientSpreadsheet.deleteOne({ _id: new ObjectId(id) });
-                            } else {
-                                if (item[1]) {
-                                    item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
+            await clientSpreadsheet.bulkWrite(transformedArray);
+
+            return res.status(200).json({
+                error: false,
+                message: "Client category updated successfully.",
+                insertedDataId: [],
+                interBankIds: []
+            });
+        } else {
+            const updatePromises = data.map(async (item) => {
+                if (item.length > 0) {
+                    if (item[0] === "Id") {
+                        const headers = ["Id", "Bank_Account", "Date", "Amt", "Narrative", "Categories", 'Business', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl_GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
+                        if (item.length > headers.length) {
+                            const extraItems = item.slice(15);
+                            const cleanedExtraItems = extraItems.map((el) =>
+                                el.replace(/<\/?b>/g, "")
+                            );
+                            headers.push(...cleanedExtraItems);
+                        }
+
+                        const headerId = spreadsheetCursor[0]._id
+                        await clientSpreadsheet.updateOne(
+                            { _id: headerId },
+                            {
+                                $set: {
+                                    data: headers
                                 }
+                            }
+                        );
+                    } else {
+                        const id = item.shift();
+                        if (id) {
+                            const existingRecord = await clientSpreadsheet.findOne({ _id: new ObjectId(id) });
 
-                                const newData = await interBankForUpdate(spreadsheetCursor, [item], id, clientSpreadsheet, interBankIds)
-                                if (newData.length > 0) {
-                                    const row = await clientSpreadsheet.findOneAndUpdate(
-                                        { _id: new ObjectId(id) },
-                                        {
-                                            $set: {
-                                                data: item,
-                                                category: item[4],
-                                                updatedAt: new Date(),
-                                                inter_bank: false,
-                                                inter_bank_with: ''
-                                            }
-                                        },
-                                        { returnOriginal: true }
-                                    );
+                            if (existingRecord) {
+                                const isItemBlank = Object.values(item).every(value => value === '' || value === null || value === undefined);
 
-                                    if (row?.inter_bank_with) {
-                                        await clientSpreadsheet.updateOne(
-                                            { _id: row.inter_bank_with },
+                                if (isItemBlank) {
+                                    await clientSpreadsheet.deleteOne({ _id: new ObjectId(id) });
+                                } else {
+                                    if (item[1]) {
+                                        item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
+                                    }
+
+                                    const newData = await interBankForUpdate(spreadsheetCursor, [item], id, clientSpreadsheet, interBankIds)
+                                    if (newData.length > 0) {
+                                        const row = await clientSpreadsheet.findOneAndUpdate(
+                                            { _id: new ObjectId(id) },
                                             {
                                                 $set: {
+                                                    data: item,
+                                                    category: item[4],
+                                                    updatedAt: new Date(),
                                                     inter_bank: false,
                                                     inter_bank_with: ''
                                                 }
-                                            });
-                                        interBankIds.push([transformObjectId(id), transformObjectId(row.inter_bank_with), false])
+                                            },
+                                            { returnOriginal: true }
+                                        );
+
+                                        if (row?.inter_bank_with) {
+                                            await clientSpreadsheet.updateOne(
+                                                { _id: row.inter_bank_with },
+                                                {
+                                                    $set: {
+                                                        inter_bank: false,
+                                                        inter_bank_with: ''
+                                                    }
+                                                });
+                                            interBankIds.push([transformObjectId(id), transformObjectId(row.inter_bank_with), false])
+                                        }
                                     }
                                 }
                             }
-                        }
-                    } else {
-                        if (item[1]) {
-                            item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
-                        }
+                        } else {
+                            if (item[1]) {
+                                item[1] = moment(item[1], 'MM/DD/YYYY').format('YYYY-MM-DD');
+                            }
 
-                        const isMatched = checkIfItemMatched(item, spreadsheetCursor)
-                        if (!isMatched && item[1]) {
-                            const newData = await checkInterBank(spreadsheetCursor, [item], clientId, null, clientSpreadsheet, insertedDataId, interBankIds)
-                            if (newData.length > 0) {
-                                const insertedId = await clientSpreadsheet.insertOne({
-                                    data: item,
-                                    category: item[4] ? item[4] : "",
-                                    createdAt: new Date(),
-                                    updatedAt: new Date(),
-                                    client_id: new ObjectId(clientId),
-                                    spreadsheet: null,
-                                    inter_bank: false
-                                });
-                                insertedDataId.push(insertedId?.insertedId)
+                            const isMatched = checkIfItemMatched(item, spreadsheetCursor)
+                            if (!isMatched && item[1]) {
+                                const newData = await checkInterBank(spreadsheetCursor, [item], clientId, null, clientSpreadsheet, insertedDataId, interBankIds)
+                                if (newData.length > 0) {
+                                    const insertedId = await clientSpreadsheet.insertOne({
+                                        data: item,
+                                        category: item[4] ? item[4] : "",
+                                        createdAt: new Date(),
+                                        updatedAt: new Date(),
+                                        client_id: new ObjectId(clientId),
+                                        spreadsheet: null,
+                                        inter_bank: false
+                                    });
+                                    insertedDataId.push(insertedId?.insertedId)
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
 
-        await Promise.all(updatePromises);
+            await Promise.all(updatePromises);
 
-        return res.status(200).json({
-            error: false,
-            message: "Client category updated successfully.",
-            insertedDataId,
-            interBankIds
-        });
+            return res.status(200).json({
+                error: false,
+                message: "Client category updated successfully.",
+                insertedDataId,
+                interBankIds
+            });
+        }
     } catch (error) {
         console.error(error.message);
         return res.status(500).json({

@@ -267,9 +267,9 @@ const ClientProvider = ({ children }) => {
         }
     }
 
-    const updateSpreadsheet = async (id, csvData) => {
+    const updateSpreadsheet = async (id, csvData, heading) => {
         try {
-            const { data } = await axios.put(`${baseURL}/client/update-spreasheet/${id}`, { data: csvData }, { headers });
+            const { data } = await axios.put(`${baseURL}/client/update-spreasheet/${id}`, { data: csvData, heading }, { headers });
             if (data.error === false) {
                 return data;
             } else {

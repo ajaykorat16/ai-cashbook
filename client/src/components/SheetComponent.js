@@ -92,9 +92,10 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
             const csv = csvDetail.spreadsheet || [];
             const firstRow = csv[0]
             const headers = ["Id", "Bank_Account", "Date", "Amt", "Narrative", "Categories", 'Business', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl_GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
+            const newHeaders = firstRow.map(item => item.replace(/<\/?(b|i|u)>/g, "")).filter(item => item.trim() !== "");
 
-            if (firstRow.length > headers.length) {
-                headers.push(...firstRow.slice(headers.length));
+            if (newHeaders.length > headers.length) {
+                headers.push(...newHeaders.slice(headers.length));
             }
 
             const convertedData = convertToCellFormat(csv);
@@ -242,6 +243,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
         if (validActions.includes(args.action)) {
             const sheet = spreadsheetRef.current.getActiveSheet();
             const editedData = []
+            let heading = []
 
             if (args?.eventArgs?.selectedRange) {
                 const cellAddress = args.eventArgs.selectedRange
@@ -298,6 +300,12 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
                     }
                 }
             } else if (args.action === 'delete') {
+                if (args?.eventArgs?.modelType === "Column") {
+                    const deletedModels = args.eventArgs.deletedCellsModel ?? [];
+                    const currentRowData = convertCellsToValues(deletedModels[0]);
+                    heading = currentRowData.map(item => item.replace(/<\/?(b|i|u)>/gi, ''));
+                }
+
                 const deletedModels = args.eventArgs.deletedModel ?? [];
                 deletedModels.forEach(deletedModel => {
                     const currentRowData = convertCellsToValues(deletedModel);
@@ -307,7 +315,7 @@ const SheetComponent = ({ clientId, showSelection, disableSelection }) => {
             }
 
             if (editedData?.length > 0) {
-                const data = await updateSpreadsheet(clientId, editedData);
+                const data = await updateSpreadsheet(clientId, editedData, heading);
 
                 if (data?.insertedDataId.length > 0) {
                     if (args.action === 'autofill') {
