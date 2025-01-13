@@ -2014,6 +2014,16 @@ function checkIfItemMatched(item, spreadsheetCursor) {
     return isMatched;
 }
 
+function findNewElements(existingHeaders, headers) {
+    const existingHeadersSet = new Set(existingHeaders); // Efficient lookup with Set
+    return headers.reduce((acc, header, index) => {
+        if (!existingHeadersSet.has(header)) {
+            acc.push({ element: header, index });
+        }
+        return acc;
+    }, []);
+}
+
 const updateClientSpreadsheet = async (req, res) => {
     try {
         const { id: clientId } = req.params;
@@ -2092,6 +2102,39 @@ const updateClientSpreadsheet = async (req, res) => {
                                 el.replace(/<\/?b>/g, "")
                             );
                             headers.push(...cleanedExtraItems);
+                        }
+
+                        const existingRecord = await clientSpreadsheet.findOne({ _id: new ObjectId(spreadsheetCursor[0]._id) });
+                        const exsitingHeaders = existingRecord.data
+
+                        if (headers.length > exsitingHeaders.length) {
+                            const newElements = findNewElements(exsitingHeaders, headers);
+
+                            const newHeaderIndex = newElements[0]?.index ? newElements[0]?.index - 1 : -1
+
+                            if (newHeaderIndex) {
+                                if (newHeaderIndex !== -1) {
+                                    exsitingHeaders.splice(newHeaderIndex, 0, "");
+                                }
+
+                                const transformedArray = spreadsheetCursor.map(({ _id, data }, index) => {
+                                    data.splice(newHeaderIndex, 0, "");
+
+                                    if (index !== 0) {
+                                        return {
+                                            updateOne: {
+                                                filter: { _id },
+                                                update: { $set: { data } },
+                                            },
+                                        };
+                                    } else {
+                                        return null
+                                    }
+                                })
+                                    .filter(item => item !== null);
+
+                                await clientSpreadsheet.bulkWrite(transformedArray);
+                            }
                         }
 
                         const headerId = spreadsheetCursor[0]._id
