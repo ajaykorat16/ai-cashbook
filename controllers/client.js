@@ -2015,7 +2015,7 @@ function checkIfItemMatched(item, spreadsheetCursor) {
 }
 
 function findNewElements(existingHeaders, headers) {
-    const existingHeadersSet = new Set(existingHeaders); // Efficient lookup with Set
+    const existingHeadersSet = new Set(existingHeaders);
     return headers.reduce((acc, header, index) => {
         if (!existingHeadersSet.has(header)) {
             acc.push({ element: header, index });
@@ -2098,27 +2098,34 @@ const updateClientSpreadsheet = async (req, res) => {
                         const headers = ["Id", "Bank_Account", "Date", "Amt", "Narrative", "Categories", 'Business', 'TaxableAmt', 'GST_Code', 'GST_Amt', 'Excl_GST_Amt', 'FY', 'QTR', 'ITR_Label', 'BAS_LabN']
                         if (item.length > headers.length) {
                             const extraItems = item.slice(15);
-                            const cleanedExtraItems = extraItems.map((el) =>
-                                el.replace(/<\/?b>/g, "")
-                            );
+                            const cleanedExtraItems = extraItems
+                                .map((el) => el.replace(/<\/?b>/g, ""))
+                                .filter((el) => el !== "");
                             headers.push(...cleanedExtraItems);
                         }
 
                         const existingRecord = await clientSpreadsheet.findOne({ _id: new ObjectId(spreadsheetCursor[0]._id) });
                         const exsitingHeaders = existingRecord.data
 
-                        if (headers.length > exsitingHeaders.length) {
-                            const newElements = findNewElements(exsitingHeaders, headers);
+                        if (headers.length !== exsitingHeaders.length) {
+                            let newElements
+                            if (headers.length > exsitingHeaders.length) {
+                                newElements = findNewElements(exsitingHeaders, headers);
+                            } else {
+                                newElements = findNewElements(headers, exsitingHeaders);
+                            }
 
-                            const newHeaderIndex = newElements[0]?.index ? newElements[0]?.index - 1 : -1
-
-                            if (newHeaderIndex) {
-                                if (newHeaderIndex !== -1) {
-                                    exsitingHeaders.splice(newHeaderIndex, 0, "");
-                                }
+                            if (newElements) {
 
                                 const transformedArray = spreadsheetCursor.map(({ _id, data }, index) => {
-                                    data.splice(newHeaderIndex, 0, "");
+                                    newElements.forEach((n) => {
+                                        const newHeaderIndex = n?.index - 1
+                                        if (headers.length > exsitingHeaders.length) {
+                                            data.splice(newHeaderIndex, 0, "");
+                                        } else {
+                                            data.splice(newHeaderIndex, 1);
+                                        }
+                                    })
 
                                     if (index !== 0) {
                                         return {
@@ -2136,6 +2143,7 @@ const updateClientSpreadsheet = async (req, res) => {
                                 await clientSpreadsheet.bulkWrite(transformedArray);
                             }
                         }
+
 
                         const headerId = spreadsheetCursor[0]._id
                         await clientSpreadsheet.updateOne(
