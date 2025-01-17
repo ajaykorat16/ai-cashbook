@@ -2116,16 +2116,19 @@ const updateClientSpreadsheet = async (req, res) => {
                             }
 
                             if (newElements) {
-
+                                const indices = newElements.map(n => n.index - 1).sort((a, b) => a - b);
                                 const transformedArray = spreadsheetCursor.map(({ _id, data }, index) => {
-                                    newElements.forEach((n) => {
-                                        const newHeaderIndex = n?.index - 1
-                                        if (headers.length > exsitingHeaders.length) {
-                                            data.splice(newHeaderIndex, 0, "");
-                                        } else {
-                                            data.splice(newHeaderIndex, 1);
-                                        }
-                                    })
+
+                                    if (headers.length > exsitingHeaders.length) {
+                                        indices.forEach((index, i) => {
+                                            data.splice(index + i, 0, ""); 
+                                        });
+                                    } else {
+                                        indices.reverse().forEach(index => {
+                                            data.splice(index, 1);
+                                        });
+                                    }
+                                    
 
                                     if (index !== 0) {
                                         return {
@@ -2143,7 +2146,6 @@ const updateClientSpreadsheet = async (req, res) => {
                                 await clientSpreadsheet.bulkWrite(transformedArray);
                             }
                         }
-
 
                         const headerId = spreadsheetCursor[0]._id
                         await clientSpreadsheet.updateOne(
